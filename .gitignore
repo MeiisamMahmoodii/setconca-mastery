@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+Research_Intelligence/Learning/_extracts.json
+Research_Intelligence/Learning/_superposition_extract.json
+Research_Intelligence/Conferences/**/_cache*.json
+Research_Intelligence/Conferences/**/_raw_notes.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Optional test deps (local only)
+Research_Intelligence/Learning/setconca-mastery/node_modules/
+Research_Intelligence/Learning/setconca-mastery/package-lock.json
+Research_Intelligence/Learning/setconca-mastery/_quick_test.mjs
+
+# Optional: keep docs/ in git for GitHub Pages (recommended)
+# Uncomment next line only if you deploy via CI artifact instead of committing docs/
+# docs/

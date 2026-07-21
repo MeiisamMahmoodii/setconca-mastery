@@ -1,0 +1,694 @@
+[
+  {
+    "file": "1312.5663v2.pdf",
+    "title": "k-Sparse Autoencoders",
+    "first_lines": [
+      "arXiv:1312.5663v2  [cs.LG]  22 Mar 2014",
+      "k-Sparse Autoencoders",
+      "Alireza Makhzani",
+      "makhzani@psi.utoronto.ca",
+      "Brendan Frey",
+      "frey@psi.utoronto.ca",
+      "University of Toronto, 10 King’s College Rd. Toronto, Ontario M5S 3G4, Canada",
+      "Abstract",
+      "Recently, it has been observed that when rep-",
+      "resentations are learnt in a way that encour-"
+    ]
+  },
+  {
+    "file": "1312.6114v11.pdf",
+    "title": "Auto-Encoding Variational Bayes",
+    "first_lines": [
+      "Auto-Encoding Variational Bayes",
+      "Diederik P. Kingma",
+      "Machine Learning Group",
+      "Universiteit van Amsterdam",
+      "dpkingma@gmail.com",
+      "Max Welling",
+      "Machine Learning Group",
+      "Universiteit van Amsterdam",
+      "welling.max@gmail.com",
+      "Abstract"
+    ]
+  },
+  {
+    "file": "1404.1100v1.pdf",
+    "title": "A Tutorial on Principal Component Analysis",
+    "first_lines": [
+      "A Tutorial on Principal Component Analysis",
+      "Jonathon Shlens∗",
+      "Google",
+      "Research",
+      "Mountain View, CA 94043",
+      "(Dated: April 7, 2014; Version 3.02)",
+      "Principal component analysis (PCA) is a mainstay of modern data analysis - a black box that is widely used",
+      "but (sometimes) poorly understood. The goal of this paper is to dispel the magic behind this black box. This",
+      "manuscript focuses on building a solid intuition for how and why principal component analysis works. This",
+      "manuscript crystallizes this knowledge by deriving from simple intuitions, the mathematics behind PCA. This"
+    ]
+  },
+  {
+    "file": "1404.2986v1.pdf",
+    "title": "A Tutorial on Independent Component Analysis",
+    "first_lines": [
+      "A Tutorial on Independent Component Analysis",
+      "Jonathon Shlens∗",
+      "Google Research",
+      "Mountain View, CA 94043",
+      "(Dated: April 14, 2014; Version 1.0)",
+      "Independent component analysis (ICA) has become a standard data analysis technique applied to an array of",
+      "problems in signal processing and machine learning. This tutorial provides an introduction to ICA based on",
+      "linear algebra formulating an intuition for ICA from ﬁrst principles. The goal of this tutorial is to provide a solid",
+      "foundation on this advanced topic so that one might learn the motivation behind ICA, learn why and when to",
+      "apply this technique and in the process gain an introduction to this exciting ﬁeld of active research."
+    ]
+  },
+  {
+    "file": "1602.01024v1.pdf",
+    "title": "ON DEEP MULTI-VIEW REPRESENTATION LEARNING",
+    "first_lines": [
+      "arXiv:1602.01024v1  [cs.LG]  2 Feb 2016",
+      "ON DEEP MULTI-VIEW REPRESENTATION LEARNING",
+      "On Deep Multi-View Representation Learning:",
+      "Objectives and Optimization",
+      "Weiran Wang",
+      "WEIRANWANG@TTIC.EDU",
+      "Toyota Technological Institute at Chicago",
+      "Chicago, IL 60637, USA",
+      "Raman Arora",
+      "ARORA@CS.JHU.EDU"
+    ]
+  },
+  {
+    "file": "1606.02185v2.pdf",
+    "title": "Published as a conference paper at ICLR 2017",
+    "first_lines": [
+      "Published as a conference paper at ICLR 2017",
+      "TOWARDS A NEURAL STATISTICIAN",
+      "Harrison Edwards",
+      "School of Informatics",
+      "University of Edinburgh",
+      "Edinburgh, UK",
+      "H.L.Edwards@sms.ed.ac.uk",
+      "Amos Storkey",
+      "School of Informatics",
+      "University of Edinburgh"
+    ]
+  },
+  {
+    "file": "1610.03454v3.pdf",
+    "title": "Deep Variational Canonical Correlation Analysis",
+    "first_lines": [
+      "Deep Variational Canonical Correlation Analysis",
+      "Weiran Wang 1 Xinchen Yan 2 Honglak Lee 2 Karen Livescu 1",
+      "Abstract",
+      "We present deep variational canonical correla-",
+      "tion analysis (VCCA), a deep multi-view learn-",
+      "ing model that extends the latent variable model",
+      "interpretation of linear CCA to nonlinear obser-",
+      "vation models parameterized by deep neural net-",
+      "works. We derive variational lower bounds of the",
+      "data likelihood by parameterizing the posterior"
+    ]
+  },
+  {
+    "file": "1702.02519v2.pdf",
+    "title": "Adrian Benton, Huda Khayrallah, Biman Gujral,",
+    "first_lines": [
+      "DEEP",
+      "GENERALIZED",
+      "CANONICAL",
+      "CORRELATION",
+      "ANALYSIS",
+      "Adrian Benton, Huda Khayrallah, Biman Gujral,",
+      "Dee Ann Reisinger, Sheng Zhang, Raman Arora",
+      "Center for Language and Speech Processing",
+      "Johns Hopkins University",
+      "Baltimore, MD 21218, USA"
+    ]
+  },
+  {
+    "file": "1703.06114v3.pdf",
+    "title": "Manzil Zaheer1,2, Satwik Kottur1, Siamak Ravanbhakhsh1,",
+    "first_lines": [
+      "Deep Sets",
+      "Manzil Zaheer1,2, Satwik Kottur1, Siamak Ravanbhakhsh1,",
+      "Barnabás Póczos1, Ruslan Salakhutdinov1, Alexander J Smola1,2",
+      "1 Carnegie Mellon University",
+      "2 Amazon Web Services",
+      "{manzilz,skottur,mravanba,bapoczos,rsalakhu,smola}@cs.cmu.edu",
+      "Abstract",
+      "We study the problem of designing models for machine learning tasks deﬁned on",
+      "sets. In contrast to traditional approach of operating on ﬁxed dimensional vectors,",
+      "we consider objective functions deﬁned on sets that are invariant to permutations."
+    ]
+  },
+  {
+    "file": "1706.05806v2.pdf",
+    "title": "SVCCA: Singular Vector Canonical Correlation",
+    "first_lines": [
+      "SVCCA: Singular Vector Canonical Correlation",
+      "Analysis for Deep Learning Dynamics and",
+      "Interpretability",
+      "Maithra Raghu,1,2 Justin Gilmer,1 Jason Yosinski,3 & Jascha Sohl-Dickstein1",
+      "1Google Brain 2Cornell University 3Uber AI Labs",
+      "maithrar@gmail•com, gilmer@google•com, yosinski@uber•com, jaschasd@google•com",
+      "Abstract",
+      "We propose a new technique, Singular Vector Canonical Correlation Analysis",
+      "(SVCCA), a tool for quickly comparing two representations in a way that is both",
+      "invariant to afﬁne transform (allowing comparison between different layers and"
+    ]
+  },
+  {
+    "file": "1711.02391v1.pdf",
+    "title": "A Tutorial on Canonical Correlation Methods",
+    "first_lines": [
+      "arXiv:1711.02391v1  [cs.LG]  7 Nov 2017",
+      "95",
+      "A Tutorial on Canonical Correlation Methods",
+      "VIIVI UURTIO, Aalto University",
+      "JO˜AO M. MONTEIRO, University College London",
+      "JAZ KANDOLA, Imperial College London",
+      "JOHN SHAWE-TAYLOR, University College London",
+      "DELMIRO FERNANDEZ-REYES, University College London",
+      "JUHO ROUSU, Aalto University",
+      "Canonical correlation analysis is a family of multivariate statistical methods for the analysis of paired sets"
+    ]
+  },
+  {
+    "file": "1807.03748v2.pdf",
+    "title": "Representation Learning with",
+    "first_lines": [
+      "Representation Learning with",
+      "Contrastive Predictive Coding",
+      "Aaron van den Oord",
+      "DeepMind",
+      "avdnoord@google.com",
+      "Yazhe Li",
+      "DeepMind",
+      "yazhe@google.com",
+      "Oriol Vinyals",
+      "DeepMind"
+    ]
+  },
+  {
+    "file": "1810.00825v3.pdf",
+    "title": "Set Transformer: A Framework for Attention-based",
+    "first_lines": [
+      "Set Transformer: A Framework for Attention-based",
+      "Permutation-Invariant Neural Networks",
+      "Juho Lee 1 2 Yoonho Lee 3 Jungtaek Kim 4 Adam R. Kosiorek 1 5 Seungjin Choi 4 Yee Whye Teh 1",
+      "Abstract",
+      "Many machine learning tasks such as multiple",
+      "instance learning, 3D shape recognition and few-",
+      "shot image classiﬁcation are deﬁned on sets of in-",
+      "stances. Since solutions to such problems do not",
+      "depend on the order of elements of the set, mod-",
+      "els used to address them should be permutation"
+    ]
+  },
+  {
+    "file": "1905.00414v4.pdf",
+    "title": "Similarity of Neural Network Representations Revisited",
+    "first_lines": [
+      "Similarity of Neural Network Representations Revisited",
+      "Simon Kornblith 1 Mohammad Norouzi 1 Honglak Lee 1 Geoffrey Hinton 1",
+      "Abstract",
+      "Recent work has sought to understand the behav-",
+      "ior of neural networks by comparing representa-",
+      "tions between layers and between different trained",
+      "models. We examine methods for comparing neu-",
+      "ral network representations based on canonical",
+      "correlation analysis (CCA). We show that CCA",
+      "belongs to a family of statistics for measuring mul-"
+    ]
+  },
+  {
+    "file": "1909.03368v1.pdf",
+    "title": "Designing and Interpreting Probes with Control Tasks",
+    "first_lines": [
+      "Designing and Interpreting Probes with Control Tasks",
+      "John Hewitt",
+      "Stanford University",
+      "johnhew@stanford.edu",
+      "Percy Liang",
+      "Stanford University",
+      "pliang@cs.stanford.edu",
+      "Abstract",
+      "Probes, supervised models trained to pre-",
+      "dict properties (like parts-of-speech) from"
+    ]
+  },
+  {
+    "file": "2002.05709v3.pdf",
+    "title": "A Simple Framework for Contrastive Learning of Visual Representations",
+    "first_lines": [
+      "A Simple Framework for Contrastive Learning of Visual Representations",
+      "Ting Chen 1 Simon Kornblith 1 Mohammad Norouzi 1 Geoffrey Hinton 1",
+      "Abstract",
+      "This paper presents SimCLR: a simple framework",
+      "for contrastive learning of visual representations.",
+      "We simplify recently proposed contrastive self-",
+      "supervised learning algorithms without requiring",
+      "specialized architectures or a memory bank. In",
+      "order to understand what enables the contrastive",
+      "prediction tasks to learn useful representations,"
+    ]
+  },
+  {
+    "file": "2003.12298v1.pdf",
+    "title": "Information-Theoretic Probing with Minimum Description Length",
+    "first_lines": [
+      "Information-Theoretic Probing with Minimum Description Length",
+      "Elena Voita1,2",
+      "Ivan Titov1,2",
+      "1University of Edinburgh, Scotland",
+      "2University of Amsterdam, Netherlands",
+      "lena-voita@hotmail.com",
+      "ititov@inf.ed.ac.uk",
+      "Abstract",
+      "To measure how well pretrained representa-",
+      "tions encode some linguistic property, it is"
+    ]
+  },
+  {
+    "file": "2004.11362v5.pdf",
+    "title": "Supervised Contrastive Learning",
+    "first_lines": [
+      "Supervised Contrastive Learning",
+      "Prannay Khosla ∗",
+      "Google Research",
+      "Piotr Teterwak ∗†",
+      "Boston University",
+      "Chen Wang †",
+      "Snap Inc.",
+      "Aaron Sarna ‡",
+      "Google Research",
+      "Yonglong Tian †"
+    ]
+  },
+  {
+    "file": "2005.10242v10.pdf",
+    "title": "Understanding Contrastive Representation Learning through",
+    "first_lines": [
+      "Understanding Contrastive Representation Learning through",
+      "Alignment and Uniformity on the Hypersphere",
+      "Tongzhou Wang 1 Phillip Isola 1",
+      "Abstract",
+      "Contrastive representation learning has been out-",
+      "standingly successful in practice. In this work,",
+      "we identify two key properties related to the con-",
+      "trastive loss: (1) alignment (closeness) of features",
+      "from positive pairs, and (2) uniformity of the in-",
+      "duced distribution of the (normalized) features on"
+    ]
+  },
+  {
+    "file": "2105.04906v3.pdf",
+    "title": "Published as a conference paper at ICLR 2022",
+    "first_lines": [
+      "Published as a conference paper at ICLR 2022",
+      "VICREG: VARIANCE-INVARIANCE-COVARIANCE RE-",
+      "GULARIZATION FOR SELF-SUPERVISED LEARNING",
+      "Adrien Bardes1,2",
+      "Jean Ponce2,4",
+      "Yann LeCun1,3,4",
+      "1Facebook AI Research",
+      "2Inria, École normale supérieure, CNRS, PSL Research University",
+      "3Courant Institute, New York University",
+      "4Center for Data Science, New York University"
+    ]
+  },
+  {
+    "file": "2209.10652v1.pdf",
+    "title": "Transformer Circuits Thread",
+    "first_lines": [
+      "Transformer Circuits Thread",
+      "AUTHORS",
+      "Nelson Elhage , Tristan Hume , Catherine Olsson , Nicholas Schiefer , Tom Henighan,",
+      "Shauna Kravec, Zac Hatfield-Dodds, Robert Lasenby, Dawn Drain, Carol Chen,",
+      "Roger Grosse, Sam McCandlish, Jared Kaplan, Dario Amodei,",
+      "Martin Wattenberg , Christopher Olah",
+      "AFFILIATIONS",
+      "Anthropic, Harvard",
+      "PUBLISHED",
+      "Sept 14, 2022"
+    ]
+  },
+  {
+    "file": "2309.08600v3.pdf",
+    "title": "SPARSE AUTOENCODERS FIND HIGHLY INTER-",
+    "first_lines": [
+      "SPARSE AUTOENCODERS FIND HIGHLY INTER-",
+      "PRETABLE FEATURES IN LANGUAGE MODELS",
+      "Hoagy Cunningham∗12, Aidan Ewart∗13, Logan Riggs∗1, Robert Huben, Lee Sharkey4",
+      "1EleutherAI, 2MATS, 3Bristol AI Safety Centre, 4Apollo Research",
+      "{hoagycunningham, aidanprattewart, logansmith5}@gmail.com",
+      "ABSTRACT",
+      "One of the roadblocks to a better understanding of neural networks’ internals is",
+      "polysemanticity, where neurons appear to activate in multiple, semantically dis-",
+      "tinct contexts.",
+      "Polysemanticity prevents us from identifying concise, human-"
+    ]
+  },
+  {
+    "file": "2311.04056v2.pdf",
+    "title": "Published as a conference paper at ICLR 2024",
+    "first_lines": [
+      "Published as a conference paper at ICLR 2024",
+      "MULTI-VIEW CAUSAL REPRESENTATION LEARNING",
+      "WITH PARTIAL OBSERVABILITY",
+      "Dingling Yao1,2, Danru Xu3, Sébastien Lachapelle7,8, Sara Magliacane3,6, Perouz Taslakian9,",
+      "Georg Martius4, Julius von Kügelgen2,5, and Francesco Locatello1",
+      "1Institute of Science and Technology Austria",
+      "2Max Planck Institute for Intelligent Systems,",
+      "Tübingen",
+      "3University of Amsterdam",
+      "4University of Tübingen"
+    ]
+  },
+  {
+    "file": "2312.10794v5.pdf",
+    "title": "A MATHEMATICAL PERSPECTIVE ON TRANSFORMERS",
+    "first_lines": [
+      "A MATHEMATICAL PERSPECTIVE ON TRANSFORMERS",
+      "BORJAN GESHKOVSKI, CYRIL LETROUIT, YURY POLYANSKIY,",
+      "AND PHILIPPE RIGOLLET",
+      "Abstract. Transformers play a central role in the inner workings of large",
+      "language models. We develop a mathematical framework for analyzing Trans-",
+      "formers based on their interpretation as interacting particle systems, with a",
+      "particular emphasis on long-time clustering behavior. Our study explores the",
+      "underlying theory and offers new perspectives for mathematicians as well as",
+      "computer scientists.",
+      "Contents"
+    ]
+  },
+  {
+    "file": "2404.16014v2.pdf",
+    "title": "Improving Dictionary Learning with Gated",
+    "first_lines": [
+      "2024-5-1",
+      "Improving Dictionary Learning with Gated",
+      "Sparse Autoencoders",
+      "Senthooran Rajamanoharan*, Arthur Conmy*, Lewis Smith, Tom Lieberum†, Vikrant Varma†, János Kramár,",
+      "Rohin Shah and Neel Nanda",
+      "*: Joint contribution. †: Core infrastructure contributor.",
+      "Recent work has found that sparse autoencoders (SAEs) are an effective technique for unsupervised",
+      "discovery of interpretable features in language models’ (LMs) activations, by finding sparse, linear",
+      "reconstructions of LM activations. We introduce the Gated Sparse Autoencoder (Gated SAE), which",
+      "achieves a Pareto improvement over training with prevailing methods. In SAEs, the L1 penalty used to"
+    ]
+  },
+  {
+    "file": "2405.08366v3.pdf",
+    "title": "Towards Principled Evaluations of Sparse Autoencoders for",
+    "first_lines": [
+      "Towards Principled Evaluations of Sparse Autoencoders for",
+      "Interpretability and Control",
+      "Aleksandar Makelov∗",
+      "aleksandar.makelov@gmail.com",
+      "Georg Lange∗",
+      "mail@georglange.com",
+      "Neel Nanda",
+      "neelnanda27@gmail.com",
+      "Abstract",
+      "Disentangling model activations into meaningful features is a central prob-"
+    ]
+  },
+  {
+    "file": "2406.04093v1.pdf",
+    "title": "Scaling and evaluating sparse autoencoders",
+    "first_lines": [
+      "Scaling and evaluating sparse autoencoders",
+      "Leo Gao∗",
+      "Tom Dupré la Tour†",
+      "Henk Tillman†",
+      "Gabriel Goh",
+      "Rajan Troll",
+      "Alec Radford",
+      "Ilya Sutskever",
+      "Jan Leike",
+      "Jeffrey Wu†"
+    ]
+  },
+  {
+    "file": "2407.14435v3.pdf",
+    "title": "Jumping Ahead: Improving Reconstruction",
+    "first_lines": [
+      "2024-8-2",
+      "Jumping Ahead: Improving Reconstruction",
+      "Fidelity with JumpReLU Sparse Autoencoders",
+      "Senthooran Rajamanoharan*, Tom Lieberum†, Nicolas Sonnerat, Arthur Conmy, Vikrant Varma, János",
+      "Kramár and Neel Nanda",
+      "*: Core contributor. †: Core infrastructure contributor.",
+      "Sparse autoencoders (SAEs) are a promising unsupervised approach for identifying causally relevant",
+      "and interpretable linear features in a language model’s (LM) activations. To be useful for downstream",
+      "tasks, SAEs need to decompose LM activations faithfully; yet to be interpretable the decomposition",
+      "must be sparse – two objectives that are in tension. In this paper, we introduce JumpReLU SAEs, which"
+    ]
+  },
+  {
+    "file": "2409.14507v6.pdf",
+    "title": "A is for Absorption: Studying Feature Splitting and",
+    "first_lines": [
+      "A is for Absorption: Studying Feature Splitting and",
+      "Absorption in Sparse Autoencoders",
+      "David Chanin*,1,2",
+      "James Wilken-Smith*,1",
+      "Tomáš Dulka*,1",
+      "Hardik Bhatnagar*,1,3",
+      "Satvik Golechha4",
+      "Joseph Bloom1,5",
+      "1LASR Labs",
+      "2University College London"
+    ]
+  },
+  {
+    "file": "2412.06410v1.pdf",
+    "title": "BatchTopK Sparse Autoencoders",
+    "first_lines": [
+      "BatchTopK Sparse Autoencoders",
+      "Bart Bussmann",
+      "Independent",
+      "bartbussmann@gmail.com",
+      "Patrick Leask",
+      "Department of Computer Science",
+      "Durham University",
+      "patrick.leask@durham.ac.uk",
+      "Neel Nanda",
+      "Abstract"
+    ]
+  },
+  {
+    "file": "248_Feature_Hedging_Correlated.pdf",
+    "error": "empty or not pdf"
+  },
+  {
+    "file": "2502.04878v1.pdf",
+    "title": "Published as a conference paper at ICLR 2025",
+    "first_lines": [
+      "Published as a conference paper at ICLR 2025",
+      "SPARSE AUTOENCODERS DO NOT FIND CANONICAL",
+      "UNITS OF ANALYSIS",
+      "Patrick Leask∗",
+      "Department of Computer Science",
+      "Durham University",
+      "patrickaaleask@gmail.com",
+      "Bart Bussmann∗",
+      "Independent",
+      "bartbussmann@gmail.com"
+    ]
+  },
+  {
+    "file": "2503.09532v4.pdf",
+    "title": "SAEBench: A Comprehensive Benchmark for Sparse Autoencoders",
+    "first_lines": [
+      "arXiv:2503.09532v4  [cs.LG]  4 Jun 2025",
+      "SAEBench: A Comprehensive Benchmark for Sparse Autoencoders",
+      "in Language Model Interpretability",
+      "Adam Karvonen * 1 Can Rager * 1 Johnny Lin * 2 Curt Tigges * 2 Joseph Bloom * 2 David Chanin 3",
+      "Yeu-Tong Lau 1 Eoin Farrell 1 Callum McDougall Kola Ayonrinde Demian Till 4 Matthew Wearden 5",
+      "Arthur Conmy Samuel Marks 6 Neel Nanda",
+      "Abstract",
+      "Sparse autoencoders (SAEs) are a popular tech-",
+      "nique for interpreting language model activations,",
+      "and there is extensive recent work on improving"
+    ]
+  },
+  {
+    "file": "2503.17547v1.pdf",
+    "title": "Learning Multi-Level Features with Matryoshka Sparse Autoencoders",
+    "first_lines": [
+      "Learning Multi-Level Features with Matryoshka Sparse Autoencoders",
+      "Bart Bussmann * Noa Nabeshima * Adam Karvonen Neel Nanda",
+      "Abstract",
+      "Sparse autoencoders (SAEs) have emerged as a",
+      "powerful tool for interpreting neural networks by",
+      "extracting the concepts represented in their acti-",
+      "vations. However, choosing the size of the SAE",
+      "dictionary (i.e. number of learned concepts) cre-",
+      "ates a tension: as dictionary size increases to cap-",
+      "ture more relevant concepts, sparsity incentivizes"
+    ]
+  },
+  {
+    "file": "2505.11756v2.pdf",
+    "title": "Preprint. Under review.",
+    "first_lines": [
+      "Preprint. Under review.",
+      "FEATURE HEDGING: CORRELATED FEATURES BREAK",
+      "NARROW SPARSE AUTOENCODERS",
+      "David Chanin",
+      "University College London",
+      "Tom´aˇs Dulka",
+      "Independent",
+      "Adri`a Garriga-Alonso",
+      "FAR AI",
+      "ABSTRACT"
+    ]
+  },
+  {
+    "file": "2511.05541v2.pdf",
+    "title": "Published as a conference paper at ICLR 2026",
+    "first_lines": [
+      "Published as a conference paper at ICLR 2026",
+      "TEMPORAL SPARSE AUTOENCODERS:",
+      "LEVERAGING",
+      "THE SEQUENTIAL NATURE OF LANGUAGE FOR INTER-",
+      "PRETABILITY",
+      "Usha Bhalla∗ab, Alex Oesterling∗a,",
+      "Claudio Mayrink Verduna, Himabindu Lakkaraju†c, Flavio P. Calmon†a",
+      "aHarvard School of Engineering and Applied Science",
+      "bKempner Institute for the Study of Natural & Artificial Intelligence",
+      "cHarvard Business School"
+    ]
+  },
+  {
+    "file": "2601.20420v2.pdf",
+    "title": "Concept Component Analysis:",
+    "first_lines": [
+      "Concept Component Analysis:",
+      "A Principled Approach for Concept Extraction in LLMs",
+      "Yuhang Liu 1 Erdun Gao 1 Dong Gong 2 Anton van den Hengel 1 Javen Qinfeng Shi 1",
+      "Project page: https://sites.google.com/view/yuhangliu/projects/cca",
+      "Abstract",
+      "Developing human understandable interpretation",
+      "of large language models (LLMs) becomes in-",
+      "creasingly critical for their deployment in essen-",
+      "tial domains. Mechanistic interpretability seeks",
+      "to mitigate the issues through extracts human-"
+    ]
+  },
+  {
+    "file": "2605.09887v1.pdf",
+    "title": "The Geometric Wall: Manifold Structure Predicts",
+    "first_lines": [
+      "The Geometric Wall: Manifold Structure Predicts",
+      "Layerwise Sparse Autoencoder Scaling Laws",
+      "Eslam Zaher1,2, Maciej Trzaskowski1,3,4, Quan Nguyen1,3,5, Fred Roosta1,2",
+      "1 ARC Training Centre for Information Resilience (CIRES)",
+      "2 School of Mathematics and Physics, University of Queensland",
+      "3 Institute for Molecular Bioscience, University of Queensland",
+      "4 Profenso",
+      "5 QIMR Berghofer Medical Research Institute",
+      "Abstract",
+      "Sparse autoencoders (SAEs) operationalise the linear representation hypothesis:"
+    ]
+  },
+  {
+    "file": "2605.18229v1.pdf",
+    "title": "Are Sparse Autoencoder Benchmarks Reliable?",
+    "first_lines": [
+      "Are Sparse Autoencoder Benchmarks Reliable?",
+      "David Chanin",
+      "Decode Research, MATS, UCL",
+      "david.chanin.22@ucl.ac.uk",
+      "Abstract",
+      "Sparse autoencoders (SAEs) are a core interpretability tool for large language",
+      "models, and progress on SAE architectures depends on benchmarks that reliably",
+      "distinguish better SAEs from worse ones. We audit the SAE quality metrics in",
+      "SAEBench, the de-facto standard SAE evaluation suite, through three complemen-",
+      "tary lenses: reseed noise on a fixed SAE, ground-truth correlation on synthetic"
+    ]
+  },
+  {
+    "file": "2605.29358v1.pdf",
+    "title": "Scaling Monosemanticity: Extracting Interpretable Features",
+    "first_lines": [
+      "Scaling Monosemanticity: Extracting Interpretable Features",
+      "from Claude 3 Sonnet",
+      "Adly Templeton*, Tom Conerly*, Jonathan Marcus, Jack Lindsey, Trenton",
+      "Bricken, Brian Chen, Adam Pearce, Craig Citro, Emmanuel Ameisen, Andy",
+      "Jones, Hoagy Cunningham, Nicholas L Turner, Callum McDougall, Monte",
+      "MacDiarmid, Alex Tamkin, Esin Durmus, Tristan Hume, Francesco Mosconi, C.",
+      "Daniel Freeman, Theodore R. Sumers, Edward Rees, Joshua Batson, Adam",
+      "Jermyn, Shan Carter, Chris Olah, and Tom Henighan†",
+      "Anthropic",
+      "* Equal contribution; † Corresponding author: henighan@anthropic.com"
+    ]
+  },
+  {
+    "file": "Bricken - 2023 - Towards Monosemanticity Decomposing Language Mode.pdf",
+    "title": "Towards Monosemanticity: Decomposing Language Models With Dictionary Learning",
+    "first_lines": [
+      "Towards Monosemanticity: Decomposing Language Models With Dictionary Learning",
+      "10/6/23, 10:46 AM",
+      "https://transformer-circuits.pub/2023/monosemantic-features/index.html",
+      "1 of 97",
+      "Page 1 of 97",
+      "Towards Monosemanticity: Decomposing Language Models With Dictionary Learning",
+      "10/6/23, 10:46 AM",
+      "Transformer Circuits Thread",
+      "Towards Monosemanticity:",
+      "Decomposing Language"
+    ]
+  },
+  {
+    "file": "andrew13.pdf",
+    "title": "Deep Canonical Correlation Analysis",
+    "first_lines": [
+      "Deep Canonical Correlation Analysis",
+      "Galen Andrew",
+      "galen@cs.washington.edu",
+      "University of Washington",
+      "Raman Arora",
+      "arora@ttic.edu",
+      "Toyota Technological Institute at Chicago",
+      "JeﬀBilmes",
+      "bilmes@ee.washington.edu",
+      "University of Washington"
+    ]
+  },
+  {
+    "file": "selby22a.pdf",
+    "title": "Learning Functions on Multiple Sets using Multi-Set Transformers",
+    "first_lines": [
+      "Learning Functions on Multiple Sets using Multi-Set Transformers",
+      "Kira A. Selby1,2",
+      "Ahmad Rashid1,2,3",
+      "Ivan Kobyzev3",
+      "Mehdi Rezagholizadeh3",
+      "Pascal Poupart1,2",
+      "1Cheriton School of Computer Science, University of Waterloo, Waterloo, Ontario, Canada",
+      "2Vector Institute , Toronto, Ontario, Canada",
+      "3Huawei Noah’s Ark Lab, Montreal, Quebec, Canada",
+      "Abstract"
+    ]
+  },
+  {
+    "file": "zimmermann21a.pdf",
+    "title": "Contrastive Learning Inverts the Data Generating Process",
+    "first_lines": [
+      "Contrastive Learning Inverts the Data Generating Process",
+      "Roland S. Zimmermann * 1 2 Yash Sharma * 1 2 Steffen Schneider * 1 2 3 Matthias Bethge † 1 Wieland Brendel † 1",
+      "Abstract",
+      "Contrastive learning has recently seen tremendous",
+      "success in self-supervised learning. So far, how-",
+      "ever, it is largely unclear why the learned represen-",
+      "tations generalize so effectively to a large variety",
+      "of downstream tasks. We here prove that feed-",
+      "forward models trained with objectives belonging",
+      "to the commonly used InfoNCE family learn to"
+    ]
+  }
+]

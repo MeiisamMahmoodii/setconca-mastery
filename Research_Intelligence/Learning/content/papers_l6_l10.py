@@ -223,6 +223,26 @@ PAPERS = {
             "2. Find an Overcomplete Basis after training (SAEs / Dictionary Learning).\n"
             "3. Hybrid approaches."
         ),
+        "priorWork": (
+            "HISTORICAL LITERATURE REVIEW & CONTEXT:\n"
+            "Earlier interpretability research assumed that single neurons corresponded to single human concepts (the 'one neuron = one concept' hypothesis). "
+            "However, empirical studies consistently found polysemantic neurons (e.g. one neuron activating for both academic citations and anime characters). "
+            "Elhage et al. (Anthropic 2022) built on compressed sensing, Thomson problem physics, and visual cortex sparse coding literature to establish the Superposition Hypothesis: networks intentionally pack more features than dimensions when features are sparse."
+        ),
+        "paperArchitecture": (
+            "MATHEMATICAL MECHANISM & TOY MODEL ALGORITHM:\n"
+            "1. Toy Architecture: Linear feature map h = W x where x ∈ ℝ^M (M features) and h ∈ ℝ^d (d dimensions, d < M). Reconstruction x_hat = ReLU(Wᵀ W x + b).\n"
+            "2. Importance & Sparsity Regimes: Feature i has importance I_i and sparsity S_i (probability of being zero = 1 - S_i).\n"
+            "3. Interference Optimization: Loss = Σ_i I_i (x_i - x_hat_i)². Minimizing loss forces weights W_i to form geometric packing configurations (antipodal pairs, triangles, pentagons, tetrahedra).\n"
+            "4. Feature Dimensionality: D_i = ||W_i||² / Σ_j (Ŵ_i · W_j)² measures the fraction of a dimension dedicated to feature i.\n"
+            "5. Phase Transitions: Exhibits sharp 1st-order phase transitions: as sparsity 1-S_i increases, feature i jumps from non-represented (D=0) → superposed (0<D<1) → dedicated axis (D=1)."
+        ),
+        "experimentalSetup": (
+            "EMPIRICAL EVALUATION & PROOF LANDMARKS:\n"
+            "• Synthetic Toy Models: Swept feature count M from 2 to 100 in d=2 dimensions across varying sparsity S ∈ [10⁰, 10⁻³] and importance distributions.\n"
+            "• Key Finding: Linear models without ReLU NEVER exhibit superposition (they perform PCA). Non-linearities (ReLU) are mathematically required to enable superposition by suppressing interference noise.\n"
+            "• Adversarial Vulnerability: Proved adversarial vulnerability increases >3× as superposition forms, because off-axis interference creates easy attack vectors."
+        ),
         "keyIdeas": [
             _idea("Superposition Hypothesis", "Networks represent more sparse features than dimensions using almost-orthogonal directions."),
             _idea("Polysemanticity", "Neuron axes activate for combinations of unrelated superposed features."),

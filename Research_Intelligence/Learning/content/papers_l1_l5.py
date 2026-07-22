@@ -29,6 +29,27 @@ PAPERS = {
             "--- THE SCIENTIFIC WARNING FOR SAE RESEARCHERS ---\n"
             "PCA axes are strictly ORTHOGONAL (at 90° right angles to each other). Orthogonality is a mathematical constraint, NOT a human concept guarantee! PCA directions are linear combinations of features created by linear algebra. Never assume low FVU means you found human concepts."
         ),
+        "priorWork": (
+            "HISTORICAL LITERATURE REVIEW & CONTEXT:\n"
+            "Karl Pearson (1901) introduced PCA as an analogue to the principal axis theorem in classical mechanics. Harold Hotelling (1933) independently expanded PCA to random variables. "
+            "Before PCA, data reduction relied on manual variable selection or arbitrary coordinate truncation. "
+            "Shlens (2014) synthesized decades of linear algebra literature into a unified tutorial connecting variance maximization, mean-squared error minimization, and Singular Value Decomposition (SVD).\n\n"
+            "RESEARCH GAP ADDRESSED:\n"
+            "Provides a rigorous linear algebra derivation bridging raw data matrices, empirical covariance estimation, diagonalisation, and SVD numerical computation without hand-waving."
+        ),
+        "paperArchitecture": (
+            "MATHEMATICAL MECHANISM & STEP-BY-STEP ALGORITHM:\n"
+            "1. Centering: Given data matrix X (N samples × d features), compute sample mean vector μ = (1/N) Σ x_i and subtract: X_centered = X - 1 μᵀ.\n"
+            "2. Empirical Covariance: Compute C = (1/(N-1)) X_centeredᵀ X_centered. C is a d × d symmetric positive semi-definite matrix.\n"
+            "3. Diagonalization: Solve C v_i = λ_i v_i subject to v_iᵀ v_j = δ_ij. Eigenvalues λ_1 ≥ λ_2 ≥ ... ≥ λ_d quantify variance along orthogonal eigenvectors v_i.\n"
+            "4. Singular Value Decomposition (SVD): Compute X_centered = U Σ Vᵀ. Columns of V are exact principal directions v_i; singular values σ_i relate to eigenvalues via λ_i = σ_i² / (N-1).\n"
+            "5. Projection & Reconstruction: Compress to rank-k via Z = X_centered V_k. Reconstruct X_hat = Z V_kᵀ + μ."
+        ),
+        "experimentalSetup": (
+            "EMPIRICAL EVALUATION & PROOF LANDMARKS:\n"
+            "• Mathematical Proof: Eckart–Young–Mirsky Theorem proves rank-k SVD truncation minimizes Frobenius norm reconstruction error ||X - X_hat||_F² over all rank-k matrices.\n"
+            "• Baseline Metric: Establishes Fraction of Variance Unexplained (FVU) = 1 - (Σ_{i≤k} λ_i / Σ_all λ_i) as the universal benchmark for linear representation preservation."
+        ),
         "keyIdeas": [
             _idea("Variance and Covariance", "Variance measures single-variable spread; covariance measures how two variables co-move. The covariance matrix summarizes all 2nd-order relationships."),
             _idea("Principal Component Directions", "Orthonormal directions that successively maximize remaining variance. First PC = longest axis of the data cloud."),

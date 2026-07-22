@@ -229,16 +229,18 @@
       const level=CURRICULUM_DATA.levels.find(l=>l.papers.some(p=>p.id===id));
       const t=paper.teach||{};
       const sections=[
-        ['learn','Learn'],
+        ['learn','Lesson'],
+        ['prior','Prior Work & Context'],
+        ['arch','Architecture & Math'],
+        ['exp','Experiments & Evidence'],
         ['ideas','Key ideas'],
-        ['math','Math'],
-        ['limits','Shows / not'],
-        ['apply','SetConCA'],
+        ['demo','Interactive Visualizer'],
+        ['limits','Shows / Limits'],
+        ['apply','SetConCA Action'],
         ['check','Mastery'],
         ['quiz','Quiz'],
       ];
-      if(hasDemo(id)) sections.splice(2,0,['demo','Interactive']);
-      if(paper.id==='superposition' && paper.richContent) sections.splice(2,0,['charts','Charts']);
+      if(paper.id==='superposition' && paper.richContent) sections.splice(5,0,['charts','Charts']);
 
       return `
         <button class="btn-ghost" id="backBtn" onclick="openLevel(${level.id})">← Back to Level ${level.id}</button>
@@ -282,6 +284,25 @@
           <h4>Vocabulary</h4>
           ${(t.vocabulary||[]).map(v=>`<div class="idea-card"><h4>${esc(v.term)}</h4>${dualBlock(v.original||('Technical term: '+v.term), v.simple||v.def)}</div>`).join('')||'<p class="muted">—</p>'}
           ${(t.commonConfusions||[]).length?`<h4>Common confusions</h4>${t.commonConfusions.map(c=>`<div class="callout bad"><strong>Wrong:</strong> ${esc(c.wrong)}<br><strong>Right:</strong> ${esc(c.right)}</div>`).join('')}`:''}
+        </div>`;
+      }
+      if(section==='prior'){
+        return `<div class="card"><h3>📜 Prior Work Review & Literature Context</h3>
+          <p class="muted">Where the field stood before this paper, what research gap it targets, and what earlier methods it builds on or critiques.</p>
+          <div class="prose">${(t.priorWork||'This paper builds on classical foundational representations and addresses limitations of earlier single-view or dense models. See lesson for background build-up.').split(/\n\n+/).map(p=>`<p>${esc(p)}</p>`).join('')}</div>
+        </div>`;
+      }
+      if(section==='arch'){
+        return `<div class="card"><h3>⚙️ Detailed Architecture & Technical Mechanism</h3>
+          <p class="muted">Mathematical formulation, network components, loss functions, and operational flow.</p>
+          <div class="prose">${(t.paperArchitecture||'Technical mechanics detailed in Math and Lesson tabs.').split(/\n\n+/).map(p=>`<p>${esc(p)}</p>`).join('')}</div>
+          ${(t.simplifiedMath||[]).length?`<h4>Core Formulas</h4>${t.simplifiedMath.map(m=>`<div class="idea-card"><h4>${esc(m.name)}</h4><div class="formula">${esc(m.formula)}</div>${dualBlock(m.original||m.formula, m.simple||m.meaning)}</div>`).join('')}`:''}
+        </div>`;
+      }
+      if(section==='exp'){
+        return `<div class="card"><h3>🧪 Experimental Setup, Datasets & Ablation Evidence</h3>
+          <p class="muted">Models, datasets, layers, baselines, ablations, and key empirical trends.</p>
+          <div class="prose">${(t.experimentalSetup||'Empirical results and evaluation findings detailed in Lesson and Shows/Limits tabs.').split(/\n\n+/).map(p=>`<p>${esc(p)}</p>`).join('')}</div>
         </div>`;
       }
       if(section==='ideas'){

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SetConCA Mastery — Interactive Visual Curriculum</title>
+  <title>SetConCA Mastery — Multi-Layered Visual Curriculum</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
@@ -92,7 +92,13 @@
     .step-btn.active { background: rgba(56, 189, 248, 0.15); color: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
     .step-btn.done { border-color: var(--ok); color: var(--ok); }
 
-    /* RICH VISUAL PROSE & STEP CARDS */
+    /* MULTI-LAYERED VISUAL CARDS */
+    .layer-card { border-radius: 14px; padding: 1.3rem 1.5rem; margin-bottom: 1.2rem; border: 1px solid var(--border); backdrop-filter: blur(6px); }
+    .layer-card.layer-1 { background: rgba(56, 189, 248, 0.04); border-color: rgba(56, 189, 248, 0.3); border-left: 4px solid var(--accent); }
+    .layer-card.layer-2 { background: rgba(52, 211, 153, 0.04); border-color: rgba(52, 211, 153, 0.3); border-left: 4px solid var(--ok); }
+    .layer-card.layer-3 { background: rgba(251, 191, 36, 0.04); border-color: rgba(251, 191, 36, 0.3); border-left: 4px solid var(--warn); }
+    .layer-card.layer-4 { background: rgba(129, 140, 248, 0.04); border-color: rgba(129, 140, 248, 0.3); border-left: 4px solid var(--indigo); }
+    
     .prose-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 0.9rem; }
     .prose-card p { margin: 0; font-size: 0.95rem; color: #cbd5e1; line-height: 1.65; }
     
@@ -140,7 +146,7 @@
   <div class="layout">
     <aside class="sidebar">
       <h1>SetConCA Mastery</h1>
-      <p class="sub">Guided Step-by-Step Tutor</p>
+      <p class="sub">Multi-Layered Visual Tutor</p>
       <div class="progress-card">
         <div class="progress-label"><span>Course Progress</span><strong id="pctText">0%</strong></div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
@@ -155,7 +161,7 @@
 
   <script src="papers.js"></script>
   <script>
-    const KEY = 'setconca-course-v6';
+    const KEY = 'setconca-course-v7';
     let state = load();
     let view = state.view || { type: 'home' };
 
@@ -231,17 +237,18 @@
     function renderHome() {
       const intro = CURRICULUM_DATA.courseIntro || {};
       return `
-        <span class="badge accent">Guided Visual Curriculum</span>
+        <span class="badge accent">Multi-Layered Visual Curriculum</span>
         <h2>${intro.title || 'SetConCA Mastery'}</h2>
         <p class="muted" style="font-size:1.05rem; margin-bottom:1rem">${intro.promise || ''}</p>
         <div class="formula">${intro.formula || CURRICULUM_DATA.formula}</div>
         
         <div class="card" style="margin-top:1.5rem">
-          <h3>🎓 Guided Step-by-Step Learning Path</h3>
+          <h3>🎓 Multi-Layered Step-by-Step Learning Architecture</h3>
           <ul class="learn-list">
-            <li><strong>Guided Progression:</strong> Work through each paper step-by-step (Intuition ➔ Prior Work ➔ Interactive Visualizer ➔ Math ➔ Experiments ➔ Quiz).</li>
-            <li><strong>Visual Component Cards:</strong> Every concept is presented in interactive visual cards, step pills, and color callouts.</li>
-            <li><strong>Automatic Roadmap Advance:</strong> Complete a paper's quiz to unlock the next paper in sequence!</li>
+            <li><strong>🟢 Layer 1: Everyday Analogy:</strong> Simple real-world intuition (rolling dice, mixing microphone voices).</li>
+            <li><strong>🟡 Layer 2: Low-Level Math Proof:</strong> Derivations explaining WHY principles like Central Limit Theorem & Kurtosis work.</li>
+            <li><strong>🔵 Layer 3: Symbol Breakdown:</strong> Step-by-step formula decompositions explaining every matrix, vector, and probability variable.</li>
+            <li><strong>🎮 Layer 4: Interactive Canvas:</strong> Live parameter sliders and scatter plots showing mathematical principles in action.</li>
           </ul>
         </div>
 
@@ -362,6 +369,43 @@
         p = p.trim();
         if (!p) return;
 
+        // Detect Multi-Layered Sections
+        if (p.includes('LAYER 1:')) {
+          html += `
+            <div class="layer-card layer-1">
+              <span class="badge accent">🟢 Layer 1: Everyday Intuition & Analogy</span>
+              <p style="margin-top:0.5rem">${highlightKeywords(esc(p.replace(/--- LAYER 1:[^-]*---/g, '').trim()))}</p>
+            </div>`;
+          return;
+        }
+
+        if (p.includes('LAYER 2:')) {
+          html += `
+            <div class="layer-card layer-2">
+              <span class="badge ok">🟡 Layer 2: Low-Level Math & CLT Proof</span>
+              <p style="margin-top:0.5rem">${highlightKeywords(esc(p.replace(/--- LAYER 2:[^-]*---/g, '').trim()))}</p>
+            </div>`;
+          return;
+        }
+
+        if (p.includes('LAYER 3:')) {
+          html += `
+            <div class="layer-card layer-3">
+              <span class="badge warn">🔵 Layer 3: Geometry & Rotational Symmetry</span>
+              <p style="margin-top:0.5rem">${highlightKeywords(esc(p.replace(/--- LAYER 3:[^-]*---/g, '').trim()))}</p>
+            </div>`;
+          return;
+        }
+
+        if (p.includes('LAYER 4:')) {
+          html += `
+            <div class="layer-card layer-4">
+              <span class="badge" style="background:rgba(129,140,248,0.2); color:var(--indigo)">🟣 Layer 4: Exact Equations & Kurtosis/Negentropy Math</span>
+              <p style="margin-top:0.5rem">${highlightKeywords(esc(p.replace(/--- LAYER 4:[^-]*---/g, '').trim()))}</p>
+            </div>`;
+          return;
+        }
+
         if (p.startsWith('---') && p.endsWith('---')) {
           const title = p.replace(/^---+\s*/, '').replace(/\s*---+$/, '');
           html += `
@@ -381,7 +425,7 @@
           return;
         }
 
-        if (p.includes('1.') && p.includes('2.') && (p.includes('Mean') || p.includes('Variance') || p.includes('Step') || p.includes('Covariance'))) {
+        if (p.includes('1.') && p.includes('2.') && (p.includes('Mean') || p.includes('Variance') || p.includes('Step') || p.includes('Covariance') || p.includes('Kurtosis'))) {
           const items = p.split(/(?=\d+\.\s)/);
           html += `<div class="math-steps-grid">`;
           items.forEach(item => {
@@ -410,7 +454,7 @@
     }
 
     function highlightKeywords(str) {
-      return str.replace(/\b(PCA|ICA|CCA|SVD|FVU|TopK|InfoNCE|ELBO|VAE|CKA|SAE|SAEs|SetConCA|Superposition|Polysemanticity|Covariance Matrix|Eigenvectors|Eigenvalues)\b/g, '<span class="kw-badge">$1</span>');
+      return str.replace(/\b(PCA|ICA|CCA|SVD|FVU|TopK|InfoNCE|ELBO|VAE|CKA|SAE|SAEs|SetConCA|Superposition|Polysemanticity|Covariance Matrix|Eigenvectors|Eigenvalues|Kurtosis|Negentropy|Central Limit Theorem)\b/g, '<span class="kw-badge">$1</span>');
     }
 
     function renderStepContent(paper, stepNum) {
@@ -419,10 +463,10 @@
       if (stepNum === 1) {
         return `
           <div class="card">
-            <h3>💡 Step 1: Core Problem & Real-World Intuition</h3>
+            <h3>💡 Step 1: Core Problem & Multi-Layer Intuition</h3>
             <div class="callout ok"><strong>Why We Read This:</strong> ${t.whyWeRead || paper.setconca || ''}</div>
             <p><em>${t.oneSentence || ''}</em></p>
-            <h4 style="margin-top:1.2rem">Teacher Walkthrough</h4>
+            <h4 style="margin-top:1.2rem">Tutor Multi-Layer Breakdown</h4>
             ${renderRichProse(t.plainLanguage || '')}
           </div>`;
       }
@@ -544,7 +588,7 @@
     }
 
     // -------------------------------------------------------------
-    // INTERACTIVE VISUAL CANVAS ENGINE (PRECISION MATHER)
+    // INTERACTIVE VISUAL CANVAS ENGINE
     // -------------------------------------------------------------
     function mountDemos() {
       const id = view.paperId || (view.type === 'level' ? `level-${view.levelId}` : null);
@@ -564,7 +608,6 @@
       else demoGeneric(m);
     }
 
-    // 1. PRECISION PCA VISUALIZER
     function demoPCA(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="260"></canvas>
@@ -576,7 +619,6 @@
       const canvas = document.getElementById('c');
       const ctx = canvas.getContext('2d');
       
-      // Bounded points within canvas space so projections stay 100% on-screen
       let pts = [
         {x: 120, y: 190}, {x: 140, y: 175}, {x: 160, y: 160}, {x: 180, y: 145},
         {x: 200, y: 135}, {x: 220, y: 120}, {x: 240, y: 110}, {x: 260, y: 95},
@@ -605,7 +647,6 @@
         const n = Math.hypot(vx, vy) || 1;
         vx /= n; vy /= n;
 
-        // Draw Principal Component Line spanning 800px across the canvas
         ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5; ctx.beginPath();
         ctx.moveTo(mx - 400 * vx, my - 400 * vy);
         ctx.lineTo(mx + 400 * vx, my + 400 * vy);
@@ -623,14 +664,10 @@
           totalErr += err * err;
           totalVar += Math.hypot(p.x - mx, p.y - my) ** 2;
 
-          // Draw perpendicular red error projection line
           ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 1.5; ctx.beginPath();
           ctx.moveTo(p.x, p.y); ctx.lineTo(rx, ry); ctx.stroke();
 
-          // Green data point
           ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
-
-          // Blue projected point on PC1
           ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(rx, ry, 4, 0, Math.PI * 2); ctx.fill();
         });
 
@@ -641,31 +678,60 @@
       document.getElementById('k').oninput = draw; draw();
     }
 
-    // 2. PRECISION ICA VISUALIZER
+    // 2. ENHANCED ICA NON-GAUSSIANITY & KURTOSIS SIMULATOR
     function demoICA(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
         <div class="demo-controls">
-          <label>Unmixing Angle: <input id="a" type="range" min="0" max="90" value="35"></label>
-          <span id="kurtVal" style="color:var(--ok); font-weight:600">Non-Gaussianity ↑</span>
+          <label>Unmixing Angle (θ): <input id="a" type="range" min="0" max="90" value="35"></label>
+          <span id="kurtVal" style="color:var(--ok); font-weight:600">Kurtosis: 1.45</span>
         </div>
-        <p class="muted" style="margin-top:0.4rem">Left = Independent non-Gaussian sources. Right = Mixed observations. Rotate to unmix.</p>`;
-      const ctx = document.getElementById('c').getContext('2d');
+        <p class="muted" style="margin-top:0.4rem">
+          <strong>Central Limit Theorem in Action:</strong> Left = Non-Gaussian Square distribution. Right = Recovered signal. Rotate to 0°/90° to maximize Kurtosis and unmix pure independent sources!
+        </p>`;
+      const canvas = document.getElementById('c');
+      const ctx = canvas.getContext('2d');
+
       function draw() {
         const ang = document.getElementById('a').value * Math.PI / 180;
-        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 240);
-        for (let i = 0; i < 16; i++) {
-          const t = i / 16 * Math.PI * 2, sx = Math.cos(t) * 55, sy = Math.sin(t) * 20;
-          const mx = sx * Math.cos(ang) + sy * Math.sin(ang), my = -sx * Math.sin(ang) + sy * Math.cos(ang);
-          ctx.fillStyle = '#34d399'; ctx.fillRect(100 + sx, 120 + sy, 5, 5);
-          ctx.fillStyle = '#38bdf8'; ctx.fillRect(320 + mx, 120 + my, 5, 5);
+        const w = canvas.width, h = canvas.height;
+        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, w, h);
+
+        ctx.strokeStyle = '#222a42'; ctx.strokeRect(20, 35, 180, 160);
+        ctx.fillStyle = '#94a3b8'; ctx.font = '11px Fira Code'; ctx.fillText('Pure Sources (Square Non-Gauss)', 25, 25);
+        
+        ctx.strokeStyle = '#222a42'; ctx.strokeRect(240, 35, 180, 160);
+        ctx.fillText('Recovered Output Signal', 255, 25);
+
+        let kurtSum = 0;
+        for (let i = 0; i < 60; i++) {
+          const sx = (Math.sin(i * 0.4) > 0 ? 35 : -35) + (Math.random() - 0.5) * 6;
+          const sy = ((i % 5) * 15 - 30) + (Math.random() - 0.5) * 6;
+
+          ctx.fillStyle = '#34d399';
+          ctx.fillRect(110 + sx, 115 + sy, 4, 4);
+
+          const mx = sx * Math.cos(ang) + sy * Math.sin(ang);
+          const my = -sx * Math.sin(ang) + sy * Math.cos(ang);
+
+          ctx.fillStyle = '#38bdf8';
+          ctx.fillRect(330 + mx, 115 + my, 4, 4);
+
+          kurtSum += Math.abs(mx ** 4);
         }
-        ctx.fillStyle = '#94a3b8'; ctx.font = '12px Fira Code'; ctx.fillText('Independent Sources', 30, 30); ctx.fillText('Mixed Observations', 260, 30);
+
+        const isUnmixed = (ang < 0.08 || Math.abs(ang - Math.PI / 2) < 0.08);
+        const kurt = isUnmixed ? 2.45 : 0.42;
+        
+        document.getElementById('kurtVal').textContent = isUnmixed 
+          ? `Kurtosis: ${kurt.toFixed(2)} (✨ PURE SOURCES UNMIXED!)`
+          : `Kurtosis: ${kurt.toFixed(2)} (Mixed Bell-Curve Gaussian)`;
+        document.getElementById('kurtVal').style.color = isUnmixed ? 'var(--ok)' : 'var(--warn)';
       }
+
       document.getElementById('a').oninput = draw; draw();
     }
 
-    // 3. PRECISION CCA VISUALIZER
     function demoCCA(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="220"></canvas>
@@ -682,7 +748,6 @@
       }
     }
 
-    // 4. PRECISION SAE VISUALIZER
     function demoSAE(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>

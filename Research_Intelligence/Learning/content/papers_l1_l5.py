@@ -96,22 +96,48 @@ PAPERS = {
         "whyWeRead": "ICA is the classical source-unmixing framework. It is the direct conceptual ancestor of Concept Component Analysis (ConCA) and independence-style representation unmixing.",
         "oneSentence": "A linear-algebra tutorial on recovering statistically independent source signals from linear mixtures.",
         "plainLanguage": (
-            "Welcome to the ICA Masterclass. Let's start with the fundamental problem ICA solves: the Cocktail Party Problem.\n\n"
-            "Imagine two independent speakers talking simultaneously in a room. Two microphones record different blended mixtures of their voices: x_1 = a s_1 + b s_2 and x_2 = c s_1 + d s_2. How can we recover the original pure voices s_1 and s_2 without knowing the mixing weights a,b,c,d?\n\n"
-            "PCA fails here because the independent voices are NOT orthogonal in microphone space. PCA simply finds the direction of maximum combined volume, mixing both voices together!\n\n"
-            "--- THE POWER OF STATISTICAL INDEPENDENCE ---\n"
-            "ICA relies on a much stronger principle than PCA: Statistical Independence. Zero correlation only means E[xy] = E[x]E[y] (no linear relationship). Independence means the joint probability distribution factors completely: p(x,y) = p(x)p(y) — knowing x gives ZERO information about y across ALL higher-order moments.\n\n"
-            "--- HOW ICA UNMIXES SIGNALS (NON-GAUSSIANITY) ---\n"
-            "The Central Limit Theorem states that adding independent signals together makes the resulting mixture MORE Gaussian (bell-curve shaped). Therefore, mixed signals are always more bell-shaped than individual pure signals!\n\n"
-            "ICA operates by searching for an unmixing matrix W such that the recovered outputs y = W x are as NON-GAUSSIAN as possible! By maximizing kurtosis or negentropy, ICA pops the independent non-Gaussian sources back out.\n\n"
-            "--- IDENTIFIABILITY AND ASSUMPTIONS ---\n"
-            "ICA can successfully recover the true sources (up to permutation and scaling) ONLY IF three assumptions hold:\n"
-            "1. The sources are statistically independent.\n"
-            "2. At most one source is Gaussian (Gaussian sources cannot be unmixed because bell curves are rotationally symmetric).\n"
-            "3. The mixing process is linear (x = A s).\n\n"
-            "RELATION TO CONCA:\n"
-            "Concept Component Analysis (ConCA) treats model activations as linear mixtures of concept components, directly inheriting ICA's generative unmixing framework."
+            "Welcome to the ICA Masterclass. Let's build the intuition, the low-level math, and the underlying meaning from absolute zero.\n\n"
+            "--- LAYER 1: EVERYDAY INTUITION & THE COCKTAIL PARTY PROBLEM ---\n"
+            "Imagine two people talking at the exact same time in a room. You place two microphones at different locations. "
+            "Microphone 1 picks up: x_1 = 0.70 * Voice_A + 0.30 * Voice_B.\n"
+            "Microphone 2 picks up: x_2 = 0.40 * Voice_A + 0.60 * Voice_B.\n"
+            "How do you extract the pure Voice_A and Voice_B without knowing who spoke or where the mics were?\n\n"
+            "PCA FAILS HERE: PCA looks for orthogonal (90°) directions of maximum volume. But Voice_A and Voice_B are NOT orthogonal in microphone space! PCA just finds the loudest combined direction, giving you a noisy mix of both voices.\n\n"
+            "--- LAYER 2: THE CENTRAL LIMIT THEOREM & THE DICE-ROLL ANALOGY ---\n"
+            "Why does ICA work? It uses a fundamental law of probability: The Central Limit Theorem (CLT).\n"
+            "• Single Pure Signal: Imagine rolling ONE 6-sided die. The numbers {1, 2, 3, 4, 5, 6} each have probability 1/6. The histogram is completely FLAT (a uniform rectangle, 0% bell-curve shape).\n"
+            "• Mixed Signal: Now roll TEN dice and sum their values. Getting all 1s (sum=10) or all 6s (sum=60) is almost impossible (probability ~1.65×10⁻⁸). But getting sums near 35 is extremely common! The histogram of the sum turns into a smooth, bell-shaped GAUSSIAN curve!\n\n"
+            "THE ICA INSIGHT: Adding/mixing independent signals ALWAYS makes their combined distribution MORE Gaussian (bell-shaped) than the pure original signals! Therefore, mixed signals are always bell-shaped, while pure independent signals are non-Gaussian!\n\n"
+            "HOW ICA UNMIXES: ICA searches for an unmixing matrix W such that the outputs y = W x have histograms that are as NON-GAUSSIAN as possible! By turning the rotation dial to maximize non-Gaussianity, ICA pops the pure independent sources back out!\n\n"
+            "--- LAYER 3: WHY GAUSSIANS CANNOT BE UNMIXED (ROTATIONAL SYMMETRY) ---\n"
+            "Why does ICA require sources to be non-Gaussian? "
+            "A 2D Gaussian probability density p(s_1, s_2) = (1 / 2π) * exp(-(s_1² + s_2²)/2) is a perfect circular blob. "
+            "If you rotate a circle by any angle θ, it stays 100% identical! There is no unique direction. "
+            "Non-Gaussian distributions (like a square, cross, or sparse spike) are NOT rotationally symmetric. There is exactly ONE angle where the independent axes line up!\n\n"
+            "--- LAYER 4: EXACT MATHEMATICAL MEASURES (KURTOSIS & NEGENTROPY) ---\n"
+            "1. Kurtosis: Kurt(y) = E[y⁴] - 3(E[y²])². Measures 4th-order tail weight. For a Gaussian variable, Kurt(y) = 0. For flat signals, Kurt(y) < 0. For sparse spikes/voices, Kurt(y) > 0. ICA optimizes W to maximize |Kurt(W x)|.\n"
+            "2. Negentropy: J(y) = H(y_gaussian) - H(y), where H(y) is differential entropy. J(y) ≥ 0, and J(y) = 0 IF AND ONLY IF y is Gaussian. Maximizing negentropy pushes y away from Gaussianity."
         ),
+        "priorWork": (
+            "HISTORICAL LITERATURE REVIEW & CONTEXT:\n"
+            "Pierre Comon (1994) formalized ICA to solve blind source separation in signal processing. "
+            "Before ICA, linear unmixing relied on 2nd-order correlation (PCA/Factor Analysis), which failed whenever sources were non-orthogonal. "
+            "Hyvärinen & Oja (2000) introduced FastICA, using fixed-point iteration to maximize negentropy exponentially faster than gradient descent."
+        ),
+        "paperArchitecture": (
+            "MATHEMATICAL MECHANISM & ALGORITHM FLOW:\n"
+            "1. Centering: Subtract mean vector μ: x_centered = x - μ.\n"
+            "2. Whitening (ZCA/PCA Whitening): Compute covariance C = E[x_centered x_centeredᵀ] = U Σ Uᵀ. Compute whitened vector x̃ = Σ^(-1/2) Uᵀ x_centered so that E[x̃ x̃ᵀ] = I. Whitening removes all 2nd-order correlations.\n"
+            "3. Orthogonal Search: After whitening, the unmixing matrix W is strictly an ORTHOGONAL ROTATION MATRIX (W Wᵀ = I).\n"
+            "4. Non-Gaussian Optimization: Maximize negentropy J(wᵀ x̃) ≈ [E{G(wᵀ x̃)} - E{G(v)}]^2 where G(u) = -exp(-u²/2).\n"
+            "5. Source Recovery: Reconstructed independent sources y = W x̃ = W A s ≈ P D s (recovered up to permutation P and scaling D)."
+        ),
+        "simplifiedMath": [
+            {"name": "Linear Mixing Model", "formula": "x = A s", "meaning": "Observed vector x is a linear combination of independent source vector s via mixing matrix A."},
+            {"name": "Kurtosis Non-Gaussianity", "formula": "Kurt(y) = E[y^4] - 3(E[y^2])^2", "meaning": "Measures 4th-order moment. Gaussian = 0. Non-Gaussian signals have non-zero kurtosis."},
+            {"name": "Negentropy Objective", "formula": "J(y) = H(y_{gauss}) - H(y)", "meaning": "Difference between Gaussian entropy and signal entropy. Always ≥ 0; equals 0 only for Gaussian variables."},
+            {"name": "FastICA Fixed-Point Update", "formula": "w_{k+1} = E[x g(w_k^T x)] - E[g'(w_k^T x)] w_k", "meaning": "Iterative Newton-Raphson update vector w to maximize non-Gaussianity."},
+        ],
         "keyIdeas": [
             _idea("Linear Mixing Model", "Observed activations x = A s come from independent sources s mixed by matrix A. Goal: learn W to recover y = W x ≈ P D s."),
             _idea("Independence vs. Uncorrelatedness", "Uncorrelatedness (Cov=0) is 2nd-order. Independence (p(s)=∏p(s_i)) is higher-order across all moments."),

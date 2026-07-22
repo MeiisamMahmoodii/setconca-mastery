@@ -97,6 +97,7 @@ const cache = {
   dependencies: null,
   papers: null,
   glossary: null,
+  lessonNarratives: null,
   lessons: {},    // lessonId → lesson data
 };
 
@@ -139,6 +140,13 @@ async function ensureGlossary() {
     cache.glossary = await fetchJSON('./curriculum/glossary.json');
   }
   return cache.glossary;
+}
+
+async function ensureLessonNarratives() {
+  if (!cache.lessonNarratives) {
+    cache.lessonNarratives = await fetchJSON('./curriculum/lesson-narratives.json');
+  }
+  return cache.lessonNarratives;
 }
 
 async function ensureLesson(id) {
@@ -390,7 +398,7 @@ function renderSidebar(state, phases, route) {
 export function createApp() {
   let state = loadState();
   let phases = null;
-  const renderer = createRenderer(state, cache, ensureLesson, ensurePhases, ensurePapers, ensureGlossary, ensureConcepts, ensureDependencies);
+  const renderer = createRenderer(state, cache, ensureLesson, ensurePhases, ensurePapers, ensureGlossary, ensureConcepts, ensureDependencies, ensureLessonNarratives);
   const vis = createVisualisations();
 
   // Apply saved settings immediately
@@ -432,7 +440,7 @@ export function createApp() {
         html = await renderer.renderPhase(parseInt(route.id), phases, state);
       } else if (route.page === 'lesson') {
         const lessonData = await ensureLesson(route.id);
-        html = renderer.renderLesson(lessonData, phases, state);
+        html = await renderer.renderLesson(lessonData, phases, state);
       } else if (route.page === 'map') {
         html = await renderer.renderConceptMap(phases, state);
       } else if (route.page === 'library') {

@@ -4,6 +4,11 @@
     "title": "Phase 0 — Orientation",
     "description": "Build the vocabulary for looking inside a neural network.",
     "rawSources": ["transformer-circuits", "superposition", "monosemanticity", "cunningham-sae"],
+    "teachingStory": [
+      "We begin with the object we are trying to understand. A language model does not carry a sentence around as words. At every layer and token position it carries a vector: a long list of numbers that is repeatedly updated as the model reads context and prepares its next prediction.",
+      "That vector is called a representation. A feature is a useful pattern inside it; a concept is our human interpretation of that pattern. Those are not interchangeable words. The representation is measured. The feature is a proposed structure. The concept label is a hypothesis that must survive examples and, later, intervention.",
+      "This distinction matters because a neuron is only one coordinate of the vector. A model can store several features through the same coordinate. Before we try to extract concepts with SAEs or SetConCA, we need to learn how to reason about vectors without assuming that a number on its own has a clean meaning."
+    ],
     "lessons": [
       {
         "id": "p00-l01",
@@ -48,6 +53,11 @@
     "title": "Phase 1 — Geometry of representations",
     "description": "Learn the geometry needed to measure, rotate, compress, and compare activation spaces.",
     "rawSources": ["pca-shlens", "ica-shlens", "cca-uurtio"],
+    "teachingStory": [
+      "A representation is a point in a very high-dimensional space. Geometry gives us a language for asking what has changed between two points: are they far apart, do they point in the same direction, or do they differ only in size? These are different questions, so distance, dot product, and cosine similarity should never be used as if they mean the same thing.",
+      "A dataset is a cloud of such points. Its mean tells us where the cloud sits; its covariance tells us which directions vary together. Projection asks what happens when we keep only part of the cloud. Eigenvectors and singular vectors identify directions that make this compression especially simple.",
+      "PCA then chooses the directions that preserve the most variance. It is a powerful baseline because it gives low reconstruction error with a simple geometric rule. But it does not know what a concept is. This is the first time the course separates a successful mathematical objective from a successful explanation."
+    ],
     "lessons": [
       {
         "id": "p01-l01",
@@ -92,6 +102,11 @@
     "title": "Phase 2 — Latent sources and identifiability",
     "description": "Understand when hidden causes can be recovered from observations—and when they cannot.",
     "rawSources": ["ica-shlens", "cl-inverts", "mv-causal", "conca"],
+    "teachingStory": [
+      "PCA describes a cloud, but it does not tell us what produced it. To talk about concepts as hidden causes, we need a latent-variable picture: observed activations are mixtures of factors we do not see directly.",
+      "ICA makes this concrete with the cocktail-party problem. Several independent sources are mixed together, and the task is to recover them. The result depends on assumptions such as independence and non-Gaussianity. Without those assumptions, many different hidden-source stories can explain the same observations.",
+      "This is identifiability. It is the discipline of saying exactly when a latent claim is recoverable and what ambiguities remain. By the end of the phase, correlation will no longer look like a causal explanation, and an intervention will have a clear role: it tests whether changing a proposed cause changes the expected effect."
+    ],
     "lessons": [
       {
         "id": "p02-l01",
@@ -136,6 +151,11 @@
     "title": "Phase 3 — Sparse representation learning",
     "description": "See why overcomplete dictionaries need sparse codes and how SAEs trade fidelity for selectivity.",
     "rawSources": ["ksparse", "cunningham-sae", "topk-sae", "gated-sae", "jumprelu"],
+    "teachingStory": [
+      "Now return to the activation vector. If many features are packed into it, a small set of axes may not be enough to describe them cleanly. An overcomplete dictionary gives us more candidate feature directions than input dimensions. That flexibility is useful, but it creates a problem: without a constraint, the model can spread every input across many vague features.",
+      "Sparsity is the constraint. It asks each activation to use only a few dictionary features. L1, TopK, and related methods enforce this in different ways, and those differences matter because they change the reconstruction--sparsity trade-off, feature magnitudes, and the risk of dead features.",
+      "A sparse autoencoder is therefore not a concept detector by definition. It is an optimization procedure that finds a sparse reconstruction. The next phases ask what extra evidence is needed before we call its features stable, meaningful, shared across views, or causally useful."
+    ],
     "lessons": [
       {
         "id": "p03-l01",
@@ -180,6 +200,11 @@
     "title": "Phase 4 — Multi-view representation learning",
     "description": "Coordinate information shared across views without erasing view-specific information.",
     "rawSources": ["cca-uurtio", "dcca", "dccae", "vcca", "dgcca"],
+    "teachingStory": [
+      "A single activation is only one observation. Often we have several views of the same underlying item: different layers, prompts, contexts, modalities, or time steps. The key question is not whether two views are identical. It is which information should agree and which information should remain private.",
+      "CCA gives the first answer. It searches for one direction in each view that makes their projections correlate as strongly as possible. Deep and probabilistic extensions can model nonlinear relationships and shared/private latents, but they inherit the same central tension: alignment can remove information as easily as it can reveal common structure.",
+      "This phase builds the argument for SetConCA. If several activation views belong to the same semantic object, they can provide supervision that a pointwise SAE never sees. But that is useful only if the view construction is honest and private information is not accidentally discarded."
+    ],
     "lessons": [
       {
         "id": "p04-l01",
@@ -224,6 +249,11 @@
     "title": "Phase 5 — Learning representations of sets",
     "description": "Represent unordered collections while retaining the relationships that matter.",
     "rawSources": ["deepsets", "neural-stat", "set-transformer", "multi-set-transformer"],
+    "teachingStory": [
+      "Once we collect several views, their order should not change the answer. A set is not a sequence: there is no meaningful first view or last view. A set representation must therefore be permutation invariant while still retaining the evidence carried by the members.",
+      "Deep Sets gives a simple recipe: encode each member, add the encodings, then transform the total. Attention-based set models add the ability to weigh relationships between members. Neither approach is automatically robust; a few unrelated members can distort a simple average.",
+      "For SetConCA, the set encoder decides what counts as shared evidence. The toy experiments here make that visible by shuffling members, changing set size, and injecting intruders. Those controls are not decoration. They are the tests that show whether a set representation is doing the job we claim."
+    ],
     "lessons": [
       {
         "id": "p05-l01",
@@ -268,6 +298,11 @@
     "title": "Phase 6 — Contrastive coordination",
     "description": "Use positive and negative relationships carefully, with explicit control of geometry and false negatives.",
     "rawSources": ["cpc", "simclr", "supcon", "align-unif", "vicreg", "cl-inverts"],
+    "teachingStory": [
+      "A set tells us which views belong together. Contrastive learning turns that relationship into a training signal: bring a positive pair together and keep it distinct from alternatives. The difficult part is defining a positive pair. That definition is the invariance hypothesis of the whole method.",
+      "InfoNCE makes the comparison explicit. Temperature controls how sharply the loss focuses on difficult alternatives. Alignment describes whether positives are close; uniformity describes whether the whole representation remains spread out rather than collapsing. Each quantity catches a different failure.",
+      "SetConCA should use coordination to make corresponding sparse codes compatible, not to erase every difference between views. The phase ends by making false negatives and shortcut cues concrete, because a contrastive loss can improve for the wrong reason while still looking numerically excellent."
+    ],
     "lessons": [
       {
         "id": "p06-l01",
@@ -312,6 +347,11 @@
     "title": "Phase 7 — Transformer and mechanistic interpretability",
     "description": "Connect representation geometry to residual streams, features, circuits, and interventions.",
     "rawSources": ["transformer-circuits", "superposition", "monosemanticity", "cunningham-sae", "scaling-mono"],
+    "teachingStory": [
+      "The geometry now returns to the transformer. The residual stream is the shared vector pathway through the model. Attention and MLP blocks write updates into it; later components read the accumulated result. This is why additive vector geometry is useful for mechanistic interpretability.",
+      "Superposition explains why one neuron can respond to several unrelated things. A model can represent more sparse features than dimensions by placing feature directions at non-right angles. An SAE tries to unfold those directions with a larger sparse dictionary, but finding a sparse basis is only the start of an explanation.",
+      "A mechanism claim needs a target behaviour, a proposed path, and an intervention. This phase moves from 'this feature correlates with the answer' to the harder question: does changing the feature alter the computation in the predicted way?"
+    ],
     "lessons": [
       {
         "id": "p07-l01",
@@ -356,6 +396,11 @@
     "title": "Phase 8 — Evaluating representations honestly",
     "description": "Match each claim to an evaluation that can actually test it.",
     "rawSources": ["svcca", "cka", "probe-control", "mdl-probe", "principled-eval", "saebench"],
+    "teachingStory": [
+      "The course has introduced several desirable properties: reconstruction, sparsity, alignment, stability, and causal usefulness. None is a substitute for the others. Evaluation begins by matching every claim to a measurement that can actually test it.",
+      "FVU asks about reconstruction. Probes ask whether information can be decoded, while control tasks ask whether that decoding is meaningful. CKA and SVCCA compare representation geometry. Steering and ablation test effects of changing a component. Each tool is useful, and each has a boundary it cannot cross.",
+      "A good evaluation table therefore has two columns in your head: what this score supports, and what it does not support. This habit protects the SetConCA project from the most common mistake in representation work: presenting one convenient metric as evidence for a much larger story."
+    ],
     "lessons": [
       {
         "id": "p08-l01",
@@ -400,6 +445,11 @@
     "title": "Phase 9 — SAE limitations and open problems",
     "description": "Treat splitting, absorption, non-canonicality, and scaling as testable failure modes.",
     "rawSources": ["absorption", "non-canonical", "saebench", "bench-reliable", "feature-hedging", "geometric-wall"],
+    "teachingStory": [
+      "Sparse features do not arrive at a single natural resolution. With more capacity, one broad feature can split into several narrower ones. With too little capacity or the wrong constraints, several factors can be absorbed into one feature. Both outcomes change what a feature label means.",
+      "There is a second problem: two SAEs trained with different seeds can find different dictionaries while achieving similar reconstruction and sparsity. That does not make either run useless, but it means a feature basis is not automatically a canonical inventory of the model's concepts.",
+      "This phase turns those observations into an evaluation protocol. Report multiple seeds. Measure absorption and splitting. Check whether an explanation is stable enough to use. The aim is not to make SAEs look bad; it is to stop a convenient decomposition from being mistaken for ground truth."
+    ],
     "lessons": [
       {
         "id": "p09-l01",
@@ -444,6 +494,11 @@
     "title": "Phase 10 — SetConCA research synthesis",
     "description": "Turn the curriculum into a falsifiable research program and a realistic experimental lab.",
     "rawSources": ["temporal-sae", "conca", "mv-causal", "topk-sae", "absorption"],
+    "teachingStory": [
+      "SetConCA is the synthesis point. Start with a sparse code that reconstructs an activation. Group multiple activation views of the same intended item into a set. Add a coordination objective that rewards the shared structure of those views. Then ask, with matched baselines, whether that extra structure changes the features in a useful way.",
+      "The project must be stated as a set of falsifiable hypotheses, not a promise. Does coordination reduce absorption in a controlled toy world? Does it improve cross-seed feature matching? Does it help a sparse code support a more faithful intervention? Each question needs its own baseline, metric, and failure criterion.",
+      "The final lab is deliberately simple. It lets you see when pooling several noisy views recovers a known latent direction and when intruders break that recovery. Only after that mechanism is clear should the same design be tested on real language-model activations."
+    ],
     "lessons": [
       {
         "id": "p10-l01",

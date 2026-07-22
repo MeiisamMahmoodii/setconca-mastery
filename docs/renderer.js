@@ -50,7 +50,10 @@ function sourceBadge(sourceId) {
 // ── Section renderers ─────────────────────────────────────────────────────────
 
 function renderDisclosure(id, title, icon, content, layerClass, sectionKey, lessonId, defaultOpen = false) {
-  const isOpen = defaultOpen;
+  // Lessons are written as a continuous explanation. Panels remain collapsible
+  // for reference, but they start open so the learner does not have to assemble
+  // the argument by clicking through disconnected cards.
+  const isOpen = true;
   return `
     <div class="disclosure ${layerClass}" style="margin-bottom:0.65rem">
       <button class="disclosure-header ${isOpen ? 'open' : ''}"
@@ -449,7 +452,7 @@ function checkProgRequirement(prog, check) {
 
 // ── Page renderers ────────────────────────────────────────────────────────────
 
-export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensurePapers, ensureGlossary, ensureConcepts, ensureDependencies) {
+export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensurePapers, ensureGlossary, ensureConcepts, ensureDependencies, ensureLessonNarratives) {
 
   async function renderHome(phases, state) {
     if (!phases) return '<p class="muted">Loading…</p>';
@@ -577,6 +580,13 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
       <h1 style="margin-bottom:0.5rem">${esc(phase.title)}</h1>
       <p class="muted" style="margin-bottom:1.25rem">${esc(phase.description || '')}</p>
 
+      ${(phase.teachingStory || []).length ? `
+        <article class="card" style="margin-bottom:1.25rem">
+          <div style="font-size:0.73rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--blue); margin-bottom:0.75rem; font-family:var(--mono)">Read this first: the story of the phase</div>
+          ${(phase.teachingStory || []).map(paragraph => `<p style="margin:0 0 0.9rem; color:#d6deeb">${esc(paragraph)}</p>`).join('')}
+        </article>
+      ` : ''}
+
       ${phase.checkpoint ? `
         <div class="callout purple" style="margin-bottom:1.25rem">
           <strong>Phase checkpoint:</strong> ${esc(phase.checkpoint)}
@@ -600,7 +610,7 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
     `;
   }
 
-  function renderLesson(lessonData, phases, state) {
+  async function renderLesson(lessonData, phases, state) {
     const id = lessonData.id;
     const sections = lessonData.sections || {};
     const isStub = lessonData.status === 'stub';
@@ -614,6 +624,9 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
       if (phase) { phaseTitle = phase.title; phaseId = phase.id; phaseData = phase; }
     }
     const nextLesson = lessonData.bridgeToNext || sections.nextLesson;
+    const previousLesson = phases?.flatMap(p => p.lessons).find(l => l.id === sections.bridgeFrom);
+    const narratives = await ensureLessonNarratives();
+    const narrative = narratives[lessonData.id];
 
     const stubBanner = isStub ? `
       <div class="stub-banner">
@@ -624,7 +637,7 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
     // Bridge from previous lesson
     const bridgeFrom = sections.bridgeFrom ? `
       <div class="callout" style="margin-bottom:1.25rem; font-size:0.9rem">
-        <strong>Building on:</strong> ${esc(sections.bridgeFrom)}
+        <strong>Building on:</strong> ${esc(previousLesson?.title || sections.bridgeFrom)}
       </div>
     ` : '';
 
@@ -651,7 +664,15 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
     ` : '';
 
     // All disclosure sections
-    const disclosureSections = [
+    const disclosureSections = (narrative ? [
+      renderVisualSection(sections.visual, id),
+      renderMathSection(sections.mathematics, id),
+      renderEvidenceSection(sections.evidence, id),
+      renderFailureSection(sections.failureModes, id),
+      renderExercisesSection(sections.exercises, id),
+      renderMasterySection(sections.masteryQuestions, id),
+      renderResearchWorksheet(sections.researchWorksheet, id),
+    ] : [
       renderIntuitionSection(sections.intuition, id),
       renderToyExampleSection(sections.toyExample, id),
       renderVisualSection(sections.visual, id),
@@ -664,7 +685,7 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
       renderExercisesSection(sections.exercises, id),
       renderMasterySection(sections.masteryQuestions, id),
       renderResearchWorksheet(sections.researchWorksheet, id),
-    ].filter(Boolean).join('');
+    ]).filter(Boolean).join('');
 
     // Bridge to next
     const bridgeNext = nextLesson ? `
@@ -690,6 +711,14 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
       </div>
     ` : '';
 
+    const teacherExplanation = narrative ? `
+      <article class="teacher-explanation card" style="margin:1.25rem 0">
+        <div style="font-size:0.73rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--blue); margin-bottom:0.7rem; font-family:var(--mono)">The explanation</div>
+        <p style="margin:0; color:#d6deeb; font-size:1rem; line-height:1.8">${esc(narrative.body)}</p>
+        <p style="margin:0.9rem 0 0; color:var(--green); font-size:0.92rem"><strong>Why this comes next:</strong> ${esc(narrative.bridge)}</p>
+      </article>
+    ` : '';
+
     return `
       <button class="btn-ghost" onclick="app.navigate('/phase/${phaseId}')" style="margin-bottom:1rem">
         ← Phase ${phaseId}: ${esc(phaseTitle)}
@@ -705,10 +734,11 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
 
       <h1 style="margin-bottom:0.6rem">${esc(lessonData.title)}</h1>
 
-      ${whyBlock}
+      ${narrative ? '' : whyBlock}
       ${bridgeFrom}
-      ${objBlock}
+      ${narrative ? '' : objBlock}
       ${rawSources}
+      ${teacherExplanation}
 
       <div style="margin-top:0.5rem">
         ${disclosureSections}

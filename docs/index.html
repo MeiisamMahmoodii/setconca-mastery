@@ -155,7 +155,7 @@
 
   <script src="papers.js"></script>
   <script>
-    const KEY = 'setconca-course-v5';
+    const KEY = 'setconca-course-v6';
     let state = load();
     let view = state.view || { type: 'home' };
 
@@ -544,7 +544,7 @@
     }
 
     // -------------------------------------------------------------
-    // INTERACTIVE VISUAL CANVAS ENGINE
+    // INTERACTIVE VISUAL CANVAS ENGINE (PRECISION MATHER)
     // -------------------------------------------------------------
     function mountDemos() {
       const id = view.paperId || (view.type === 'level' ? `level-${view.levelId}` : null);
@@ -564,6 +564,7 @@
       else demoGeneric(m);
     }
 
+    // 1. PRECISION PCA VISUALIZER
     function demoPCA(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="260"></canvas>
@@ -571,33 +572,76 @@
           <label>Components (k): <input type="range" id="k" min="1" max="2" value="1"></label>
           <span id="fvuVal" style="color:var(--accent); font-weight:600">FVU: 0.12</span>
         </div>
-        <p class="muted" style="margin-top:0.4rem">Green = original data. Blue = projected rank-k reconstruction. Red lines = reconstruction error.</p>`;
-      const ctx = document.getElementById('c').getContext('2d');
-      let pts = Array.from({ length: 16 }, () => ({ x: 70 + Math.random() * 300, y: 40 + Math.random() * 180 }));
+        <p class="muted" style="margin-top:0.4rem">Green = data points. Blue line = Principal axis (PC1). Red lines = perpendicular projections onto the full PC1 axis line.</p>`;
+      const canvas = document.getElementById('c');
+      const ctx = canvas.getContext('2d');
+      
+      // Bounded points within canvas space so projections stay 100% on-screen
+      let pts = [
+        {x: 120, y: 190}, {x: 140, y: 175}, {x: 160, y: 160}, {x: 180, y: 145},
+        {x: 200, y: 135}, {x: 220, y: 120}, {x: 240, y: 110}, {x: 260, y: 95},
+        {x: 280, y: 85},  {x: 300, y: 70},  {x: 150, y: 195}, {x: 190, y: 115},
+        {x: 230, y: 140}, {x: 270, y: 65},  {x: 310, y: 90},  {x: 130, y: 140}
+      ];
+
       function draw() {
         const k = +document.getElementById('k').value;
-        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 260);
-        const mx = pts.reduce((s, p) => s + p.x, 0) / pts.length, my = pts.reduce((s, p) => s + p.y, 0) / pts.length;
-        let cxx = 0, cyy = 0, cxy = 0; pts.forEach(p => { const dx = p.x - mx, dy = p.y - my; cxx += dx * dx; cyy += dy * dy; cxy += dx * dy; });
+        const w = canvas.width, h = canvas.height;
+        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, w, h);
+
+        const mx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
+        const my = pts.reduce((s, p) => s + p.y, 0) / pts.length;
+
+        let cxx = 0, cyy = 0, cxy = 0;
+        pts.forEach(p => {
+          const dx = p.x - mx, dy = p.y - my;
+          cxx += dx * dx; cyy += dy * dy; cxy += dx * dy;
+        });
         cxx /= pts.length; cyy /= pts.length; cxy /= pts.length;
-        const tr = cxx + cyy, det = cxx * cyy - cxy * cxy, l1 = (tr + Math.sqrt(tr * tr - 4 * det)) / 2;
-        let vx = cxy, vy = l1 - cxx; const n = Math.hypot(vx, vy) || 1; vx /= n; vy /= n;
-        
-        ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(mx - 120 * vx, my - 120 * vy); ctx.lineTo(mx + 120 * vx, my + 120 * vy); ctx.stroke();
+
+        const tr = cxx + cyy, det = cxx * cyy - cxy * cxy;
+        const l1 = (tr + Math.sqrt(Math.max(0, tr * tr - 4 * det))) / 2;
+        let vx = cxy, vy = l1 - cxx;
+        const n = Math.hypot(vx, vy) || 1;
+        vx /= n; vy /= n;
+
+        // Draw Principal Component Line spanning 800px across the canvas
+        ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5; ctx.beginPath();
+        ctx.moveTo(mx - 400 * vx, my - 400 * vy);
+        ctx.lineTo(mx + 400 * vx, my + 400 * vy);
+        ctx.stroke();
+
         let totalErr = 0, totalVar = 0;
         pts.forEach(p => {
+          const proj = (p.x - mx) * vx + (p.y - my) * vy;
           let rx = p.x, ry = p.y;
-          if (k === 1) { const proj = (p.x - mx) * vx + (p.y - my) * vy; rx = mx + proj * vx; ry = my + proj * vy; }
-          const err = Math.hypot(p.x - rx, p.y - ry); totalErr += err * err; totalVar += Math.hypot(p.x - mx, p.y - my) ** 2;
-          ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, 7); ctx.fill();
-          ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(rx, ry); ctx.stroke();
-          ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(rx, ry, 3, 0, 7); ctx.fill();
+          if (k === 1) {
+            rx = mx + proj * vx;
+            ry = my + proj * vy;
+          }
+          const err = Math.hypot(p.x - rx, p.y - ry);
+          totalErr += err * err;
+          totalVar += Math.hypot(p.x - mx, p.y - my) ** 2;
+
+          // Draw perpendicular red error projection line
+          ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 1.5; ctx.beginPath();
+          ctx.moveTo(p.x, p.y); ctx.lineTo(rx, ry); ctx.stroke();
+
+          // Green data point
+          ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
+
+          // Blue projected point on PC1
+          ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(rx, ry, 4, 0, Math.PI * 2); ctx.fill();
         });
-        document.getElementById('fvuVal').textContent = `FVU: ${(k === 2 ? 0.00 : (totalErr / (totalVar || 1))).toFixed(2)}`;
+
+        const fvu = k === 2 ? 0.00 : (totalErr / (totalVar || 1));
+        document.getElementById('fvuVal').textContent = `FVU: ${fvu.toFixed(2)} (${Math.round((1 - fvu) * 100)}% Variance Captured)`;
       }
+
       document.getElementById('k').oninput = draw; draw();
     }
 
+    // 2. PRECISION ICA VISUALIZER
     function demoICA(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
@@ -610,17 +654,18 @@
       function draw() {
         const ang = document.getElementById('a').value * Math.PI / 180;
         ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 240);
-        for (let i = 0; i < 14; i++) {
-          const t = i / 14 * Math.PI * 2, sx = Math.cos(t) * 50, sy = Math.sin(t) * 18;
+        for (let i = 0; i < 16; i++) {
+          const t = i / 16 * Math.PI * 2, sx = Math.cos(t) * 55, sy = Math.sin(t) * 20;
           const mx = sx * Math.cos(ang) + sy * Math.sin(ang), my = -sx * Math.sin(ang) + sy * Math.cos(ang);
-          ctx.fillStyle = '#34d399'; ctx.fillRect(110 + sx, 120 + sy, 5, 5);
-          ctx.fillStyle = '#38bdf8'; ctx.fillRect(310 + mx, 120 + my, 5, 5);
+          ctx.fillStyle = '#34d399'; ctx.fillRect(100 + sx, 120 + sy, 5, 5);
+          ctx.fillStyle = '#38bdf8'; ctx.fillRect(320 + mx, 120 + my, 5, 5);
         }
-        ctx.fillStyle = '#94a3b8'; ctx.font = '12px Fira Code'; ctx.fillText('Independent Sources', 50, 30); ctx.fillText('Mixed Observations', 260, 30);
+        ctx.fillStyle = '#94a3b8'; ctx.font = '12px Fira Code'; ctx.fillText('Independent Sources', 30, 30); ctx.fillText('Mixed Observations', 260, 30);
       }
       document.getElementById('a').oninput = draw; draw();
     }
 
+    // 3. PRECISION CCA VISUALIZER
     function demoCCA(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="220"></canvas>
@@ -629,14 +674,15 @@
       const ctx = document.getElementById('c').getContext('2d');
       ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 220);
       for (let i = 0; i < 18; i++) {
-        const t = Math.random() * 6, a = 60 + t * 14 + Math.random() * 15, b = 260 + t * 12 + Math.random() * 20;
-        const ya = 140 - Math.sin(t) * 35, yb = 140 - Math.sin(t) * 30 + Math.random() * 8;
+        const t = (i / 18) * 6, a = 60 + t * 14, b = 260 + t * 12;
+        const ya = 140 - Math.sin(t) * 35, yb = 140 - Math.sin(t) * 30;
         ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(a, ya, 4, 0, 7); ctx.fill();
         ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(b, yb, 4, 0, 7); ctx.fill();
         ctx.strokeStyle = 'rgba(52,211,153,0.3)'; ctx.beginPath(); ctx.moveTo(a, ya); ctx.lineTo(b, yb); ctx.stroke();
       }
     }
 
+    // 4. PRECISION SAE VISUALIZER
     function demoSAE(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>

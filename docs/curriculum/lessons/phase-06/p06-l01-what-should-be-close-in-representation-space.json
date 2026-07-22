@@ -1,0 +1,177 @@
+{
+  "id": "p06-l01",
+  "phase": 6,
+  "lesson": 1,
+  "title": "What Should Be Close in Representation Space?",
+  "estimatedMinutes": 25,
+  "status": "complete",
+  "prerequisites": ["p05-l17"],
+  "learningObjectives": [
+    "Articulate what it means for two points to be 'close' in a learned representation space",
+    "Distinguish metric choices from learning objectives",
+    "Explain why the choice of what to make close is a design decision, not a mathematical inevitability",
+    "Connect proximity criteria to downstream tasks and interpretability goals"
+  ],
+  "sections": {
+    "whyThisLesson": {
+      "text": "Every representation learning method implicitly or explicitly decides: which inputs should map to nearby vectors? This decision shapes everything downstream — retrieval, clustering, classification, and interpretability. Before studying contrastive learning's specific answer, we must understand the space of possible answers and why the choice is non-trivial."
+    },
+    "bridgeFrom": "Phase 5 concluded with set encoders that aggregate information across multiple members. Now we ask: once we have representations, what geometric relationships should hold between them? The answer determines which downstream tasks the representations will support.",
+    "intuition": {
+      "analogy": "Imagine organising a library. You could sort books alphabetically by title, by author, by genre, by reading level, by the emotion they evoke, or by the year they were published. Each ordering makes different queries easy and others hard. 'Closeness' in the library corresponds to proximity in representation space.",
+      "analogyLimit": "In a library, you can only impose one physical ordering. In representation space, the geometry can simultaneously encode multiple relationships — but usually at the cost of some relationships being encoded less faithfully than others.",
+      "text": "A representation space is a metric space where distance (or angle) signals similarity. The central design question is: similarity with respect to what? Pixel similarity? Semantic meaning? Task relevance? Causal structure? Different choices lead to representations that excel at different things. Contrastive learning operationalises this choice through the selection of positive and negative pairs."
+    },
+    "toyExample": {
+      "description": "Consider 6 images: two cats (one fluffy, one shaved), two dogs (one fluffy, one shaved), one wolf (fluffy), one sheep (fluffy).",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Define proximity by texture: group fluffy animals together",
+          "result": "Cat-fluffy, dog-fluffy, wolf, sheep cluster; cat-shaved and dog-shaved cluster apart",
+          "insight": "Representations encode texture well, but species identity is scrambled"
+        },
+        {
+          "step": 2,
+          "action": "Define proximity by species: group cats together regardless of texture",
+          "result": "Both cats cluster; both dogs cluster; wolf and sheep are separate",
+          "insight": "Representations encode species identity; texture variation within species is ignored"
+        },
+        {
+          "step": 3,
+          "action": "Consider retrieval task: 'find other cats'",
+          "result": "Species-based proximity gives perfect retrieval; texture-based gives 50% accuracy",
+          "insight": "The choice of proximity criterion directly determines task performance — there is no universally correct choice"
+        }
+      ]
+    },
+    "visual": {
+      "id": "vector-space",
+      "question": "How does changing the proximity criterion change which points cluster together?",
+      "description": "Arrange points in 2D vector space and toggle between different labelling schemes to see how the same data produces different cluster structures depending on what you define as 'similar'"
+    },
+    "technical": {
+      "text": "A proximity criterion specifies a mapping from pairs of inputs (x, x') to a scalar similarity score s(x, x') ∈ ℝ. Training a representation model to respect this criterion means learning f such that d(f(x), f(x')) is small when s(x, x') is large, and large otherwise. The choice of d (Euclidean, cosine, Manhattan) interacts with the criterion. Most contrastive methods use cosine similarity after L2 normalisation, which means learning directions rather than magnitudes. Three canonical categories of proximity criterion: (1) augmentation invariance — same image after different crops should be close; (2) label equivalence — same class label implies proximity; (3) semantic equivalence — same meaning regardless of surface form.",
+      "definitions": [
+        {
+          "term": "proximity criterion",
+          "definition": "A function specifying which pairs of inputs should be mapped to nearby representations; the core design decision of any representation learning method"
+        },
+        {
+          "term": "representation space geometry",
+          "definition": "The metric or inner-product structure of the space into which inputs are embedded; governs which downstream operations (nearest-neighbour, linear probing) are meaningful"
+        },
+        {
+          "term": "augmentation invariance",
+          "definition": "The proximity criterion that treats two differently-augmented versions of the same data point as a positive pair; encourages representations to ignore augmentation-induced variation"
+        }
+      ]
+    },
+    "mathematics": [
+      {
+        "id": "eq-1",
+        "label": "Proximity criterion formalisation",
+        "latex": "\\mathcal{L}_{prox} = \\mathbb{E}_{(x,x^+,x^-)}\\left[d(f(x), f(x^+)) - d(f(x), f(x^-))\\right]",
+        "symbols": {
+          "f": "encoder mapping input to representation",
+          "x": "anchor input",
+          "x^+": "positive input (should be close to anchor)",
+          "x^-": "negative input (should be far from anchor)",
+          "d": "distance function in representation space"
+        },
+        "plainExplanation": "This generic contrastive objective pushes positive pairs closer and negative pairs further apart in representation space.",
+        "whyNeeded": "Formalises the proximity criterion as an optimisation target so it can be implemented in a neural network",
+        "ifRemoved": "Without this objective, the encoder has no incentive to organise the representation space according to any particular proximity criterion",
+        "encourages": "Representations where the chosen similarity criterion is reflected in geometric proximity",
+        "doesNotGuarantee": "That the proximity criterion captures semantically meaningful relationships; the criterion itself must be carefully chosen"
+      }
+    ],
+    "methodComparison": [
+      {
+        "question": "How does the proximity criterion differ between augmentation-based and label-based contrastive learning?",
+        "methods": [
+          {
+            "name": "Augmentation-based (SimCLR)",
+            "answer": "Positive pairs are two augmented views of the same image. The criterion is augmentation-invariance: what remains stable across crops, flips, and colour jitter is treated as signal."
+          },
+          {
+            "name": "Label-based (SupCon)",
+            "answer": "Positive pairs are all images sharing the same class label. The criterion is class-equivalence: intra-class variation is treated as noise, inter-class variation as signal."
+          }
+        ],
+        "practicalImplication": "Augmentation-based learning can be applied without labels but the proximity criterion is defined by the augmentation policy, which may or may not align with semantic meaning. Label-based learning requires labels but defines proximity more directly in terms of task-relevant categories."
+      }
+    ],
+    "evidence": [
+      {
+        "claim": "The choice of augmentation strategy in self-supervised learning determines which features the model learns to encode",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "chen-simclr-2020",
+        "section": "Section 3, Ablation on augmentation",
+        "verified": true,
+        "paraphrase": "Chen et al. showed that removing colour jitter from the augmentation pipeline caused SimCLR to rely heavily on colour statistics, demonstrating that the proximity criterion (via augmentation choice) directly controls which features are encoded"
+      }
+    ],
+    "failureModes": [
+      {
+        "name": "Proximity criterion misalignment",
+        "mechanism": "The chosen proximity criterion does not align with the downstream task's notion of similarity",
+        "symptom": "High contrastive training accuracy but poor downstream task performance",
+        "diagnosticTest": "Compare nearest-neighbour accuracy in representation space against label-based accuracy; large gap indicates misalignment",
+        "mitigation": "Audit augmentation choices or label definitions against the downstream task's similarity requirements",
+        "setconcaRelevance": "SetConCA defines proximity via semantic co-occurrence in sets; this may not align with interpretability-relevant notions of feature similarity"
+      }
+    ],
+    "setconcaConnection": {
+      "relevance": "SetConCA must choose which representations should be close: tokens within a semantically coherent set, or tokens sharing a feature regardless of set membership",
+      "whichPart": "The contrastive regularisation component of SetConCA",
+      "whichDesignChoice": "Whether to use set membership, token-level feature similarity, or both as the proximity criterion",
+      "whichFailureExplained": "If the proximity criterion does not match the interpretability goal, the resulting representations may be geometrically clean but semantically opaque",
+      "proposedExperiment": "Train SetConCA with three different proximity criteria (set membership, feature label, augmentation) and compare the resulting representations on both retrieval and linear probing tasks",
+      "alternativeExplanation": "It is possible that no single proximity criterion captures all relevant relationships; multi-objective proximity criteria may be necessary"
+    },
+    "exercises": [
+      {
+        "type": "prediction",
+        "prompt": "If you train a contrastive model where positive pairs are sentences with the same sentiment label, what will the representation space encode well, and what will it fail to encode?",
+        "reveal": "The model will encode sentiment polarity well (positive/negative/neutral) and may cluster sentences by sentiment effectively. It will fail to encode syntactic structure, topic, or semantic content that does not correlate with sentiment. For example, 'I love dogs' and 'This film was fantastic' will be close, even though their topics differ."
+      },
+      {
+        "type": "construct",
+        "prompt": "Design a proximity criterion for learning representations of protein sequences that would be useful for predicting binding sites",
+        "reveal": "A good criterion would treat proteins with the same binding site structure as positive pairs, regardless of overall sequence similarity. This might use experimentally verified binding site labels, or structural alignment scores as a proxy. Augmentations might include sequence mutations that preserve binding function."
+      }
+    ],
+    "masteryQuestions": [
+      {
+        "type": "open",
+        "prompt": "Construct a dataset and proximity criterion where the representation space has perfect contrastive loss but is completely useless for a natural downstream task. Explain the mechanism.",
+        "rubric": [
+          "Identifies that contrastive loss measures adherence to the chosen criterion, not downstream utility",
+          "Constructs a concrete example (e.g., proximity by file creation timestamp; downstream task is semantic similarity)",
+          "Explains that the problem is criterion-task misalignment, not model failure",
+          "Notes that evaluation must measure the right thing, not just training loss"
+        ],
+        "badVersion": "Contrastive learning fails when you choose the wrong loss function.",
+        "goodVersion": "Consider images labelled by photographer name. A contrastive model trained with photographer identity as the proximity criterion achieves low loss — all photos by the same photographer cluster together. But this representation is useless for identifying objects in scenes, because the proximity criterion encodes photographer style, not object identity. The model succeeds at its stated objective while failing the downstream task."
+      }
+    ],
+    "researchWorksheet": {
+      "claim": "The choice of proximity criterion fully determines the structure of the learned representation space",
+      "requiredAssumptions": "The encoder has sufficient capacity; the optimiser converges; the proximity criterion is consistent (no contradictory pairs)",
+      "evidenceProvided": "Ablation studies in SimCLR show that augmentation choices qualitatively change what features are encoded",
+      "strongestAlternativeExplanation": "Architecture inductive biases (e.g., convolutional structure) may impose structure on the representation space independent of the proximity criterion",
+      "missingControl": "A control that holds architecture fixed while systematically varying only the proximity criterion across a range of downstream tasks",
+      "closestBaseline": "Random encoder baselines that expose how much structure comes from architecture alone",
+      "falsifyingResult": "If two encoders trained with identical proximity criteria but different architectures learn representations that are linearly indistinguishable, the architecture would be the dominant factor",
+      "setconcaImplication": "SetConCA's contrastive component must be carefully designed so that its proximity criterion reflects interpretability-relevant similarity, not just set co-occurrence",
+      "proposedExperiment": "Train 5 encoders with identical architectures but different proximity criteria (augmentation, label, set-membership, temporal adjacency, random) and compare downstream task performance across 10 tasks"
+    }
+  },
+  "bridgeToNext": {
+    "nextId": "p06-l02",
+    "text": "Having established that the proximity criterion is a design decision, the next lesson examines the positive pair — the specific choice of which inputs should be made close — and how positive pair construction shapes what contrastive learning can and cannot learn."
+  },
+  "papers": []
+}

@@ -1,0 +1,175 @@
+{
+  "id": "p06-l03",
+  "phase": 6,
+  "lesson": 3,
+  "title": "Negative Pairs",
+  "estimatedMinutes": 25,
+  "status": "complete",
+  "prerequisites": ["p06-l02"],
+  "learningObjectives": [
+    "Explain the role of negative pairs in defining what should be far apart in representation space",
+    "Distinguish in-batch negatives from mined negatives and off-line negatives",
+    "Articulate the sampling bias problem in negative pair construction",
+    "Predict how negative pair quality affects the geometry of learned representations"
+  ],
+  "sections": {
+    "whyThisLesson": {
+      "text": "Positive pairs teach the model what is similar; negative pairs teach it what is dissimilar. Without negatives, the trivial solution — map everything to the same point — satisfies the contrastive objective perfectly. Negatives define the structure of the representation space just as much as positives do."
+    },
+    "bridgeFrom": "Positive pairs operationalise the proximity criterion. But proximity is only meaningful relative to distance from something else. Negative pairs provide this reference: they are the inputs that should be far from the anchor.",
+    "intuition": {
+      "analogy": "Learning the meaning of 'hot' requires not just examples of hot things, but examples of things that are not hot. If all your examples of 'not hot' are room-temperature objects, you learn to distinguish hot from room-temperature. If your examples include freezing objects, you learn a finer-grained temperature scale.",
+      "analogyLimit": "Unlike temperature, which has a natural ordering, the 'distance' we want in representation space is a design choice. Negatives that are semantically similar but treated as negatives (false negatives) will corrupt the learned geometry in ways that have no analogue in the temperature example.",
+      "text": "Negatives are inputs that should be pushed away from the anchor in representation space. The most common approach is in-batch negatives: for each anchor in a batch, all other items in the batch that are not positives of that anchor serve as negatives. This is computationally convenient but introduces bias: if a batch is small or non-randomly sampled, the negatives may not represent the full data distribution. Hard negatives are inputs that are semantically similar to the anchor but are not positives — these are the most informative for learning fine-grained distinctions."
+    },
+    "toyExample": {
+      "description": "8 sentences about animals: 2 about cats, 2 about dogs, 2 about weather, 2 about food.",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Use uniform random in-batch negatives for anchor 'The cat sat on the mat'",
+          "result": "Negatives include: dog sentences, weather sentences, food sentences — all quite different from the cat sentence",
+          "insight": "Easy negatives: the model can separate them without learning fine-grained semantics"
+        },
+        {
+          "step": 2,
+          "action": "Use hard negatives: choose 'The dog sat on the mat' as a negative",
+          "result": "The model must learn that 'cat' and 'dog' differ, even though the sentence structure is identical",
+          "insight": "Hard negatives force the model to learn fine-grained semantic distinctions"
+        },
+        {
+          "step": 3,
+          "action": "Use too many identical negatives: 5 copies of 'The weather is nice' as negatives",
+          "result": "Model learns that animal-weather distinction is important but misses animal-animal distinctions",
+          "insight": "Negative distribution affects what distinctions the model learns; negatives should represent the full diversity of the data"
+        }
+      ]
+    },
+    "visual": {
+      "id": "scatter-covariance",
+      "question": "How does the choice of negative samples affect the spread of representations in the space?",
+      "description": "Observe how different negative sampling strategies produce representations with different covariance structures; uniform negatives tend to produce more uniformly distributed representations"
+    },
+    "technical": {
+      "text": "Three negative sampling strategies are in common use: (1) In-batch negatives: within each training batch, all non-positive pairs serve as negatives. Fast and simple, but quality depends on batch size and composition. (2) Mined negatives: negatives are selected from the full dataset based on some criterion (typically high similarity to the anchor in a prior representation space) — 'hard negatives'. More informative but requires a mining step. (3) Memory bank / queue negatives: a large queue of representations from previous batches serves as negatives (MoCo-style). Decouples batch size from number of negatives. The quality of negatives — their hardness relative to the current encoder — determines the signal-to-noise ratio of the gradient update.",
+      "definitions": [
+        {
+          "term": "negative pair",
+          "definition": "A pair (x, x⁻) where x and x⁻ are not positives; the contrastive objective trains the encoder to push their representations apart"
+        },
+        {
+          "term": "in-batch negatives",
+          "definition": "Using other items in the same training batch (excluding positives) as negatives; computationally efficient but batch-size dependent"
+        },
+        {
+          "term": "hard negative",
+          "definition": "A negative that is semantically similar to the anchor, making it difficult to distinguish; provides high-gradient learning signal for fine-grained discrimination"
+        }
+      ]
+    },
+    "mathematics": [
+      {
+        "id": "eq-1",
+        "label": "Negative pair contribution to gradient",
+        "latex": "\\nabla_{\\theta} \\mathcal{L} \\propto \\sum_{i} w_i \\cdot \\nabla_{\\theta} d(f_{\\theta}(x), f_{\\theta}(x_i^-))",
+        "symbols": {
+          "w_i": "weight assigned to negative i; higher for hard negatives that are currently nearby in representation space",
+          "d": "distance function",
+          "f_\\theta": "encoder with parameters θ",
+          "x_i^-": "the i-th negative sample"
+        },
+        "plainExplanation": "The gradient contribution of each negative is weighted by how hard it currently is; negatives that are already far from the anchor contribute little, while nearby negatives (hard ones) drive most of the learning signal.",
+        "whyNeeded": "Explains why hard negatives are more informative than easy ones — they produce larger gradient updates",
+        "ifRemoved": "Without negative weighting, all negatives contribute equally regardless of how informative they are, reducing learning efficiency",
+        "encourages": "The encoder to focus on the hardest discriminations first",
+        "doesNotGuarantee": "That hard negatives are true negatives — they may be semantically similar to the anchor (false negatives), corrupting the gradient"
+      }
+    ],
+    "methodComparison": [
+      {
+        "question": "How do different negative sampling strategies trade off computational cost against learning signal quality?",
+        "methods": [
+          {
+            "name": "In-batch random negatives",
+            "answer": "Low cost: requires no extra computation beyond the forward pass. Lower signal: easy negatives dominate, especially with small batches. Requires large batches to ensure adequate diversity."
+          },
+          {
+            "name": "Hard negative mining",
+            "answer": "Higher cost: requires a retrieval step before each batch. Higher signal: negatives that are currently near the anchor in representation space drive the strongest gradients. Risk of false negatives if mining quality is poor."
+          },
+          {
+            "name": "Memory bank (MoCo-style)",
+            "answer": "Medium cost: maintains a queue of representations from recent batches. Medium signal: queue representations are slightly stale, reducing their hardness. Decouples effective negative count from batch size."
+          }
+        ],
+        "practicalImplication": "For large-scale training where batch size is limited, memory bank or hard negative mining strategies typically outperform in-batch negatives. For research with large batches, in-batch negatives are simpler and often sufficient."
+      }
+    ],
+    "evidence": [
+      {
+        "claim": "Increasing the number of negative samples in contrastive learning consistently improves downstream task performance up to a point of diminishing returns",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "chen-simclr-2020",
+        "section": "Section 3, Effect of batch size",
+        "verified": true,
+        "paraphrase": "SimCLR showed monotonically improving performance as batch size (and thus effective number of in-batch negatives) increased from 256 to 8192, with diminishing returns at the largest batch sizes, consistent with the theoretical analysis of negative sampling quality"
+      }
+    ],
+    "failureModes": [
+      {
+        "name": "Negative distribution mismatch",
+        "mechanism": "Negatives are not sampled from the true data marginal; certain types of negatives are over- or under-represented",
+        "symptom": "Representations distinguish the over-represented negative types well but fail on under-represented ones",
+        "diagnosticTest": "Compute nearest-neighbour precision for each data subgroup; systematically lower precision in some subgroups indicates distribution mismatch",
+        "mitigation": "Use stratified negative sampling to ensure negatives represent the full data distribution",
+        "setconcaRelevance": "If SetConCA batches contain semantically homogeneous sets, in-batch negatives may be too easy (all within the same broad topic), reducing the learning signal"
+      }
+    ],
+    "setconcaConnection": {
+      "relevance": "SetConCA's negative pairs are tokens from different semantic sets; the quality of set boundaries determines negative quality",
+      "whichPart": "The within-batch negative sampling for the contrastive regularisation term",
+      "whichDesignChoice": "Whether to use uniform in-batch negatives, hard negatives mined from similar sets, or cross-set negatives from diverse topics",
+      "whichFailureExplained": "If all negatives are from semantically distant sets, the contrastive signal is weak; the model can separate them trivially without learning fine-grained semantic features",
+      "proposedExperiment": "Compare SetConCA trained with (a) random in-batch negatives, (b) hard negatives from semantically adjacent sets, and (c) adversarially constructed near-miss negatives on feature discrimination tasks",
+      "alternativeExplanation": "It is possible that for interpretability goals, easy negatives are sufficient — the model only needs to distinguish broad semantic categories, not fine-grained distinctions"
+    },
+    "exercises": [
+      {
+        "type": "prediction",
+        "prompt": "A contrastive model for medical text is trained with in-batch negatives. All batches are composed of text from a single medical specialty (cardiology, neurology, etc.). Predict what happens to the representations.",
+        "reveal": "The model will learn to distinguish between conditions within each specialty very well, because all negatives are drawn from the same specialty. However, it will not learn to distinguish between specialties, because cross-specialty contrasts are never seen during training. The representations will be highly calibrated within specialties but poorly calibrated across them."
+      }
+    ],
+    "masteryQuestions": [
+      {
+        "type": "open",
+        "prompt": "A researcher claims: 'More negatives always means better contrastive learning.' Construct a counterexample and identify the mechanism by which additional negatives can harm performance.",
+        "rubric": [
+          "Identifies the false negative problem: more negatives increases the chance of including semantically similar items as negatives",
+          "Constructs a concrete dataset where false negatives are common (e.g., a corpus with many paraphrases)",
+          "Explains the gradient corruption mechanism: false negatives push genuinely similar items apart",
+          "Notes that the severity depends on the false negative rate in the negative sampling distribution"
+        ],
+        "badVersion": "More negatives is not always better because it can cause overfitting.",
+        "goodVersion": "Consider a corpus of 1000 near-identical sentences (minor paraphrase variants of 10 original sentences). With 100 in-batch negatives, ~90% of them are semantically equivalent to the anchor but treated as negatives. The gradient pushes genuinely similar sentences apart, corrupting the representation so that paraphrases are far from each other. Adding more negatives makes this worse, not better, because the false negative rate remains ~90% regardless of negative count. In this case, more negatives means more corrupted gradients."
+      }
+    ],
+    "researchWorksheet": {
+      "claim": "Hard negative mining consistently improves contrastive learning compared to random negative sampling",
+      "requiredAssumptions": "False negative rate in the hard negative pool is low enough not to corrupt training; the mining step retrieves true negatives that are near the anchor",
+      "evidenceProvided": "Several papers report improved downstream performance with hard negative mining, particularly in information retrieval settings",
+      "strongestAlternativeExplanation": "Hard negative mining may improve performance primarily by increasing effective batch diversity, not by providing harder discriminations per se",
+      "missingControl": "A control that matches the diversity of easy and hard negative pools to isolate the effect of hardness from diversity",
+      "closestBaseline": "In-batch random negatives with very large batch size (to approximate diversity of hard negative mining without hardness)",
+      "falsifyingResult": "If a model with random negatives and batch size N performs equivalently to a model with hard negatives and batch size N/10 when both have the same negative diversity, hardness rather than diversity would not be the mechanism",
+      "setconcaImplication": "SetConCA should carefully consider whether its contrastive signal requires hard (semantically adjacent) negatives or whether easy cross-topic negatives are sufficient for its interpretability goals",
+      "proposedExperiment": "Train three SetConCA variants with identical architectures: (1) random in-batch negatives, (2) hard negatives from semantically adjacent sets, (3) adversarially constructed false-positive-free hard negatives. Compare on interpretability benchmarks, not just retrieval accuracy."
+    }
+  },
+  "bridgeToNext": {
+    "nextId": "p06-l04",
+    "text": "Negative pairs can contain errors: items that are semantically positive but treated as negative, and items that are semantically negative but treated as positive. The next two lessons examine these two types of error — false positives first — and their consequences for representation learning."
+  },
+  "papers": []
+}

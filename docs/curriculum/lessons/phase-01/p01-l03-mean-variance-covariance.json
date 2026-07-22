@@ -1,0 +1,261 @@
+{
+  "id": "p01-l03",
+  "phase": 1,
+  "lesson": 3,
+  "title": "Mean, Variance, and Covariance",
+  "estimatedMinutes": 35,
+  "status": "complete",
+  "prerequisites": ["p01-l02"],
+  "learningObjectives": [
+    "Compute the mean vector of a dataset and interpret it as the 'centre of mass'",
+    "Compute variance in each dimension and interpret it as the spread of the data along that axis",
+    "Compute covariance between two dimensions and interpret it as whether two dimensions stretch together",
+    "Explain why centering data (subtracting the mean) is necessary before covariance analysis",
+    "Distinguish between positive covariance (dimensions increase together) and negative covariance (one increases as the other decreases)"
+  ],
+  "sections": {
+    "whyThisLesson": {
+      "text": "PCA, the anchor lesson of this phase, is fundamentally about finding the directions of maximum variance in a dataset. To understand PCA, you need to understand variance — and variance is impossible to understand without mean. But we also need covariance: the question of whether two dimensions 'vary together'. When we pack all pairwise covariances into a matrix (the covariance matrix, next lesson), we get the complete geometric description of a data cloud's shape. This lesson builds those three concepts — mean, variance, covariance — with actual numbers so that no step is mysterious."
+    },
+    "bridgeFrom": "We can measure similarity between individual pairs of vectors. Now we need tools to describe the statistical properties of an entire COLLECTION of vectors — how they cluster, spread, and correlate across dimensions.",
+    "intuition": {
+      "analogy": "Imagine a swarm of bees hovering around a flower. The mean is where the flower is — the centre of the whole swarm. Variance is how 'spread out' the swarm is — a high-variance swarm stretches far in some direction. Covariance is whether the bees tend to be in the upper-right part of the cloud at the same time they are also far to the right — do the horizontal and vertical spread happen together? If you can only look at a single bee, you learn almost nothing. But when you look at the whole swarm as a statistical object, you see its shape — and that shape is described by the mean and the covariance.",
+      "analogyLimit": "Bees in 2D or 3D can be visualised directly. Data clouds in a 768-dimensional embedding space cannot — we can only access their shape through statistical summaries like mean, variance, and covariance. Additionally, the bee swarm has a clear physical cause (the flower). For neural activation data, the 'cause' of the cloud shape is the interplay of thousands of training examples — and disentangling that structure is precisely what we are working toward.",
+      "text": "Centering data — subtracting the mean from every data point — is not a trivial preprocessing step. It is geometrically essential: it moves the entire data cloud to be centred at the origin, which makes covariance and variance measure structure relative to the centre rather than relative to some arbitrary location. When we compute covariance of raw (uncentered) data, we confuse 'where the data is' with 'how the data is shaped'. Centering separates these two questions, allowing us to study shape independently of location."
+    },
+    "toyExample": {
+      "description": "Five 2D data points are used to compute the mean vector, variance in each dimension, and covariance between dimensions, all by hand.",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Define 5 data points: p₁=[1,2], p₂=[3,5], p₃=[2,3], p₄=[4,6], p₅=[2,4]. List all x-coordinates: {1,3,2,4,2} and all y-coordinates: {2,5,3,6,4}.",
+          "result": "X-values: 1, 3, 2, 4, 2. Y-values: 2, 5, 3, 6, 4.",
+          "insight": "The data has 5 points in 2D. We will compute statistics separately for each dimension, then jointly for both dimensions together."
+        },
+        {
+          "step": 2,
+          "action": "Compute the mean: μₓ = (1+3+2+4+2)/5 = 12/5 = 2.4. μᵧ = (2+5+3+6+4)/5 = 20/5 = 4.0. Mean vector μ = [2.4, 4.0].",
+          "result": "μ = [2.4, 4.0]. This is the centre of mass of the 5 points.",
+          "insight": "The mean is the single point that balances all 5 data points. If we hung a weightless sheet with equal point-masses at each data point, the sheet would balance perfectly at [2.4, 4.0]."
+        },
+        {
+          "step": 3,
+          "action": "Center the data: subtract μ from each point. Centered points: c₁=[1-2.4, 2-4]= [-1.4,-2], c₂=[0.6,1], c₃=[-0.4,-1], c₄=[1.6,2], c₅=[-0.4,0].",
+          "result": "Centered points: [-1.4,-2], [0.6,1], [-0.4,-1], [1.6,2], [-0.4,0]. Verify: mean of centered x = (-1.4+0.6-0.4+1.6-0.4)/5 = 0 ✓",
+          "insight": "After centering, the data cloud is now centered at the origin. Variance and covariance computed on centered data describe the 'shape' of the cloud independently of its position."
+        },
+        {
+          "step": 4,
+          "action": "Compute variance in x: Var(X) = (1/5)Σ(cᵢₓ²) = (1/5)(1.96 + 0.36 + 0.16 + 2.56 + 0.16) = (1/5)(5.20) = 1.04.",
+          "result": "Var(X) = 1.04. The x-dimension has variance 1.04, meaning data points deviate on average √1.04 ≈ 1.02 units from the x-mean.",
+          "insight": "Variance is always non-negative. Zero variance would mean all points have the exact same x-coordinate — a degenerate case. Large variance means the data stretches far in the x-direction."
+        },
+        {
+          "step": 5,
+          "action": "Compute variance in y: Var(Y) = (1/5)(4 + 1 + 1 + 4 + 0) = (1/5)(10) = 2.00.",
+          "result": "Var(Y) = 2.00. The y-dimension has nearly double the variance of x — the data cloud is more elongated in the y-direction.",
+          "insight": "Comparing variances tells us which dimension has more spread. Here, y varies more than x, meaning the data cloud is 'taller' than it is 'wide'."
+        },
+        {
+          "step": 6,
+          "action": "Compute covariance: Cov(X,Y) = (1/5)Σ(cᵢₓ × cᵢᵧ) = (1/5)[(-1.4×-2) + (0.6×1) + (-0.4×-1) + (1.6×2) + (-0.4×0)] = (1/5)[2.8 + 0.6 + 0.4 + 3.2 + 0] = (1/5)(7.0) = 1.40.",
+          "result": "Cov(X,Y) = 1.40. Positive covariance means that when x is above average, y tends to be above average too.",
+          "insight": "The positive covariance of 1.40 tells us the data cloud is 'tilted' — it stretches in the upper-right to lower-left direction. Points that are large in x tend to be large in y as well. This is the beginning of understanding the direction of maximum variance."
+        }
+      ]
+    },
+    "visual": {
+      "id": "scatter-covariance",
+      "question": "When you add a point in the upper-right corner of the scatter plot, does it increase or decrease the covariance? Why?",
+      "description": "An interactive 2D scatter plot where you can click to add or remove data points. The mean is shown as a crosshair. The covariance ellipse (an ellipse whose axes are the eigenvectors of the covariance matrix, scaled by eigenvalues) is drawn over the cloud and updates in real time. Marginal histograms for x and y are shown on the sides, displaying variance in each dimension. A readout shows the numerical values of μₓ, μᵧ, Var(X), Var(Y), and Cov(X,Y)."
+    },
+    "technical": {
+      "text": "Mean, variance, and covariance are the first and second statistical moments of a distribution. They provide a compact description of a data cloud's central tendency (mean) and dispersion (covariance). For a dataset of n data points in d dimensions, the mean is a d-dimensional vector, the variance is a d-dimensional vector (one variance per dimension), and the full covariance is a d×d matrix (one covariance for each pair of dimensions, plus variances on the diagonal). The sign of covariance tells the direction of the relationship: positive covariance means the dimensions increase together; negative covariance means one increases as the other decreases; zero covariance means no linear relationship (though nonlinear relationships can still exist). Importantly, zero covariance does not imply statistical independence — it only implies no LINEAR relationship.",
+      "definitions": [
+        {
+          "term": "Mean (expected value)",
+          "definition": "E[X] = (1/n)Σᵢ xᵢ. The arithmetic average of all values. For a vector dataset, the mean vector has each component equal to the mean of that component across all points. The mean is the 'centre of mass' of the data cloud."
+        },
+        {
+          "term": "Variance",
+          "definition": "Var(X) = E[(X - μ)²] = (1/n)Σᵢ (xᵢ - μ)². The average squared deviation from the mean. Always non-negative. Measures how much the data 'spreads' along a single dimension."
+        },
+        {
+          "term": "Standard deviation",
+          "definition": "σ = √Var(X). The square root of variance, restoring the same units as the original data. A more interpretable measure of spread than variance, but variance is preferred mathematically because it is additive for independent quantities."
+        },
+        {
+          "term": "Covariance",
+          "definition": "Cov(X,Y) = E[(X-μₓ)(Y-μᵧ)] = (1/n)Σᵢ (xᵢ-μₓ)(yᵢ-μᵧ). Measures the degree to which two dimensions vary together. Positive: both increase together. Negative: one increases as the other decreases. Zero: no linear relationship."
+        },
+        {
+          "term": "Centering",
+          "definition": "Subtracting the mean from every data point: x̃ᵢ = xᵢ - μ. After centering, the mean of the dataset is zero. Centering is necessary before computing covariance to ensure we measure shape independent of location."
+        }
+      ]
+    },
+    "mathematics": [
+      {
+        "id": "eq-mean",
+        "label": "Mean (expected value)",
+        "latex": "\\mu = E[X] = \\frac{1}{n} \\sum_{i=1}^{n} x_i",
+        "symbols": {
+          "μ": "the mean — the average value, also called the expected value",
+          "E[X]": "expectation notation — 'the expected value of X' — for empirical data, this is the sample average",
+          "n": "the number of data points in the dataset",
+          "xᵢ": "the i-th data point (a scalar if we are computing the mean of one dimension, a vector if we are computing the mean vector)",
+          "Σ": "sum over all n data points"
+        },
+        "plainExplanation": "The mean is the sum of all values divided by the number of values — the familiar arithmetic average. For vector data, compute the mean independently in each dimension: μ = [mean of all x₁ values, mean of all x₂ values, ..., mean of all xₙ values].",
+        "whyNeeded": "The mean defines the 'centre' of the data cloud. Without the mean, we cannot define deviations (xᵢ - μ), and without deviations we cannot compute variance or covariance. The mean is the necessary starting point for all second-order statistics.",
+        "ifRemoved": "Without centering (subtracting the mean), the covariance formula would conflate the position of the data cloud with its shape. Two datasets with the same shape but different positions would have different covariances, which would be misleading.",
+        "encourages": "Thinking of the mean as the single vector that best represents the entire dataset in the absence of any other information.",
+        "doesNotGuarantee": "That the mean point is representative of any actual data point, or that it lies in a 'typical' region of the distribution. For multimodal distributions, the mean may lie in a region of low data density."
+      },
+      {
+        "id": "eq-variance",
+        "label": "Variance",
+        "latex": "\\text{Var}(X) = E[(X - \\mu)^2] = \\frac{1}{n} \\sum_{i=1}^{n} (x_i - \\mu)^2",
+        "symbols": {
+          "Var(X)": "variance of X — a non-negative scalar measuring spread",
+          "(X - μ)": "the deviation of each data point from the mean — how far each point is from centre",
+          "(X - μ)²": "squared deviation — squaring makes all deviations positive and penalises large deviations more heavily",
+          "E[...]": "expectation — average over the dataset",
+          "μ": "the mean of X"
+        },
+        "plainExplanation": "Variance asks: on average, how far does each data point deviate from the centre? We square the deviations for two reasons: (1) to make them non-negative (so positive and negative deviations don't cancel), and (2) to penalise large deviations more heavily than small ones. The result is in squared units (e.g., if X is in metres, Var(X) is in m²), which is why we sometimes take the square root to get standard deviation.",
+        "whyNeeded": "Variance quantifies the 'spread' of data along a single dimension. PCA finds the directions of MAXIMUM variance — so understanding what variance is, is literally understanding what PCA is looking for.",
+        "ifRemoved": "Without variance, we cannot rank directions by how much data spreads along them, and thus we cannot define principal components. We also cannot normalise features (standardise to unit variance), which is often needed before applying dimensionality reduction.",
+        "encourages": "Asking 'how much does the data vary in this direction?' as the first question when examining a dataset or a learned representation.",
+        "doesNotGuarantee": "That high-variance directions are meaningful or interpretable. Variance is a statistical property of the data; interpretability of the direction is a separate empirical question."
+      },
+      {
+        "id": "eq-covariance",
+        "label": "Covariance",
+        "latex": "\\text{Cov}(X, Y) = E[(X - \\mu_X)(Y - \\mu_Y)] = \\frac{1}{n} \\sum_{i=1}^{n} (x_i - \\mu_X)(y_i - \\mu_Y)",
+        "symbols": {
+          "Cov(X,Y)": "covariance between dimensions X and Y — can be positive, negative, or zero",
+          "(X - μₓ)": "deviation of X from its mean",
+          "(Y - μᵧ)": "deviation of Y from its mean",
+          "μₓ": "mean of dimension X",
+          "μᵧ": "mean of dimension Y",
+          "(xᵢ - μₓ)(yᵢ - μᵧ)": "the product of the deviations for the i-th data point — positive when both are above or both are below their means; negative when one is above and the other is below"
+        },
+        "plainExplanation": "Covariance measures whether two dimensions 'go together'. For each data point, compute how much it deviates from the x-mean and how much it deviates from the y-mean, then multiply these deviations together. If a point is above-average in both x AND y (both deviations are positive), the product is positive. If a point is above-average in x but below-average in y (deviations are opposite sign), the product is negative. Average all these products: positive average means the dimensions tend to go up together; negative average means they oppose each other.",
+        "whyNeeded": "Covariance is the key to understanding the geometric shape of a data cloud. If all pairwise covariances are zero, the cloud is 'axis-aligned' (an ellipse with axes along the coordinate directions). If covariances are nonzero, the cloud is 'tilted' and the principal directions are not the coordinate axes — which is precisely the situation PCA is designed to handle.",
+        "ifRemoved": "Without covariance, we would only see the variance in each coordinate axis independently, missing any information about the tilted, correlated structure of the data cloud. PCA would be impossible to motivate or define.",
+        "encourages": "Thinking of datasets not as individual points but as joint distributions with structure in multiple dimensions simultaneously.",
+        "doesNotGuarantee": "Statistical independence. Cov(X,Y) = 0 means X and Y have no LINEAR relationship, but they can still have a complex nonlinear relationship (e.g., Y = X² has zero covariance with X for symmetric distributions but is completely determined by X)."
+      }
+    ],
+    "methodComparison": [
+      {
+        "question": "Should we use population variance (divide by n) or sample variance (divide by n-1)?",
+        "methods": [
+          {
+            "name": "Population variance (1/n)",
+            "answer": "Assumes you have the COMPLETE population of data. When applied to a sample, this estimator is biased — it systematically underestimates the true variance, because a sample mean is always closer to the sample points than the true population mean is. Used in machine learning where the dataset IS the object of study (not a sample from a larger distribution)."
+          },
+          {
+            "name": "Sample variance (1/(n-1))",
+            "answer": "The unbiased estimator of population variance when you have a SAMPLE from a larger distribution. Dividing by n-1 (Bessel's correction) compensates for the bias introduced by using the sample mean instead of the true population mean. Used in statistics when the goal is to infer properties of the population from a sample."
+          }
+        ],
+        "practicalImplication": "In machine learning and PCA, we typically use 1/n (or equivalently, compute the covariance matrix as XᵀX/n after centering). The distinction matters only for very small datasets. For the large datasets typical in neural network research, the difference between 1/n and 1/(n-1) is negligible. Always check which convention a library uses — numpy uses 1/n by default in np.cov with bias=True, but 1/(n-1) by default with bias=False."
+      }
+    ],
+    "evidence": [
+      {
+        "claim": "The covariance structure of neural network activations reveals systematic patterns of co-activation that reflect the model's learned feature structure.",
+        "claimType": "course_interpretation",
+        "label": "[Course Interpretation]",
+        "sourceId": null,
+        "section": null,
+        "verified": true,
+        "paraphrase": "When we compute the covariance matrix of neural network activations across a large corpus, the resulting matrix encodes which neurons tend to activate together. This structure reflects — in an entangled way — the features the model has learned to detect, and is the starting point for methods like PCA and sparse autoencoders that attempt to disentangle these features."
+      },
+      {
+        "claim": "Zero covariance does not imply statistical independence; two variables can have Cov(X,Y)=0 while being strongly statistically dependent.",
+        "claimType": "mathematical_result",
+        "label": "[Mathematical Result]",
+        "sourceId": null,
+        "section": null,
+        "verified": true,
+        "paraphrase": "The classic counterexample: let X ~ Uniform(-1, 1) and Y = X². Then E[XY] = E[X³] = 0 (by symmetry of X), so Cov(X,Y) = 0, yet Y is completely determined by X. This is a mathematical fact that severely limits the conclusions we can draw from covariance alone."
+      }
+    ],
+    "failureModes": [
+      {
+        "name": "Confusing zero covariance with statistical independence",
+        "mechanism": "Covariance only measures LINEAR relationships. If X and Y have a strong nonlinear relationship (e.g., Y = X²), their covariance can be zero while they are completely statistically dependent.",
+        "symptom": "Concluding that two neural features are 'unrelated' because their covariance is zero, when they may have a complex nonlinear relationship.",
+        "diagnosticTest": "Plot a scatter plot of the two variables. A 'U-shaped' or 'S-shaped' pattern would indicate nonlinear dependence despite zero covariance.",
+        "mitigation": "Use mutual information or rank-based correlation measures (Spearman's ρ) that can detect nonlinear relationships. For neural activations, visualise joint activation distributions directly.",
+        "setconcaRelevance": "If SetConCA's features have zero covariance in the residual stream but are nonlinearly dependent, PCA-based analysis will miss the relationship entirely. ICA (Phase 2) partially addresses this, but mutual information measures provide a more comprehensive test."
+      },
+      {
+        "name": "Interpreting high variance as high information",
+        "mechanism": "High variance in a direction means data spreads a lot in that direction — but the spread might reflect noise rather than signal. A noisy dimension with random errors has high variance, but the variance is pure noise.",
+        "symptom": "PCA prioritises high-variance directions, which may be directions where training data has a lot of irrelevant variation (e.g., artefacts of data collection) rather than meaningful signal.",
+        "diagnosticTest": "Compare the top PCA directions found on training data versus held-out test data. If the top components differ substantially between train and test, the high variance on training data may be overfitting to noise.",
+        "mitigation": "Cross-validate PCA by computing components on subsets of the data and checking stability. Use domain knowledge to assess whether high-variance directions correspond to meaningful structure.",
+        "setconcaRelevance": "In SetConCA analysis, applying PCA to the activation space will find the directions of highest variance in the training data. If training data has systematic biases (e.g., certain set compositions are overrepresented), the top PCA components may reflect those biases rather than the fundamental structure of the representations."
+      }
+    ],
+    "setconcaConnection": {
+      "relevance": "When we want to understand what SetConCA's encoder has learned, we will analyse the statistical structure of its activations — specifically the covariance matrix of the pooled set representations across many input sets. The mean tells us the 'typical' representation; the covariance matrix tells us the 'shape' of the representation cloud.",
+      "whichPart": "The covariance structure of SetConCA's pooled representations reflects which semantic dimensions tend to co-occur in the training data. If 'animal'-type sets and 'domestic pet'-type sets both appear frequently, these two directions will have positive covariance in the activation space.",
+      "whichDesignChoice": "If SetConCA uses a contrastive objective that explicitly pushes representations apart, it may reduce certain covariances in the representation space by forcing diverse set types to have different representations. This would appear as a lower-covariance activation cloud.",
+      "whichFailureExplained": "If the covariance matrix of SetConCA's activations is nearly diagonal (small off-diagonal covariances), it suggests each neuron is roughly independently encoding a different aspect of the input — which would be a sign of good disentanglement. If it has large off-diagonal covariances, the representations are highly entangled.",
+      "proposedExperiment": "Compute and visualise the covariance matrix of SetConCA's pooled activations across 10,000 diverse input sets. Use a colour map to show which pairs of neurons have high positive or negative covariance. This directly reveals the degree of entanglement in the learned representations.",
+      "alternativeExplanation": "High covariance between two neurons might reflect a genuine semantic correlation in the data (some concepts truly co-occur) rather than a failure of the model to disentangle features. It is important to check whether the covariance structure matches the known correlational structure of the training domain before concluding the model is 'failing to disentangle'."
+    },
+    "exercises": [
+      {
+        "type": "prediction",
+        "prompt": "Predict the sign of Cov(X,Y) for this dataset: {[1,5], [2,4], [3,3], [4,2], [5,1]}. Do not compute — just look at the pattern. Then compute it to verify.",
+        "reveal": "Mean: μₓ = 3, μᵧ = 3. Deviations: x: [-2,-1,0,1,2], y: [2,1,0,-1,-2]. Products: [(-2)(2), (-1)(1), (0)(0), (1)(-1), (2)(-2)] = [-4,-1,0,-1,-4]. Mean = -10/5 = -2.0. Cov = -2.0, which is NEGATIVE. When x goes up, y goes down — perfectly anti-correlated. The scatter plot would show a perfectly downward-sloping line."
+      },
+      {
+        "type": "construct",
+        "prompt": "Construct a dataset of 4 two-dimensional points where: (a) Var(X) = 4, Var(Y) = 1, and (b) Cov(X,Y) = 0 (the two dimensions are uncorrelated). Verify your answer by computing all three statistics.",
+        "reveal": "One solution: {[2,1], [-2,1], [2,-1], [-2,-1]}. Mean: [0,0]. Centered points = same. Var(X) = (4+4+4+4)/4 = 4 ✓. Var(Y) = (1+1+1+1)/4 = 1 ✓. Cov(X,Y) = [(2)(1)+(−2)(1)+(2)(−1)+(−2)(−1)]/4 = [2−2−2+2]/4 = 0 ✓. The data forms a rectangle aligned with the axes — high x-spread, low y-spread, no correlation."
+      },
+      {
+        "type": "diagnose",
+        "prompt": "A colleague computes the covariance between the first and second components of GPT-4's residual stream activations and finds Cov = 0.003, concluding that 'these two dimensions are completely independent'. Identify two separate problems with this conclusion.",
+        "reveal": "Problem 1: Zero covariance only means NO LINEAR relationship. Neurons 1 and 2 could have a strong nonlinear dependency (e.g., neuron 2 activates strongly when neuron 1 is either very large or very small, but not in between) that covariance would completely miss. Problem 2: Covariance is computed in the NEURON BASIS, which is an arbitrary coordinate system. In a different basis (e.g., the PCA basis), the same activation data might show completely different covariance structure. Saying 'dimension 1 and dimension 2 are independent' depends entirely on which basis you are using."
+      }
+    ],
+    "masteryQuestions": [
+      {
+        "type": "open",
+        "prompt": "Construct a dataset of 6 two-dimensional points where the variance in both dimensions is identical (Var(X) = Var(Y) = 4) but the covariance is maximally positive (Cov(X,Y) = 4). What does this dataset look like geometrically? What does the covariance tell you about the shape of the data cloud?",
+        "rubric": [
+          "Constructs a valid dataset satisfying the constraints, verifying all three statistics numerically",
+          "Recognises that Cov(X,Y) = Var(X) = Var(Y) = 4 means the data lies exactly on a line of slope 1 through the origin (up to centering), because all variance is shared between dimensions",
+          "Describes the geometric shape: the data cloud is elongated along the 45° diagonal (equal parts x and y direction), with no spread perpendicular to this diagonal",
+          "Explains that maximum covariance (= the common variance) occurs when the data lies on a 1D subspace, meaning the effective dimensionality is 1 despite the data being defined in 2D"
+        ],
+        "badVersion": "What is the formula for covariance?",
+        "goodVersion": "Construct a dataset where the covariance between two dimensions equals the variance of each dimension, and explain what this reveals about the geometric shape of the data cloud."
+      }
+    ],
+    "researchWorksheet": {
+      "claim": "The principal components of neural network activations capture the most statistically salient directions of variation, and therefore reveal the most important learned features.",
+      "requiredAssumptions": "That the most statistically salient directions of variation correspond to the most semantically important features; that the feature structure is linearly separable (so linear PCA can find it); that the dataset used to compute activations is representative of the model's true learned representations.",
+      "evidenceProvided": "PCA of activation spaces in studied networks sometimes produces interpretable components (e.g., a 'positional encoding' direction, a 'sentiment' direction in language models). These are typically demonstrated by showing that the top components correlate with known input properties.",
+      "strongestAlternativeExplanation": "The directions of maximum variance in activations may reflect the statistical structure of the training data (e.g., common topics or common syntactic patterns) rather than the model's intentional feature structure. Variance is a property of the data-model interaction, not a direct window into the model's 'representations'.",
+      "missingControl": "Applying the same PCA analysis to a randomly-initialized (untrained) model evaluated on the same corpus, to check what baseline structure arises from the network architecture alone before training.",
+      "closestBaseline": "PCA of a randomly shuffled version of the activation matrix, which preserves marginal statistics but destroys correlation structure.",
+      "falsifyingResult": "If the top PCA components of the activations correlated no better with interpretable concepts than randomly chosen directions in the same space, the claim would be substantially weakened.",
+      "setconcaImplication": "When we apply PCA to SetConCA's activations, we are computing directions of maximum variance in the covariance matrix of those activations. If SetConCA's training has successfully learned to represent diverse set properties, the top PCA components should correspond to major axes of semantic variation in the training data. If they do not, it suggests the covariance structure is dominated by dataset artifacts rather than learned features.",
+      "proposedExperiment": "Compute PCA of SetConCA's pooled activations. For each top-10 principal component, compute the correlation between the projection of each set representation onto that component and a set of manually-annotated set properties (e.g., 'average size of members', 'taxonomic category', 'abstractness'). Report both the correlation magnitude and its statistical significance after correction for multiple comparisons."
+    }
+  },
+  "bridgeToNext": {
+    "nextId": "p01-l04",
+    "text": "We have computed mean, variance, and covariance for individual pairs of dimensions. But a real dataset may have hundreds or thousands of dimensions — and we need to capture ALL pairwise covariances simultaneously. The covariance matrix does exactly this: it packs all n² pairwise covariances (and variances) into a single n×n matrix. This matrix has remarkable mathematical properties — it is symmetric, and it is positive semi-definite — that make it the foundation for eigenvector analysis and PCA. The next lesson builds this matrix and explores what it tells us about the geometry of the data cloud."
+  },
+  "papers": []
+}

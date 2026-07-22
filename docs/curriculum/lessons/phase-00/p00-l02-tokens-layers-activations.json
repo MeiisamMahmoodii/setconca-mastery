@@ -1,0 +1,242 @@
+{
+  "id": "p00-l02",
+  "phase": 0,
+  "lesson": 2,
+  "title": "Tokens, layers, and activations",
+  "estimatedMinutes": 20,
+  "status": "complete",
+  "prerequisites": ["p00-l01"],
+  "learningObjectives": [
+    "Explain what tokenization does and why the vocabulary is not the same as words",
+    "Describe an embedding as a learned lookup table mapping token IDs to real-valued vectors",
+    "Explain what an activation vector is and why it encodes more than the token identity",
+    "Understand why geometrically similar tokens (cosine similarity) tend to be semantically related, and why this relationship is imperfect"
+  ],
+  "sections": {
+    "whyThisLesson": {
+      "text": "In the previous lesson, you saw the residual stream as a vector that accumulates information across layers. But we glossed over a fundamental question: how does a word like 'Paris' become a vector in the first place, and why does that vector encode something meaningful? This lesson answers those questions. The concepts here — tokens, embeddings, and activation vectors — are the raw material of everything in this curriculum. Once you understand them concretely, you will have the vocabulary to discuss representations, features, and concepts with precision."
+    },
+    "bridgeFrom": {
+      "text": "In lesson p00-l01, we saw that the residual stream starts as a token embedding h_0 and grows richer with each layer. We left open the question of what h_0 is and why it encodes anything meaningful about the word it represents."
+    },
+    "intuition": {
+      "analogy": "Think of an activation vector as a GPS coordinate in a very high-dimensional space. Just as a GPS coordinate (latitude, longitude, altitude) locates a physical place on Earth, an activation vector locates a token — or a concept, or a context — in a learned conceptual space. Cities that are geographically close tend to have similar coordinates. Similarly, tokens that are contextually and semantically related end up with activation vectors that are close together in this high-dimensional space. 'Paris' and 'London' are both large European capital cities, so their activation vectors are neighbours. 'Paris' and 'banana' are not, so their vectors are distant.",
+      "analogyLimit": "GPS coordinates are grounded in physical space, which has a fixed, pre-specified meaning for every dimension. Activation space is not like this: the dimensions of an activation vector have no pre-assigned meaning. Their meaning is entirely emergent — determined by what the model found useful to track during training. Furthermore, GPS coordinates are unique and stable across contexts, while activation vectors change depending on the surrounding tokens (at layers > 0). The 'Paris' in 'Paris Hilton' and the 'Paris' in 'Paris, France' will have different layer-3 activations even though they share a token embedding.",
+      "text": "A language model processes text as a sequence of tokens. Tokens are the basic units of input: they may be words, word-pieces, or individual characters depending on the tokenizer. Each token is mapped to an integer ID, and that ID is looked up in an embedding table to retrieve a vector in R^d_model. This vector is the starting residual stream state. After each layer, the residual stream vector for that token changes — it is updated by the attention and MLP computations of that layer. The vector at any given layer is called an 'activation vector' because it is the activation of the model at that position and layer. By layer L (the last layer), the activation vector is a rich summary of the token's identity combined with all the contextual information the model has gathered."
+    },
+    "toyExample": {
+      "description": "Compare activation vectors for three tokens — 'Paris', 'London', and 'banana' — using a simplified 3-dimensional embedding space. We use made-up but plausible numbers to illustrate similarity.",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Look up the layer-0 (embedding) vectors for each token from the embedding table.",
+          "result": "Paris:  [0.82, 0.71, -0.44]\nLondon: [0.79, 0.68, -0.41]\nBanana: [-0.31, 0.55, 0.82]",
+          "insight": "Even at layer 0, 'Paris' and 'London' are already close together — their embeddings are similar because they co-occur in similar linguistic contexts during training (e.g., 'the capital of France/England is...', 'a flight to Paris/London'). 'Banana' has a very different embedding because it appears in completely different contexts."
+        },
+        {
+          "step": 2,
+          "action": "Compute cosine similarity between pairs: cos(Paris, London), cos(Paris, banana).",
+          "result": "cos(Paris, London) = (0.82*0.79 + 0.71*0.68 + (-0.44)*(-0.41)) / (|Paris| * |London|) ≈ (0.648 + 0.483 + 0.180) / (1.07 * 1.04) ≈ 1.311 / 1.113 ≈ 0.98\ncos(Paris, banana) = (0.82*(-0.31) + 0.71*0.55 + (-0.44)*0.82) / ... ≈ (-0.254 + 0.391 - 0.361) / (1.07 * 1.01) ≈ -0.224 / 1.081 ≈ -0.21",
+          "insight": "Paris and London have cosine similarity ≈ 0.98 (nearly identical direction). Paris and banana have cosine similarity ≈ -0.21 (nearly orthogonal or slightly opposed). Cosine similarity measures the angle between vectors, not their magnitude — it is the standard metric for comparing word/token embeddings."
+        },
+        {
+          "step": 3,
+          "action": "Now look at layer-2 activations for 'Paris' in two different contexts: 'The city of Paris is...' vs. 'Paris Hilton attended...'.",
+          "result": "Paris (city context):  [1.4, 1.9, 0.1]\nParis (person context): [0.6, 1.1, 1.3]",
+          "insight": "The layer-2 activations are different even though the token ID is the same. Context has changed what the residual stream encodes. This is the key power of deep processing: later activations are context-sensitive, not just token-identity-sensitive. The model disambiguates 'Paris' based on surrounding words."
+        },
+        {
+          "step": 4,
+          "action": "Compute cosine similarity between the two 'Paris' context activations at layer 2.",
+          "result": "cos(Paris-city, Paris-person) ≈ 0.61",
+          "insight": "Even at layer 2, these two senses of 'Paris' are less similar than 'Paris' and 'London' at layer 0. This demonstrates that activation vectors at deeper layers encode contextual meaning, not just surface token identity. A classifier trained on layer-2 activations could likely distinguish the city from the person — this is the basic principle behind linear probing."
+        }
+      ]
+    },
+    "visual": {
+      "id": "vector-space",
+      "question": "How do tokens cluster in activation space, and does the cluster structure match your semantic intuitions?",
+      "description": "The interactive shows a 2D projection (via PCA) of embedding vectors for a set of tokens. Hover over a token to see its nearest neighbours by cosine similarity. Use the layer slider to project activations from different layers — observe how clusters shift and sharpen as you move from layer 0 (raw embeddings) to later layers (context-sensitive activations). Try adding 'Paris', 'London', 'Tokyo', 'banana', and 'apple' and see how the geometry matches your expectations."
+    },
+    "technical": {
+      "text": "Tokenization maps raw text to a sequence of integer IDs using a fixed algorithm (e.g. byte-pair encoding, BPE). The vocabulary size |V| is typically 32,000–100,000. Each token ID i is looked up in an embedding matrix W_E in R^{|V| x d_model}, retrieving row W_E[i] — this is the token embedding h_0. After each layer l, the activation for token position t is h_{t,l} in R^{d_model}. This vector encodes everything the model has computed about that token given its context up to layer l. When we say 'the activation of Paris at layer 3', we mean the specific vector h_{t=pos(Paris), l=3} produced by running the model up to layer 3 on a specific input containing 'Paris' at position t. Crucially, this is a different vector for every input context — it is not a fixed property of the token.",
+      "definitions": [
+        {
+          "term": "Token",
+          "definition": "The basic unit of text input to a language model. Tokens may be whole words, word fragments (e.g. '##ing'), or individual characters, depending on the tokenizer. The model's vocabulary is the fixed set of all possible tokens."
+        },
+        {
+          "term": "Embedding",
+          "definition": "A learned real-valued vector representation of a token. The embedding table W_E maps each token ID to a vector in R^{d_model}. These vectors are trained end-to-end and encode statistical regularities — tokens that appear in similar contexts get similar embeddings."
+        },
+        {
+          "term": "Activation vector",
+          "definition": "The residual stream vector h_{t,l} for a specific token position t at a specific layer l. Unlike the embedding (which is fixed per token), the activation vector is context-dependent: the same token at the same position produces different activation vectors in different input sentences."
+        },
+        {
+          "term": "Cosine similarity",
+          "definition": "A measure of the angle between two vectors: cos(a, b) = (a · b) / (|a| |b|). It ranges from -1 (perfectly opposed) to 1 (identical direction). Used to compare word/token embeddings because direction, not magnitude, encodes semantic content."
+        }
+      ]
+    },
+    "mathematics": [
+      {
+        "id": "eq-embedding-lookup",
+        "label": "Embedding lookup",
+        "latex": "h_0 = W_E[\\text{id}(t)]",
+        "symbols": {
+          "h_0": "Initial residual stream vector (token embedding); a vector in R^{d_model}",
+          "W_E": "Embedding matrix; a learned matrix in R^{|V| x d_model} where each row is the embedding for one token",
+          "\\text{id}(t)": "The integer token ID of token t; an integer in {0, 1, ..., |V|-1}"
+        },
+        "plainExplanation": "To get the starting vector for a token, look up its row in the embedding table. The embedding table is just a matrix — the i-th row is the vector for token i.",
+        "whyNeeded": "Without the embedding, the model has no way to convert discrete token IDs (integers) into a continuous space where mathematical operations (dot products, additions) are meaningful. The embedding lookup is the bridge from symbolic text to geometric space.",
+        "ifRemoved": "Without the embedding matrix, you would have to represent tokens as one-hot vectors (length 100,000 with a single 1), which are extremely sparse and carry no information about token similarity. The model would have to learn everything from scratch for every token with no geometric structure to exploit.",
+        "encourages": "The embedding encourages tokens that appear in similar contexts to have similar vectors, because the model is trained to minimise prediction error — and predicting similar things for similar tokens is efficient.",
+        "doesNotGuarantee": "It does not guarantee that the embedding dimensions correspond to human-interpretable features. The geometry is useful but opaque without further analysis."
+      },
+      {
+        "id": "eq-cosine-similarity",
+        "label": "Cosine similarity between activation vectors",
+        "latex": "\\text{sim}(a, b) = \\frac{a \\cdot b}{\\|a\\| \\|b\\|}",
+        "symbols": {
+          "a": "First activation vector; a vector in R^d",
+          "b": "Second activation vector; a vector in R^d",
+          "a \\cdot b": "Dot product: sum of element-wise products",
+          "\\|a\\|": "Euclidean norm (length) of vector a: sqrt(sum of squared components)"
+        },
+        "plainExplanation": "Cosine similarity is the cosine of the angle between two vectors. If two vectors point in the same direction, cosine similarity is 1. If they are perpendicular, it is 0. If they point in opposite directions, it is -1.",
+        "whyNeeded": "We use cosine similarity rather than Euclidean distance because embeddings are often of different magnitudes (some tokens are rarer and have smaller norms). Normalising by the norms removes this confound and focuses on directional similarity, which is what encodes semantic content.",
+        "ifRemoved": "If you use raw Euclidean distance instead of cosine similarity, you may find that less frequent tokens (with smaller embedding norms) appear closer to many things simply because their norms are small — a misleading artefact.",
+        "encourages": "Cosine similarity encourages us to think of meaning as direction in activation space — a framing that will be central to the definition of 'feature' in lesson p00-l04.",
+        "doesNotGuarantee": "High cosine similarity does not guarantee semantic similarity — it only guarantees that the model placed these vectors in similar directions, which is an approximation to semantic similarity derived from co-occurrence statistics."
+      }
+    ],
+    "methodComparison": [
+      {
+        "question": "What is the best way to measure the similarity between two tokens in a language model?",
+        "methods": [
+          {
+            "name": "Embedding cosine similarity (layer 0)",
+            "answer": "Fast and simple. Captures distributional similarity from training. Does not capture context — 'Paris' in 'Paris Hilton' gets the same similarity to 'London' as 'Paris' in 'Paris, France'. Useful for vocabulary-level analysis."
+          },
+          {
+            "name": "Layer-l activation cosine similarity",
+            "answer": "Context-sensitive. The same token in different contexts will have different similarities to other tokens. More expensive (requires a forward pass). Better for understanding what the model computes, not just what words mean on average."
+          },
+          {
+            "name": "Probing classifier accuracy",
+            "answer": "Train a linear classifier to predict property P from activation vectors. If it succeeds, the property is linearly encoded in the activation space. This is an indirect measure of semantic similarity but provides causal-ish evidence about what information is encoded."
+          }
+        ],
+        "practicalImplication": "For SetConCA analysis, you typically want layer-l activation similarity (not embedding similarity) because SetConCA operates on activations that include contextual information — the whole point is to capture concept-level signals that emerge from context."
+      }
+    ],
+    "evidence": [
+      {
+        "claim": "Word embeddings trained on large text corpora encode semantic relationships as geometric relationships — e.g. the direction from 'king' to 'queen' is similar to the direction from 'man' to 'woman'.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "mikolov-word2vec-2013",
+        "section": "Section 4",
+        "verified": true,
+        "paraphrase": "In the evaluated setting, word2vec embeddings were found to encode analogical relationships as linear vector offsets. This is consistent with the view that semantic relationships correspond to geometric structure in embedding space, but does not prove that all semantic relationships are linear or that all directions are interpretable."
+      },
+      {
+        "claim": "Contextualised embeddings (from deep transformer layers) are more useful for downstream tasks than static embeddings (layer 0).",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "devlin-bert-2018",
+        "section": "Section 4",
+        "verified": true,
+        "paraphrase": "In the evaluated settings, using contextualised representations from deeper layers of BERT significantly outperformed static embeddings on NLP benchmarks. This is consistent with the view that deeper activations encode richer contextual information, but the specific layer that is most useful varies by task."
+      },
+      {
+        "claim": "The same token can have substantially different activation vectors in different contexts, indicating that later-layer activations encode context, not just token identity.",
+        "claimType": "course_interpretation",
+        "label": "[Course Interpretation]",
+        "sourceId": null,
+        "section": null,
+        "verified": true,
+        "paraphrase": "This follows directly from the architecture: the attention mechanism allows every token's representation to be influenced by every other token in the context. Therefore, the same token in a different context sentence will receive different attention-mediated updates and end up with different activation vectors."
+      }
+    ],
+    "failureModes": [
+      {
+        "name": "Treating embeddings as fixed meanings",
+        "mechanism": "Beginners sometimes assume that the token embedding (layer 0) is the model's 'meaning' for a word. In fact, the embedding is just a starting point that gets heavily modified by each layer.",
+        "symptom": "Analysing only embeddings and drawing conclusions about what the model 'knows' about concepts — without recognising that later layers may completely change the representation.",
+        "diagnosticTest": "Compare cosine similarity of 'Paris' and 'London' at layer 0 vs. layer 6. If they change substantially, the embedding alone was not capturing the model's full representation.",
+        "mitigation": "Always specify the layer when discussing activations. 'The layer-0 embedding of Paris' and 'the layer-8 activation of Paris' are very different things.",
+        "setconcaRelevance": "SetConCA operates on activations at a chosen layer, not on raw embeddings. The layer choice is a significant design decision."
+      },
+      {
+        "name": "Assuming cosine similarity equals semantic similarity",
+        "mechanism": "Cosine similarity measures geometric proximity in a learned space. That space is shaped by training objectives, which may not perfectly align with human semantic judgements.",
+        "symptom": "Two tokens with high cosine similarity turn out to be used differently by the model; or two tokens that are semantically related to a human have low cosine similarity.",
+        "diagnosticTest": "Take a pair with high cosine similarity (e.g. > 0.9). Can you find contexts where the model treats them very differently (e.g. one is used as a subject, the other as an object)? If so, cosine similarity was misleading.",
+        "mitigation": "Treat cosine similarity as a hypothesis-generating tool, not a ground truth. Always validate geometric similarity claims with functional evidence (probing, interventions).",
+        "setconcaRelevance": "SetConCA uses activation geometry to identify related tokens. This means its outputs are only as meaningful as the geometric structure of the underlying activations."
+      }
+    ],
+    "setconcaConnection": {
+      "relevance": "SetConCA receives a set of activation vectors as input. Understanding what those vectors are — context-sensitive, high-dimensional, geometrically structured — is essential for understanding what SetConCA can and cannot do with them.",
+      "whichPart": "The input representation: SetConCA takes {h_{l,t_1}, ..., h_{l,t_k}} — a set of activation vectors, one per token in a chosen set, at a chosen layer.",
+      "whichDesignChoice": "The choice to process a SET of activations (not a single activation) is motivated by the observation that semantic concepts are better defined by a cluster of related tokens than by any single token's activation.",
+      "whichFailureExplained": "If SetConCA processed activations independently (one token at a time), it would miss the relational structure between token representations — the fact that 'Paris' and 'London' should activate similar concept-level features.",
+      "proposedExperiment": "Take 10 tokens that are semantically related (e.g. all French cities) and 10 that are not. Extract their layer-6 activations. Do the related tokens form a tighter cluster (lower mean pairwise cosine distance) than the unrelated tokens? This tests whether the activation space has the geometric structure that SetConCA requires.",
+      "alternativeExplanation": "An alternative to using raw activation vectors would be to use sparse autoencoder feature activations (the sparse code) as the representation. This would give a different geometric structure — potentially more aligned with human-interpretable concepts. Whether this is better or worse than raw activations is an open empirical question."
+    },
+    "exercises": [
+      {
+        "type": "prediction",
+        "prompt": "Predict the cosine similarity (approximately) between the layer-0 embeddings of: (a) 'dog' and 'puppy', (b) 'dog' and 'cat', (c) 'dog' and 'democracy'. Give a rough ordering from most to least similar and justify your prediction.",
+        "reveal": "Expected ordering: dog/puppy > dog/cat > dog/democracy. 'Puppy' and 'dog' appear in extremely similar contexts (both are common in sentences about pets, training, food) and 'puppy' is definitionally a young dog. 'Cat' and 'dog' also appear in many similar contexts (pets, animals, care) but cats and dogs are also contrasted. 'Democracy' and 'dog' share almost no linguistic context. Typical cosine similarities in a trained model: dog/puppy ≈ 0.85, dog/cat ≈ 0.70, dog/democracy ≈ 0.05. Note that 'cat' and 'dog' are more similar than you might expect because of shared contexts — this is a limitation of pure distributional semantics."
+      },
+      {
+        "type": "construct",
+        "prompt": "Describe a specific pair of tokens where cosine similarity at layer 0 would be HIGH but where you would expect their layer-8 activations to be DIFFERENT. Explain what mechanism produces this difference.",
+        "reveal": "A good example: 'lead' (the metal) and 'lead' (to guide) — but these are different tokens in most tokenizers. Better: 'bank' (financial) in 'I went to the bank to deposit money' vs. 'bank' (river) in 'I sat on the bank of the river'. At layer 0, both 'bank' tokens have the same embedding (identical cosine similarity = 1.0). But by layer 8, the attention mechanism has allowed surrounding context ('deposit money' vs. 'river') to update each 'bank' representation differently, resulting in very different activation vectors. This is word sense disambiguation emergent from transformer architecture."
+      },
+      {
+        "type": "diagnose",
+        "prompt": "A researcher computes cosine similarity between activation vectors at layer 0 for all pairs of tokens in the vocabulary and reports: 'I have mapped the model's semantic space.' What is wrong with this claim?",
+        "reveal": "Three problems: (1) Layer 0 is the raw embedding — it encodes distributional statistics from training but not the model's full contextual understanding. (2) Token-level analysis ignores context: the same token in different sentences has different activations at deeper layers. (3) The full semantic space is context-dependent and cannot be fully characterised by pairwise token embedding comparisons — you would need to sample from the space of contexts, not just the vocabulary."
+      }
+    ],
+    "masteryQuestions": [
+      {
+        "type": "open",
+        "prompt": "A student says: 'I looked at the embedding vectors for 1000 words and measured their cosine similarities. Words that are similar have high cosine similarity, so I have discovered the model's concept of similarity.' Provide a thorough critique of this claim, and propose a more rigorous approach to the same goal.",
+        "rubric": [
+          "Identifies the layer-0 vs. contextualised activations problem: embeddings are context-free, not the model's full representation",
+          "Identifies the distributional vs. semantic gap: cosine similarity measures co-occurrence patterns, not necessarily human-meaningful semantic similarity",
+          "Identifies that 'the model's concept of similarity' implies the model uses this geometry causally — which requires intervention experiments, not just correlation",
+          "Proposes a more rigorous approach, such as: using layer-l contextualised activations across many input sentences, validating geometric similarity with probing or steering experiments, or using causal interventions"
+        ],
+        "badVersion": "The student is right because high cosine similarity means the words are similar to the model.",
+        "goodVersion": "This claim conflates three distinct things: (1) distributional similarity (words that appear in similar contexts), (2) geometric proximity in embedding space (which approximates distributional similarity), and (3) the model's internal concept of similarity (which would require knowing how the model uses these representations). Layer-0 embeddings are context-free — the model may represent 'Paris' very differently at layer 8 depending on whether the context is geographic or celebrity-focused. Furthermore, even if geometric proximity matches human judgements, we have not established that the model uses this geometry to make decisions — it might use entirely different dimensions for its actual computations. A more rigorous approach would extract layer-l contextualised activations across diverse input contexts, validate geometric clusters with probing classifiers (do vectors in the same cluster trigger the same downstream behaviour?), and test causal hypotheses by intervening on activations."
+      }
+    ],
+    "researchWorksheet": {
+      "claim": "The cosine similarity between activation vectors at a given layer provides a meaningful measure of semantic relatedness between tokens in that context.",
+      "requiredAssumptions": "Assumes that semantic relatedness is captured by geometric proximity in the model's representation space. Assumes that the model's learned geometry aligns with human semantic judgements. Assumes that direction (not magnitude) is the right metric.",
+      "evidenceProvided": "Empirically, tokens that humans rate as semantically similar tend to have higher cosine similarity in transformer activations than tokens rated as dissimilar. This is consistent with the claim but does not establish that geometric proximity equals semantic proximity for all cases.",
+      "strongestAlternativeExplanation": "Cosine similarity might measure syntactic role similarity rather than semantic similarity — 'quickly' and 'slowly' are very similar syntactically (both adverbs) and in terms of co-occurrence patterns, so they have high cosine similarity, but they are semantic opposites.",
+      "missingControl": "We would want a comparison: does cosine similarity in activation space predict human semantic similarity judgements better than a purely distributional baseline (like n-gram co-occurrence counts)?",
+      "closestBaseline": "Distributional semantic models (word2vec, GloVe) make the same claim for static embeddings. Their success and failures provide a baseline expectation for transformer embeddings.",
+      "falsifyingResult": "If a systematic set of human-judged semantic pairs had consistently lower cosine similarity than human-judged dissimilar pairs, the claim would be falsified. In practice, exceptions abound (antonyms are often geometrically close).",
+      "setconcaImplication": "If cosine similarity is an imperfect proxy for semantic relatedness, then grouping tokens by activation geometry (as SetConCA implicitly does) may not produce semantically coherent groups. This is a limitation SetConCA must be aware of.",
+      "proposedExperiment": "Sample 100 pairs of tokens rated 'highly similar' and 100 rated 'highly dissimilar' by humans (from a dataset like SimLex-999). Measure cosine similarity of their activation vectors at each layer. Plot the correlation between human rating and cosine similarity by layer. Does the correlation increase with depth? Does it peak and then decrease at the final layer?"
+    }
+  },
+  "bridgeToNext": {
+    "nextId": "p00-l03",
+    "text": "We now know that activations are high-dimensional vectors that encode something about tokens and their contexts. But what exactly does it mean to 'encode' something? When we say the activation for 'Paris' at layer 8 'represents' the concept of a European capital city, what is the technical content of that claim? In the next lesson, we make the notion of 'representation' precise — and discover that it has important nuances that matter for interpretability research."
+  },
+  "papers": [
+    "mikolov-word2vec-2013",
+    "devlin-bert-2018",
+    "vaswani-attention-2017"
+  ]
+}

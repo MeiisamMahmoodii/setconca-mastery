@@ -1,0 +1,475 @@
+[
+  {
+    "id": 0,
+    "title": "Phase 0 — Orientation",
+    "description": "Build the vocabulary for looking inside a neural network.",
+    "lessons": [
+      {
+        "id": "p00-l01",
+        "title": "What happens inside a language model?",
+        "file": "p00-l01-what-happens-inside-a-language-model.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p00-l02",
+        "title": "Tokens, layers, and activations",
+        "file": "p00-l02-tokens-layers-and-activations.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p00-l03",
+        "title": "Representations, features, and concepts",
+        "file": "p00-l03-representations-features-and-concepts.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p00-l04",
+        "title": "Why neurons are not concepts",
+        "file": "p00-l04-why-neurons-are-not-concepts.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p00-l05",
+        "title": "What SetConCA is trying to improve",
+        "file": "p00-l05-what-setconca-is-trying-to-improve.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      }
+    ],
+    "checkpoint": "Explain the phase's core objective, reproduce a toy comparison, and write its strongest limitation."
+  },
+  {
+    "id": 1,
+    "title": "Phase 1 — Geometry of representations",
+    "description": "Learn the geometry needed to measure, rotate, compress, and compare activation spaces.",
+    "lessons": [
+      {
+        "id": "p01-l01",
+        "title": "Vectors as locations and directions",
+        "file": "p01-l01-vectors-as-locations-and-directions.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p01-l02",
+        "title": "Distance, dot products, and cosine similarity",
+        "file": "p01-l02-distance-dot-products-and-cosine-similarity.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p01-l03",
+        "title": "Mean, variance, and covariance",
+        "file": "p01-l03-mean-variance-and-covariance.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p01-l04",
+        "title": "Projections, eigenvectors, and SVD",
+        "file": "p01-l04-projections-eigenvectors-and-svd.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p01-l05",
+        "title": "PCA: what it reveals and what it hides",
+        "file": "p01-l05-pca-what-it-reveals-and-what-it-hides.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      }
+    ],
+    "checkpoint": "Explain the phase's core objective, reproduce a toy comparison, and write its strongest limitation."
+  },
+  {
+    "id": 2,
+    "title": "Phase 2 — Latent sources and identifiability",
+    "description": "Understand when hidden causes can be recovered from observations—and when they cannot.",
+    "lessons": [
+      {
+        "id": "p02-l01",
+        "title": "Observed variables versus latent causes",
+        "file": "p02-l01-observed-variables-versus-latent-causes.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p02-l02",
+        "title": "Correlation is not independence",
+        "file": "p02-l02-correlation-is-not-independence.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p02-l03",
+        "title": "ICA and the cocktail-party problem",
+        "file": "p02-l03-ica-and-the-cocktail-party-problem.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p02-l04",
+        "title": "Identifiability: what can be uniquely recovered?",
+        "file": "p02-l04-identifiability-what-can-be-uniquely-recovered.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p02-l05",
+        "title": "Interventions and causal representation claims",
+        "file": "p02-l05-interventions-and-causal-representation-claims.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      }
+    ],
+    "checkpoint": "Explain the phase's core objective, reproduce a toy comparison, and write its strongest limitation."
+  },
+  {
+    "id": 3,
+    "title": "Phase 3 — Sparse representation learning",
+    "description": "See why overcomplete dictionaries need sparse codes and how SAEs trade fidelity for selectivity.",
+    "lessons": [
+      {
+        "id": "p03-l01",
+        "title": "Undercomplete and overcomplete codes",
+        "file": "p03-l01-undercomplete-and-overcomplete-codes.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p03-l02",
+        "title": "L0, L1, and TopK sparsity",
+        "file": "p03-l02-l0-l1-and-topk-sparsity.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p03-l03",
+        "title": "The sparse autoencoder objective",
+        "file": "p03-l03-the-sparse-autoencoder-objective.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p03-l04",
+        "title": "Dead features, shrinkage, and dictionary width",
+        "file": "p03-l04-dead-features-shrinkage-and-dictionary-width.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p03-l05",
+        "title": "Reconstruction is not interpretability",
+        "file": "p03-l05-reconstruction-is-not-interpretability.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      }
+    ],
+    "checkpoint": "Explain the phase's core objective, reproduce a toy comparison, and write its strongest limitation."
+  },
+  {
+    "id": 4,
+    "title": "Phase 4 — Multi-view representation learning",
+    "description": "Coordinate information shared across views without erasing view-specific information.",
+    "lessons": [
+      {
+        "id": "p04-l01",
+        "title": "What counts as a view?",
+        "file": "p04-l01-what-counts-as-a-view.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p04-l02",
+        "title": "CCA: align shared variation",
+        "file": "p04-l02-cca-align-shared-variation.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p04-l03",
+        "title": "Deep multi-view models",
+        "file": "p04-l03-deep-multi-view-models.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p04-l04",
+        "title": "Shared and private latent variables",
+        "file": "p04-l04-shared-and-private-latent-variables.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p04-l05",
+        "title": "Alignment versus information preservation",
+        "file": "p04-l05-alignment-versus-information-preservation.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      }
+    ],
+    "checkpoint": "Explain the phase's core objective, reproduce a toy comparison, and write its strongest limitation."
+  },
+  {
+    "id": 5,
+    "title": "Phase 5 — Learning representations of sets",
+    "description": "Represent unordered collections while retaining the relationships that matter.",
+    "lessons": [
+      {
+        "id": "p05-l01",
+        "title": "Sets, sequences, and permutation invariance",
+        "file": "p05-l01-sets-sequences-and-permutation-invariance.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p05-l02",
+        "title": "Deep Sets and sum decomposition",
+        "file": "p05-l02-deep-sets-and-sum-decomposition.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p05-l03",
+        "title": "Attention over set members",
+        "file": "p05-l03-attention-over-set-members.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p05-l04",
+        "title": "Set statistics and intruder robustness",
+        "file": "p05-l04-set-statistics-and-intruder-robustness.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p05-l05",
+        "title": "Why SetConCA needs a set encoder",
+        "file": "p05-l05-why-setconca-needs-a-set-encoder.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      }
+    ],
+    "checkpoint": "Explain the phase's core objective, reproduce a toy comparison, and write its strongest limitation."
+  },
+  {
+    "id": 6,
+    "title": "Phase 6 — Contrastive coordination",
+    "description": "Use positive and negative relationships carefully, with explicit control of geometry and false negatives.",
+    "lessons": [
+      {
+        "id": "p06-l01",
+        "title": "What makes a positive pair?",
+        "file": "p06-l01-what-makes-a-positive-pair.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p06-l02",
+        "title": "InfoNCE and temperature",
+        "file": "p06-l02-infonce-and-temperature.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p06-l03",
+        "title": "Alignment and uniformity",
+        "file": "p06-l03-alignment-and-uniformity.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p06-l04",
+        "title": "False negatives and shortcut solutions",
+        "file": "p06-l04-false-negatives-and-shortcut-solutions.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p06-l05",
+        "title": "Contrastive coordination for sparse features",
+        "file": "p06-l05-contrastive-coordination-for-sparse-features.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      }
+    ],
+    "checkpoint": "Explain the phase's core objective, reproduce a toy comparison, and write its strongest limitation."
+  },
+  {
+    "id": 7,
+    "title": "Phase 7 — Transformer and mechanistic interpretability",
+    "description": "Connect representation geometry to residual streams, features, circuits, and interventions.",
+    "lessons": [
+      {
+        "id": "p07-l01",
+        "title": "The residual stream as a communication bus",
+        "file": "p07-l01-the-residual-stream-as-a-communication-bus.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p07-l02",
+        "title": "Attention and MLP circuit hypotheses",
+        "file": "p07-l02-attention-and-mlp-circuit-hypotheses.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p07-l03",
+        "title": "Superposition and polysemanticity",
+        "file": "p07-l03-superposition-and-polysemanticity.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p07-l04",
+        "title": "SAEs as overcomplete dictionaries",
+        "file": "p07-l04-saes-as-overcomplete-dictionaries.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p07-l05",
+        "title": "From feature correlation to mechanism",
+        "file": "p07-l05-from-feature-correlation-to-mechanism.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      }
+    ],
+    "checkpoint": "Explain the phase's core objective, reproduce a toy comparison, and write its strongest limitation."
+  },
+  {
+    "id": 8,
+    "title": "Phase 8 — Evaluating representations honestly",
+    "description": "Match each claim to an evaluation that can actually test it.",
+    "lessons": [
+      {
+        "id": "p08-l01",
+        "title": "Reconstruction, FVU, and loss recovery",
+        "file": "p08-l01-reconstruction-fvu-and-loss-recovery.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p08-l02",
+        "title": "Probes and control tasks",
+        "file": "p08-l02-probes-and-control-tasks.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p08-l03",
+        "title": "CKA, SVCCA, and representation similarity",
+        "file": "p08-l03-cka-svcca-and-representation-similarity.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p08-l04",
+        "title": "Stability across seeds and models",
+        "file": "p08-l04-stability-across-seeds-and-models.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p08-l05",
+        "title": "Causal faithfulness and steering",
+        "file": "p08-l05-causal-faithfulness-and-steering.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      }
+    ],
+    "checkpoint": "Explain the phase's core objective, reproduce a toy comparison, and write its strongest limitation."
+  },
+  {
+    "id": 9,
+    "title": "Phase 9 — SAE limitations and open problems",
+    "description": "Treat splitting, absorption, non-canonicality, and scaling as testable failure modes.",
+    "lessons": [
+      {
+        "id": "p09-l01",
+        "title": "Feature splitting and granularity",
+        "file": "p09-l01-feature-splitting-and-granularity.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p09-l02",
+        "title": "Feature absorption and missed distinctions",
+        "file": "p09-l02-feature-absorption-and-missed-distinctions.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p09-l03",
+        "title": "Non-canonical dictionaries",
+        "file": "p09-l03-non-canonical-dictionaries.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p09-l04",
+        "title": "Automated interpretability and metric validity",
+        "file": "p09-l04-automated-interpretability-and-metric-validity.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p09-l05",
+        "title": "A rigorous SAE evaluation protocol",
+        "file": "p09-l05-a-rigorous-sae-evaluation-protocol.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      }
+    ],
+    "checkpoint": "Explain the phase's core objective, reproduce a toy comparison, and write its strongest limitation."
+  },
+  {
+    "id": 10,
+    "title": "Phase 10 — SetConCA research synthesis",
+    "description": "Turn the curriculum into a falsifiable research program and a realistic experimental lab.",
+    "lessons": [
+      {
+        "id": "p10-l01",
+        "title": "SetConCA: the full objective",
+        "file": "p10-l01-setconca-the-full-objective.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p10-l02",
+        "title": "Designing multi-view activation sets",
+        "file": "p10-l02-designing-multi-view-activation-sets.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p10-l03",
+        "title": "A realistic toy experiment",
+        "file": "p10-l03-a-realistic-toy-experiment.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p10-l04",
+        "title": "Hypotheses, baselines, and ablations",
+        "file": "p10-l04-hypotheses-baselines-and-ablations.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      },
+      {
+        "id": "p10-l05",
+        "title": "Writing the research claim without overclaiming",
+        "file": "p10-l05-writing-the-research-claim-without-overclaiming.json",
+        "status": "complete",
+        "estimatedMinutes": 25
+      }
+    ],
+    "checkpoint": "Explain the phase's core objective, reproduce a toy comparison, and write its strongest limitation."
+  }
+]

@@ -1,0 +1,228 @@
+{
+  "id": "p00-l05",
+  "phase": 0,
+  "lesson": 5,
+  "title": "What is a concept?",
+  "estimatedMinutes": 22,
+  "status": "complete",
+  "prerequisites": ["p00-l04"],
+  "learningObjectives": [
+    "Distinguish between a 'feature' (a direction in activation space) and a 'concept' (a human-interpretable category or idea)",
+    "Explain why the term 'concept' is contested in mechanistic interpretability research and why this matters",
+    "Recognise the implicit assumptions about human interpretability that are embedded in claims about concepts",
+    "Evaluate when it is and is not appropriate to call a feature a concept"
+  ],
+  "sections": {
+    "whyThisLesson": {
+      "text": "Every time a mechanistic interpretability paper describes a 'concept neuron' or a 'concept feature', it is making an implicit claim about alignment between the model's internal structure and human cognition. This claim is rarely defended explicitly. In this lesson, we slow down and ask: what would it mean for a model to have a 'concept', and why is this question harder than it seems? You do not need to resolve the philosophical debate — but you do need to understand what is at stake, so that when SetConCA claims to find 'concept-level features', you can evaluate that claim with appropriate rigour."
+    },
+    "bridgeFrom": {
+      "text": "In lesson p00-l04, we defined a feature as a direction in activation space associated with a property of the input. But many MI researchers use 'feature' and 'concept' interchangeably. This lesson unpacks why that conflation is potentially misleading."
+    },
+    "intuition": {
+      "analogy": "Imagine a library organised not by the Dewey Decimal System (a human classification), but by a pattern-matching algorithm that has read every book and grouped them by co-occurrence of words. The algorithm finds a cluster of books that all contain the words 'king', 'queen', 'crown', 'throne', 'medieval'. A human librarian might look at this cluster and say 'Ah, this is the ROYALTY concept.' But is that what the algorithm found? Maybe — or maybe it found 'books with power hierarchies', or 'books set before 1800', or 'books that use archaic vocabulary'. The cluster is real and coherent; but naming it 'royalty' imposes a human conceptual category on an organisational structure that was built without reference to human concepts.",
+      "analogyLimit": "A library's organisation is static and inspectable — you can read the books and judge whether the cluster coheres. Neural network features are dynamic and indirect — you infer their meaning from a finite sample of inputs that maximally activate them. The sample may be unrepresentative. Furthermore, concepts in human cognition are theory-laden — they carry rich structure, causal relations, and prototype effects. Neural features may have none of this additional structure.",
+      "text": "In mechanistic interpretability, a 'concept' is typically operationalised as a feature direction that a human evaluator can label with a coherent, nameable category after inspecting the top activating examples. This is an implicit definition, and it has several problems: (1) It depends on human raters, whose judgements are variable and potentially biased. (2) It treats the top activating examples as representative, but a feature may be polysemantic — coherent for the top examples but incoherent for medium-activating examples. (3) It conflates the model's computational unit with a human conceptual unit, assuming the model organises information the same way humans do. There is currently no agreed formal definition of 'concept' in MI research, and papers vary widely in how they use the term."
+    },
+    "toyExample": {
+      "description": "Examine a single feature and show why calling it a 'concept' requires assumptions that may or may not hold.",
+      "steps": [
+        {
+          "step": 1,
+          "action": "SAE Feature 2047 has the following top-10 maximally activating inputs: 'Eiffel Tower', 'croissant', 'beret', 'baguette', 'wine', 'Paris', 'French Riviera', 'Versailles', 'Louvre', 'Tour de France'.",
+          "result": "A human rater says: 'This is clearly a FRANCE concept.'",
+          "insight": "The label seems obvious from the top examples. But notice: all top examples are famous, stereotypical things associated with France. The feature might be 'famous cultural symbols of France', not 'France' in general."
+        },
+        {
+          "step": 2,
+          "action": "Now examine the inputs that activate Feature 2047 with moderate strength (0.3 to 0.7, not just the top): 'cafe', 'museum', 'romantic', 'history', 'fashion', 'bread', 'cheese', 'Alps', 'bicycle', 'painting'.",
+          "result": "These are all associated with France but also with many other contexts. 'Romantic' activates moderately — but is 'romantic' a France-concept or a general cultural concept?",
+          "insight": "The moderate-activating examples reveal that the feature may be more accurately labelled 'European cultural sophistication' or 'stereotypically romantic/cultural contexts' rather than 'France' specifically. The label 'FRANCE concept' was an over-interpretation based on the most striking examples."
+        },
+        {
+          "step": 3,
+          "action": "Check what inputs activate Feature 2047 most weakly (but still above zero): 'Germany', 'Italy', 'Spain', 'Netherlands'.",
+          "result": "Other Western European countries also activate the feature, though weakly. 'Germany' activates at 0.1, 'Italy' at 0.15.",
+          "insight": "If the feature were truly a 'France concept', Germany and Italy should have near-zero activation. Their non-zero activations suggest the feature encodes something broader — perhaps 'Western European cultural token' — with France as the prototypical example."
+        },
+        {
+          "step": 4,
+          "action": "Compare two human raters' labels for this feature. Rater A says 'French culture'. Rater B says 'European cultural tokens'. They disagree. Neither is wrong — the feature is real, but the concept it represents is ambiguous.",
+          "result": "Inter-rater agreement: low. Feature is real and coherent; concept label is contested.",
+          "insight": "This is the core problem: features are real and measurable; concept labels are human interpretations that may not be unique. Saying 'the model has a France concept' implies more precision than the evidence warrants."
+        }
+      ]
+    },
+    "visual": {
+      "id": "concept-map",
+      "question": "What is the relationship between features (geometric objects) and concepts (human categories), and what assumptions bridge them?",
+      "description": "The interactive shows a concept map with three layers: (1) input tokens at the bottom, (2) feature directions in the middle (as arrows in a 2D projection of activation space), (3) human concept labels at the top (as named boxes). Edges connect tokens to features they activate (thickness = activation strength) and features to concept labels (thickness = confidence of human label). Toggle 'show borderline examples' to see which tokens sit between clusters — these are the tokens that make concept labels ambiguous."
+    },
+    "technical": {
+      "text": "The term 'concept' in mechanistic interpretability does not have a single agreed definition. Three distinct usages appear in the literature: (1) Operational concept: a feature direction that a human can label after seeing top activating examples. This is the most common usage and the weakest — it requires only human pattern recognition. (2) Causal concept: a feature direction that causally mediates the model's predictions on tasks that humans associate with that concept. This is stronger — it requires intervention experiments. (3) Compositional concept: a feature direction that participates in structured, rule-like computations (e.g., 'if capital city AND France THEN next word is likely Paris') — the strongest and rarest form of evidence. Most claims in MI research use sense (1). Claims about SetConCA should specify which sense is intended.",
+      "definitions": [
+        {
+          "term": "Operational concept",
+          "definition": "A feature direction that a human evaluator can assign a coherent label to after inspecting the top k maximally activating inputs. This is the most common usage in mechanistic interpretability but is subject to rater variability and top-k sampling bias."
+        },
+        {
+          "term": "Causal concept",
+          "definition": "A feature direction such that causally intervening on its activation changes model predictions in a way consistent with the human concept label. Requires activation patching or ablation experiments. A stronger standard than operational concept."
+        },
+        {
+          "term": "Compositional concept",
+          "definition": "A feature direction that participates in structured, generalisable computations — e.g., it can be systematically combined with other features to produce new predictions. The strongest standard and the least commonly demonstrated."
+        },
+        {
+          "term": "Prototype effect",
+          "definition": "The tendency for human concepts to be graded rather than binary — some instances are more prototypical than others. A feature direction may align well with prototypical instances of a concept but poorly with atypical instances, suggesting it encodes prototype-based rather than rule-based concept structure."
+        }
+      ]
+    },
+    "mathematics": [
+      {
+        "id": "eq-concept-ambiguity",
+        "label": "Feature-to-concept label ambiguity",
+        "latex": "L(f) = \\arg\\max_{c \\in \\mathcal{C}} \\; P(\\text{label}=c \\mid \\text{top-}k(f))",
+        "symbols": {
+          "L(f)": "The most likely human concept label assigned to feature f, given the top-k activating examples",
+          "c": "A candidate human concept label from the set of possible labels C",
+          "\\mathcal{C}": "The set of all possible human concept labels — this is undefined a priori and chosen by the rater",
+          "\\text{top-}k(f)": "The set of k inputs with highest activation strength for feature f; this is the evidence a human rater sees",
+          "P(\\text{label}=c \\mid \\text{top-}k(f))": "The probability that rater assigns label c given top-k examples — varies by rater, k, and example selection"
+        },
+        "plainExplanation": "The concept label for a feature is not a fact about the model — it is an inference made by a human rater from a finite sample of maximally activating inputs. The label is the rater's best guess about what concept would produce this pattern of activations. Different raters, different samples, or different values of k can produce different labels.",
+        "whyNeeded": "Making the label selection procedure explicit exposes the assumptions: that top-k examples are representative, that human raters agree, and that the label set C covers all relevant concepts. When these assumptions fail, concept labels are unreliable.",
+        "ifRemoved": "Without this framing, 'the model has a France concept' sounds like a fact about the model. With this framing, it is clear that the claim is conditional on rater judgements, sample selection, and a particular labelling protocol.",
+        "encourages": "This framing encourages careful reporting of concept labelling methodology: how many raters, what k was used, what inter-rater agreement was achieved, and whether labels were validated beyond the top-k examples.",
+        "doesNotGuarantee": "It does not resolve the ambiguity — it only makes it visible. Even with multiple raters and large k, concept labels for polysemantic or borderline features may remain genuinely ambiguous."
+      }
+    ],
+    "methodComparison": [
+      {
+        "question": "How should we decide whether to call a feature a 'concept'?",
+        "methods": [
+          {
+            "name": "Top-k inspection (common practice)",
+            "answer": "Show a rater the top k inputs where a feature maximally activates. If the rater assigns a coherent label, call it a concept. Problems: top-k examples may be unrepresentative; single rater judgement is unreliable; k is arbitrary."
+          },
+          {
+            "name": "Intervention validation",
+            "answer": "Test whether the proposed concept label predicts the feature's causal effect: if the feature is 'France concept', does activating it make the model more likely to predict French words? If yes, the concept label is predictive of model behaviour — a stronger standard."
+          },
+          {
+            "name": "Compositional test",
+            "answer": "Check whether the feature participates in rule-like combinations with other features: e.g., 'France' feature + 'capital city' feature → 'Paris' prediction. If such compositions are reliable, the feature is a genuine computational concept, not just a correlated pattern."
+          }
+        ],
+        "practicalImplication": "For SetConCA, the goal is to find set-level features that pass at least the intervention validation standard. Reporting only top-k inspection results would be insufficient to distinguish SetConCA features from coincidental patterns."
+      }
+    ],
+    "evidence": [
+      {
+        "claim": "There is no agreed formal definition of 'concept' in mechanistic interpretability research — the term is used informally to mean 'a feature that a human can interpret'.",
+        "claimType": "warning",
+        "label": "[Warning]",
+        "sourceId": null,
+        "section": null,
+        "verified": true,
+        "paraphrase": "A survey of MI literature finds that papers define 'concept' operationally and inconsistently. This is a known issue in the field. Using the term 'concept' in SetConCA research should be accompanied by an explicit operational definition and a validation procedure."
+      },
+      {
+        "claim": "The top activating examples for a feature are often unrepresentative of the full distribution of inputs that activate it, leading to overconfident concept labels.",
+        "claimType": "course_interpretation",
+        "label": "[Course Interpretation]",
+        "sourceId": null,
+        "section": null,
+        "verified": true,
+        "paraphrase": "This is a methodological observation: features may have a coherent 'core' captured by top examples but a heterogeneous 'tail' not visible in top-k inspection. Concept labels based on top-k inspection may describe the core but miss the tail, leading to over-narrow labels."
+      },
+      {
+        "claim": "Human concept categories have prototype effects — some members are more typical than others — and neural features may approximate this structure.",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": null,
+        "section": null,
+        "verified": false,
+        "paraphrase": "If neural features encode something like prototype effects (high activation for typical instances, lower activation for atypical ones), this would be consistent with the view that features approximate human concepts. This is plausible but has not been rigorously established in MI research."
+      }
+    ],
+    "failureModes": [
+      {
+        "name": "Overconfident concept labelling",
+        "mechanism": "A researcher inspects the top 5 examples for a feature, finds them coherent, and labels the feature as 'the X concept'. They then report results as if the feature IS X, conflating the label with the model's internal structure.",
+        "symptom": "Papers that say 'we found the grammaticality concept at layer 7' based on 5-example inspection. No validation that the label is unique, consistent across raters, or predictive of behaviour.",
+        "diagnosticTest": "Ask: does the concept label predict activation for examples NOT in the top-k? Does the label predict causal effects of ablating the feature? If no, the label is an informal description, not a verified concept.",
+        "mitigation": "Use hedged language: 'Feature 2047 consistently activates for inputs associated with French culture (top-20 examples shown in Appendix A; inter-rater agreement 0.82). We provisionally call this the French-culture feature.' Distinguish this from established causal claims.",
+        "setconcaRelevance": "SetConCA will be evaluated on whether it finds 'concept-level features'. This evaluation must use rigorous protocols: multiple raters, large k, validation beyond top-k, and ideally intervention experiments."
+      },
+      {
+        "name": "Treating feature and concept as synonymous",
+        "mechanism": "The words 'feature' and 'concept' are used interchangeably throughout a paper, obscuring the distinction between a geometric object (direction in activation space) and a semantic category (human-interpretable group).",
+        "symptom": "Statements like 'the model's concepts are the SAE features' — this assumes every SAE feature is interpretable, and that interpretability equals concept-hood.",
+        "diagnosticTest": "Can every SAE feature in the model be given a consistent human label? If not (and typically not all can), then features are not all concepts.",
+        "mitigation": "Reserve 'concept' for features that have been validated as human-interpretable by at least one of the methods in the methodComparison table. Use 'feature' for any direction in activation space, labelled or not.",
+        "setconcaRelevance": "SetConCA aims to find 'concept-level features' — but this requires demonstrating that the features it finds are more concept-like (in the validated sense) than what pointwise SAEs find. That comparison requires the right evaluation protocol."
+      }
+    ],
+    "setconcaConnection": {
+      "relevance": "SetConCA's central claim is that processing tokens as a set enables learning of 'concept-level' features. Whether this claim is meaningful depends on how 'concept' is defined and validated. This lesson establishes the framework for that evaluation.",
+      "whichPart": "The evaluation methodology for SetConCA features: how will we decide whether SetConCA features are 'concept-level'?",
+      "whichDesignChoice": "SetConCA's set-based processing is designed to capture shared properties across a group of tokens — properties that correspond more naturally to concepts (which apply to categories, not individuals) than to token-level features.",
+      "whichFailureExplained": "If SetConCA features are evaluated only by top-k inspection (the weakest standard), the claim that they are 'concept-level' is under-evidenced. The evaluation protocol must match the strength of the claim.",
+      "proposedExperiment": "For each SetConCA feature and each corresponding SAE feature on the same model: (1) Collect top-20 activating examples; (2) Have 3 independent raters assign concept labels and rate confidence; (3) Measure inter-rater agreement (Cohen's kappa); (4) Test whether the label predicts activation on held-out examples not shown to raters. Compare these metrics between SetConCA and SAE features.",
+      "alternativeExplanation": "Alternatively, 'concept-level' may refer not to human interpretability but to the level of abstraction: a concept-level feature might be one that is invariant across surface forms (e.g., activates for 'Paris', 'la ville lumiere', 'the French capital', '75001' — all referring to the same thing). This invariance-based definition is more precise and testable."
+    },
+    "exercises": [
+      {
+        "type": "prediction",
+        "prompt": "Feature 881 has top-10 activating inputs: 'calculus', 'differential equation', 'integral', 'derivative', 'Leibniz', 'Newton', 'rate of change', 'slope', 'tangent line', 'function'. Feature 882 has top-10 activating inputs: 'calculus', 'semester', 'exam', 'homework', 'tutor', 'textbook', 'professor', 'course', 'student', 'grade'. Which feature is more likely to be a well-defined concept, and why?",
+        "reveal": "Feature 881 is more likely to be a well-defined concept ('mathematical calculus'). All top-10 examples are mathematically related to calculus specifically. Feature 882's examples span calculus but also general academic context — the feature might be 'academic study context' rather than 'calculus' specifically. Feature 882 is more likely to be polysemantic or to represent a broader concept than initially apparent."
+      },
+      {
+        "type": "construct",
+        "prompt": "Design a validation experiment to determine whether Feature 2047 from the toy example (which might be 'France' or 'European cultural sophistication') is better described by one label or the other. Specify exactly what data you would collect and what result would distinguish the two hypotheses.",
+        "reveal": "Experiment: (1) Collect 200 inputs that have NOTHING to do with France but are associated with 'European cultural sophistication' — e.g., 'Italian Renaissance', 'Vienna opera', 'Greek philosophy', 'Spanish tapas'. Measure Feature 2047's activation on these inputs. (2) Collect 200 inputs strongly associated with France but NOT with cultural sophistication — e.g., 'French agricultural policy', 'Tour de France peloton', 'French trade statistics'. Measure activation. Results interpretation: If activation is high for Category 1 (European sophistication) but low for Category 2 (France but not sophistication), the feature is 'European cultural sophistication'. If activation is high for Category 2 but low for Category 1, the feature is 'France'. If both are high, the feature might be the union; if neither is high, top-k inspection was misleading."
+      },
+      {
+        "type": "diagnose",
+        "prompt": "A paper claims: 'We found that GPT-4 has a robust concept of justice. Our SAE feature 9847 activates for all inputs containing references to fairness, legal proceedings, and moral reasoning.' What is problematic about calling this a 'concept of justice'?",
+        "reveal": "Three problems: (1) The activation criterion (inputs containing references to fairness, legal proceedings, moral reasoning) describes a surface linguistic pattern, not a conceptual structure. The feature may be 'legal/moral vocabulary' rather than 'justice' as a structured concept. (2) 'Robust concept of justice' implies the model has stable, compositional understanding of justice — but SAE feature activation only shows that certain inputs produce high activation in a direction. It does not show that the model can reason about justice, apply justice principles to new cases, or distinguish just from unjust actions. (3) The claim is not falsifiable as stated. What would a model WITHOUT a justice concept look like by this measure? A concrete falsifying prediction is needed."
+      }
+    ],
+    "masteryQuestions": [
+      {
+        "type": "open",
+        "prompt": "A researcher says 'SetConCA finds concept-level features.' What questions would you ask to evaluate whether this claim is justified, and what evidence would be sufficient to accept it?",
+        "rubric": [
+          "Asks about the definition of 'concept' used: operational, causal, or compositional?",
+          "Asks about the evaluation methodology: how many raters, what k, what inter-rater agreement, validation beyond top-k?",
+          "Asks about comparison to baseline: is the claim that SetConCA features are MORE concept-like than SAE features, and if so, what is the comparison metric?",
+          "Specifies what evidence would be sufficient: e.g., high inter-rater agreement on concept labels + successful intervention experiment + generalisation to unseen examples"
+        ],
+        "badVersion": "I would ask if the features look like concepts when I look at them. If they do, the claim is justified.",
+        "goodVersion": "I would ask several questions: First, what does 'concept-level' mean operationally — is it human label consistency (operational), causal relevance (causal), or generalisation to unseen instances (compositional)? Second, what evaluation protocol was used: how many raters, what k for top-k examples, was there a held-out validation set not shown to raters? Third, what is the comparison baseline — are SetConCA features more concept-like than SAE features, and if so, by how much and on which metric? Evidence I would accept: inter-rater agreement > 0.7 on concept labels (good agreement), successful causal intervention experiment showing the feature causally affects predictions in the labelled domain, and generalisation test showing the concept label predicts activation on held-out inputs not seen during evaluation. Without all three, the claim is at best an operational observation, not an established finding."
+      }
+    ],
+    "researchWorksheet": {
+      "claim": "SetConCA features are 'concept-level' in a sense that is more precise and causally meaningful than the features found by pointwise SAEs.",
+      "requiredAssumptions": "Assumes a definition of 'concept-level' that is more demanding than top-k inspection. Assumes that set-based processing produces features with different properties than pointwise processing. Assumes that the comparison is fair (same model, same layer, matched evaluation protocol).",
+      "evidenceProvided": "This is a hypothesis — SetConCA is unpublished research. No direct evidence has been established. The motivation comes from the theoretical argument that set-based processing should capture shared properties across tokens, which may correspond more naturally to concepts.",
+      "strongestAlternativeExplanation": "Pointwise SAE features, when aggregated by co-activation patterns, may already capture concept-level information. A concept might emerge from the combination of individual token features rather than requiring a set-level architecture.",
+      "missingControl": "A direct comparison experiment: train both a pointwise SAE and SetConCA on the same model and layer, apply the same concept evaluation protocol, and compare results. This is the missing experiment that would establish or refute the claim.",
+      "closestBaseline": "Bricken et al. (monosemanticity) and Cunningham et al. (SAE features) provide the closest baselines for individual-token feature interpretability.",
+      "falsifyingResult": "If SetConCA features scored no higher on inter-rater agreement, causal intervention tests, and generalisation tests than individual-token SAE features, the claim that SetConCA finds 'concept-level' features would be unsupported.",
+      "setconcaImplication": "The burden of proof for 'concept-level features' is high. SetConCA should be evaluated with explicit, pre-registered evaluation protocols that go beyond top-k inspection.",
+      "proposedExperiment": "Pre-register a concept evaluation protocol: (1) sample 100 SetConCA features and 100 SAE features; (2) have 5 raters label each with a concept and confidence score; (3) measure inter-rater agreement, label accuracy on held-out examples, and causal effect of ablating each feature; (4) report all three metrics and their comparison between SetConCA and SAE. This provides a rigorous, multi-dimensional evaluation of the 'concept-level' claim."
+    }
+  },
+  "bridgeToNext": {
+    "nextId": "p00-l06",
+    "text": "We have now seen that 'concept' is a contested and carefully qualified term. One reason the term is so contested is that the most obvious candidate for a concept — an individual neuron in the network — turns out to be a very bad concept-carrier. In the next lesson, we examine in detail why neurons are not concepts, a phenomenon called polysemanticity, and why this failure of neuron-level analysis motivated the entire SAE research programme."
+  },
+  "papers": [
+    "cunningham-sae-2023",
+    "bricken-monosemanticity-2023",
+    "elhage-superposition-2022"
+  ]
+}

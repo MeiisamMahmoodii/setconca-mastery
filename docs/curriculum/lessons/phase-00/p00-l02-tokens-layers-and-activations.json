@@ -1,0 +1,153 @@
+{
+  "id": "p00-l02",
+  "phase": "Orientation",
+  "phaseIndex": 0,
+  "lessonIndex": 2,
+  "title": "Tokens, layers, and activations",
+  "estimatedMinutes": 25,
+  "status": "complete",
+  "claimLabels": [
+    "Definition",
+    "Mathematical Result",
+    "Course Interpretation",
+    "Hypothesis",
+    "Warning"
+  ],
+  "prerequisites": [
+    "p00-l01"
+  ],
+  "learningObjectives": [
+    "Explain tokens, layers, and activations in plain language",
+    "Write down the objective and identify its assumptions",
+    "Design one test that could falsify an over-strong interpretation"
+  ],
+  "sections": {
+    "whyThisLesson": {
+      "text": "This lesson exists because tokens, layers, and activations is a prerequisite for making defensible claims in SetConCA. It is placed here after the previous idea so the notation has a job to do."
+    },
+    "bridgeFrom": "p00-l01",
+    "intuition": {
+      "analogy": "Give the model the same word in two sentences: the token id is fixed, but its activation can change because context changes the computation.",
+      "analogyLimit": "Token position, layer, and hook point are part of the measurement definition; changing them changes the scientific question.",
+      "text": "Tokens are discrete inputs; activations are the numerical states produced as those inputs pass through layers."
+    },
+    "toyExample": {
+      "description": "Use a small synthetic dataset to isolate tokens, layers, and activations before adding model-scale complexity.",
+      "steps": [
+        {
+          "action": "Choose the data-generating factors",
+          "result": "Write down which variables should be shared, private, sparse, or irrelevant.",
+          "insight": "If the intended structure is not specified first, an evaluation can reward a shortcut."
+        },
+        {
+          "action": "Apply the method",
+          "result": "Record the representation, reconstruction, and the statistic used to judge it.",
+          "insight": "The metric is part of the experiment, not a neutral afterthought."
+        },
+        {
+          "action": "Perturb one assumption",
+          "result": "Change correlation, noise, view quality, or dictionary width and repeat.",
+          "insight": "A method is understood by its boundary conditions."
+        }
+      ]
+    },
+    "visual": {
+      "id": "vector-space",
+      "question": "What changes when you manipulate the main assumption behind tokens, layers, and activations?",
+      "description": "Adjust the control, observe the geometry, then state what the visual does and does not prove."
+    },
+    "technical": {
+      "text": "Technically, tokens, layers, and activations is defined by the data interface, the learned or computed representation, and the evaluation statistic. Keep those three separate. The representation is an object; the interpretation is a claim about that object; the experiment is evidence for or against the claim."
+    },
+    "mathematics": [
+      {
+        "equation": "h_{l,t}=f_l(h_{l-1,1:T})",
+        "symbols": {
+          "x": "observed activation or input",
+          "z": "latent code",
+          "d_i": "dictionary direction",
+          "lambda": "trade-off weight"
+        },
+        "explanation": "The equation names the quantities being combined; it is not a proof that the latent variables have the intended meaning.",
+        "whyNeeded": "It makes the optimization target explicit.",
+        "ifRemoved": "Without the objective, comparisons become vague and irreproducible.",
+        "encourages": "State assumptions and evaluate them directly.",
+        "doesNotGuarantee": "Identifiability, interpretability, or causality."
+      }
+    ],
+    "methodComparison": [
+      {
+        "question": "What does it prioritise?",
+        "pca": "Within-view variance",
+        "ica": "Statistical independence",
+        "cca": "Cross-view correlation",
+        "implication": "Choose the method from the scientific question, not from the best-looking plot."
+      }
+    ],
+    "evidence": [
+      {
+        "claim": "Tokens are discrete inputs; activations are the numerical states produced as those inputs pass through layers.",
+        "claimType": "definition",
+        "sourceId": "course-synthesis",
+        "section": "lesson framing",
+        "verified": false,
+        "note": "Course synthesis; verify against the linked primary papers before making a paper-level claim."
+      }
+    ],
+    "failureModes": [
+      {
+        "name": "Objective–claim mismatch",
+        "mechanism": "The optimization statistic rewards a proxy rather than the property the researcher names.",
+        "symptom": "The score improves while controls or interventions do not.",
+        "diagnosticTest": "Add a negative control and a counterfactual intervention.",
+        "mitigation": "Narrow the claim or add evidence that tests the missing property.",
+        "setconcaRelevance": "Every SetConCA comparison should report the proxy and its ceiling."
+      }
+    ],
+    "setconcaConnection": {
+      "relevance": "Tokens, layers, and activations supplies one design decision for SetConCA.",
+      "whichPart": "The representation, view construction, or evaluation protocol.",
+      "whichDesignChoice": "Keep the baseline matched on data, capacity, and compute.",
+      "whichFailure": "Confusing agreement with recovery of a true concept.",
+      "whichExperiment": "Compare pointwise SAE and set-coordinated SAE on reconstruction, stability, selectivity, and intervention.",
+      "alternativeExplanation": "Any gain may come from extra context, regularization, or capacity rather than set coordination."
+    },
+    "exercises": [
+      {
+        "type": "diagnose",
+        "prompt": "A paper reports a better score after adding tokens, layers, and activations. What is the first alternative explanation you would test?",
+        "reveal": "Hold model, data, training budget, and evaluation examples fixed; then add controls for capacity and shortcut information."
+      }
+    ],
+    "masteryQuestions": [
+      {
+        "type": "open",
+        "prompt": "Explain tokens, layers, and activations to a colleague, then name one thing the method cannot establish by itself.",
+        "rubric": [
+          "Defines the object clearly",
+          "Names the objective or assumption",
+          "Separates evidence from interpretation",
+          "Gives a valid limitation"
+        ]
+      }
+    ],
+    "nextLesson": {
+      "id": "p00-l03",
+      "bridge": "Next: Representations, features, and concepts. The next idea reuses this lesson's representation and makes a new assumption explicit."
+    },
+    "researchWorksheet": {
+      "fields": [
+        {
+          "key": "claim",
+          "label": "Falsifiable claim",
+          "prompt": "Write the smallest claim this lesson supports."
+        },
+        {
+          "key": "control",
+          "label": "Control",
+          "prompt": "What control would rule out a shortcut?"
+        }
+      ]
+    }
+  }
+}

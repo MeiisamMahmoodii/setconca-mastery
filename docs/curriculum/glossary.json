@@ -1,0 +1,72 @@
+[
+  {
+    "term": "What happens inside a language model?",
+    "oneSentence": "A language model repeatedly transforms a token representation, adding updates in a shared residual stream until the final vector supports a prediction.",
+    "fullDefinition": "A sentence is like a relay race: each layer reads the current baton, computes a small update, and passes the baton on. The useful object is the changing vector, not a single neuron.",
+    "conceptId": "p00-l01",
+    "lessonIds": [
+      "p00-l01"
+    ],
+    "inlineHighlight": true
+  },
+  {
+    "term": "Tokens, layers, and activations",
+    "oneSentence": "Tokens are discrete inputs; activations are the numerical states produced as those inputs pass through layers.",
+    "fullDefinition": "Give the model the same word in two sentences: the token id is fixed, but its activation can change because context changes the computation.",
+    "conceptId": "p00-l02",
+    "lessonIds": [
+      "p00-l02"
+    ],
+    "inlineHighlight": true
+  },
+  {
+    "term": "Representations, features, and concepts",
+    "oneSentence": "A representation is a vector state; a feature is a direction or function that detects a recurring property; a concept is the human-level hypothesis attached to that feature.",
+    "fullDefinition": "A map can store the same city with coordinates, pixels, or roads. A representation is the encoding; a feature is a useful direction through that encoding.",
+    "conceptId": "p00-l03",
+    "lessonIds": [
+      "p00-l03"
+    ],
+    "inlineHighlight": true
+  },
+  {
+    "term": "Why neurons are not concepts",
+    "oneSentence": "A neuron coordinate can respond to several features when the model stores more features than dimensions: this is polysemanticity.",
+    "fullDefinition": "One shelf can hold several rarely co-occurring objects. Looking at the shelf's occupancy does not tell you which object caused it without context.",
+    "conceptId": "p00-l04",
+    "lessonIds": [
+      "p00-l04"
+    ],
+    "inlineHighlight": true
+  },
+  {
+    "term": "What SetConCA is trying to improve",
+    "oneSentence": "SetConCA tests whether coordinating sparse codes across multiple views of the same underlying item improves stability, specificity, and causal usefulness.",
+    "fullDefinition": "Instead of judging a feature from one photograph, compare several photographs of the same object and ask what survives the viewpoint change.",
+    "conceptId": "p00-l05",
+    "lessonIds": [
+      "p00-l05"
+    ],
+    "inlineHighlight": true
+  },
+  {
+    "term": "FVU",
+    "oneSentence": "Fraction of variance unexplained after reconstruction.",
+    "fullDefinition": "FVU compares reconstruction error with the centered data variance; lower is better reconstruction, not proof of interpretability.",
+    "conceptId": "p08-l01",
+    "lessonIds": [
+      "p08-l01"
+    ],
+    "inlineHighlight": true
+  },
+  {
+    "term": "Identifiability",
+    "oneSentence": "Whether the hidden object can be uniquely recovered under stated assumptions.",
+    "fullDefinition": "A recovery problem is identifiable when alternative latent explanations cannot produce the same observations, up to declared symmetries.",
+    "conceptId": "p02-l04",
+    "lessonIds": [
+      "p02-l04"
+    ],
+    "inlineHighlight": true
+  }
+]

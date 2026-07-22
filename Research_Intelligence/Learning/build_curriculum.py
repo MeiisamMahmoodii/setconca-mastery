@@ -388,7 +388,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--web", action="store_true", help="Web paths (RAW/...) for GitHub Pages")
     parser.add_argument("--out", type=Path, default=ROOT / "setconca-mastery" / "papers.js")
+    parser.add_argument("--format", choices=("papers", "json"), default="papers", help="Legacy paper bundle or modular lesson JSON")
     args = parser.parse_args()
+    if args.format == "json":
+        from generate_redesign import main as generate_json_curriculum
+        generate_json_curriculum()
+        print("Wrote modular curriculum JSON under docs/curriculum")
+        raise SystemExit(0)
     prefix = "RAW/" if args.web else "../../../RAW/"
     write_papers_js(prefix, args.out)
     print(f"Wrote {args.out} — {sum(len(l['papers']) for l in CURRICULUM)} papers (pdf prefix: {prefix})")

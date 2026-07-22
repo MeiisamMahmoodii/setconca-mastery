@@ -1,1023 +1,144 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-fontsize="md">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SetConCA Mastery — Fully Visualized Masterclass Curriculum</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <title>SetConCA Mastery — Research Apprenticeship</title>
+  <meta name="description" content="A concept-driven interactive textbook teaching representation learning, sparse autoencoders, multi-view learning, and SetConCA research from first principles." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg: #07090e;
-      --surface: #0f131f;
-      --surface2: #161c2d;
-      --surface3: #1f273d;
-      --border: rgba(255, 255, 255, 0.08);
-      --border-accent: rgba(56, 189, 248, 0.35);
-      --text: #f1f5f9;
-      --muted: #94a3b8;
-      --accent: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.2);
-      --indigo: #818cf8;
-      --ok: #34d399;
-      --warn: #fbbf24;
-      --bad: #f43f5e;
-      --font: 'Inter', system-ui, sans-serif;
-      --heading: 'Outfit', sans-serif;
-      --mono: 'Fira Code', monospace;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.65;
-      min-height: 100vh;
-      background-image: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
-                        radial-gradient(circle at 90% 90%, rgba(129, 140, 248, 0.06) 0%, transparent 40%);
-      background-attachment: fixed;
-    }
-    button { font-family: inherit; cursor: pointer; border: none; border-radius: 8px; padding: 0.65rem 1.25rem; font-weight: 500; transition: all 0.2s ease; }
-    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--indigo)); color: #07090e; font-weight: 700; box-shadow: 0 4px 16px rgba(56, 189, 248, 0.28); }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(56, 189, 248, 0.38); }
-    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--surface3); border-color: var(--accent); }
-    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-    .btn-ghost:hover { color: var(--text); background: var(--surface2); }
-    
-    .layout { display: grid; grid-template-columns: 310px 1fr; min-height: 100vh; }
-    .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 1.25rem; overflow-y: auto; position: sticky; top: 0; height: 100vh; backdrop-filter: blur(12px); }
-    .sidebar h1 { font-family: var(--heading); font-size: 1.3rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.2rem; }
-    .sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.2rem; }
-    
-    .progress-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; margin-bottom: 1.25rem; }
-    .progress-bar { height: 8px; background: var(--surface); border-radius: 99px; overflow: hidden; margin: 0.5rem 0; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--ok)); width: 0%; transition: width 0.4s ease; }
-    .progress-label { font-size: 0.78rem; color: var(--muted); display: flex; justify-content: space-between; }
-    
-    .level-nav { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
-    .level-nav button { width: 100%; text-align: left; background: transparent; color: var(--muted); padding: 0.65rem 0.8rem; border-radius: 10px; font-size: 0.84rem; border: 1px solid transparent; display: flex; gap: 0.6rem; align-items: center; justify-content: space-between; }
-    .level-nav button:hover { background: var(--surface2); color: var(--text); }
-    .level-nav button.active { background: var(--surface2); color: var(--accent); border-color: var(--border-accent); box-shadow: 0 0 16px var(--accent-glow); }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
-    .level-nav button.done .dot { background: var(--ok); box-shadow: 0 0 8px rgba(52, 211, 153, 0.4); }
-    
-    main { padding: 2rem 2.5rem 5rem; max-width: 1020px; margin: 0 auto; width: 100%; }
-    .badge { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.2rem 0.65rem; border-radius: 6px; background: var(--surface2); color: var(--muted); margin-right: 0.4rem; }
-    .badge.accent { background: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3); }
-    .badge.ok { background: rgba(52, 211, 153, 0.15); color: var(--ok); border: 1px solid rgba(52, 211, 153, 0.3); }
-    
-    h2 { font-family: var(--heading); font-size: 1.85rem; font-weight: 700; margin: 0.4rem 0 0.8rem; letter-spacing: -0.02em; }
-    h3 { font-family: var(--heading); font-size: 1.25rem; font-weight: 600; margin: 0 0 0.8rem; color: #fff; }
-    h4 { font-family: var(--heading); font-size: 1rem; font-weight: 600; margin: 1.2rem 0 0.5rem; color: var(--accent); }
-    
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.6rem; margin-bottom: 1.5rem; backdrop-filter: blur(8px); box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
-    .callout { border-left: 4px solid var(--accent); padding: 0.95rem 1.25rem; background: rgba(56, 189, 248, 0.06); border-radius: 0 12px 12px 0; margin: 1rem 0; font-size: 0.92rem; }
-    .callout.ok { border-color: var(--ok); background: rgba(52, 211, 153, 0.06); }
-    .callout.warn { border-color: var(--warn); background: rgba(251, 191, 36, 0.06); }
-    .callout.bad { border-color: var(--bad); background: rgba(244, 63, 94, 0.06); }
-    
-    .formula { font-family: var(--mono); font-size: 0.9rem; background: #0b0e17; border: 1px solid var(--border-accent); padding: 0.9rem 1.2rem; border-radius: 10px; color: var(--ok); margin: 0.8rem 0; box-shadow: inset 0 2px 6px rgba(0,0,0,0.4); }
-    .learn-list { list-style: none; }
-    .learn-list li { padding: 0.4rem 0 0.4rem 1.4rem; position: relative; font-size: 0.94rem; color: #cbd5e1; }
-    .learn-list li::before { content: '➔'; position: absolute; left: 0; color: var(--accent); font-size: 0.85rem; }
-    
-    .paper-item, .toc-item { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.95rem 1.15rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; margin-bottom: 0.6rem; transition: all 0.2s ease; }
-    .paper-item:hover, .toc-item:hover { border-color: var(--accent); transform: translateX(3px); background: var(--surface3); }
-    
-    /* GUIDED STEPPER ROADMAP UI */
-    .stepper-nav { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
-    .step-btn { flex: 1; min-width: 120px; text-align: center; padding: 0.6rem 0.75rem; border-radius: 10px; font-size: 0.78rem; font-weight: 600; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
-    .step-btn.active { background: rgba(56, 189, 248, 0.15); color: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
-    .step-btn.done { border-color: var(--ok); color: var(--ok); }
 
-    /* MULTI-LAYERED VISUAL CARDS & INLINE DIAGRAMS */
-    .layer-card { border-radius: 14px; padding: 1.3rem 1.5rem; margin-bottom: 1.2rem; border: 1px solid var(--border); backdrop-filter: blur(6px); }
-    .layer-card.layer-1 { background: rgba(56, 189, 248, 0.04); border-color: rgba(56, 189, 248, 0.3); border-left: 4px solid var(--accent); }
-    .layer-card.layer-2 { background: rgba(52, 211, 153, 0.04); border-color: rgba(52, 211, 153, 0.3); border-left: 4px solid var(--ok); }
-    .layer-card.layer-3 { background: rgba(251, 191, 36, 0.04); border-color: rgba(251, 191, 36, 0.3); border-left: 4px solid var(--warn); }
-    .layer-card.layer-4 { background: rgba(129, 140, 248, 0.04); border-color: rgba(129, 140, 248, 0.3); border-left: 4px solid var(--indigo); }
-    
-    .prose-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 0.9rem; }
-    .prose-card p { margin: 0; font-size: 0.95rem; color: #cbd5e1; line-height: 1.65; }
-    
-    .step-header-card { background: linear-gradient(135deg, #151b2c, #0b0f19); border: 1px solid var(--border-accent); border-radius: 14px; padding: 1.25rem 1.4rem; margin: 1.4rem 0 1rem; box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
-    .step-header-card h3 { font-family: var(--heading); font-size: 1.35rem; color: #fff; margin: 0.3rem 0 0; }
-    
-    .math-steps-grid { display: flex; flex-direction: column; gap: 0.8rem; margin: 1.2rem 0; }
-    .math-step-card { display: flex; gap: 1rem; align-items: flex-start; background: #121726; border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; transition: border-color 0.2s ease; }
-    .math-step-card:hover { border-color: var(--accent); }
-    .step-pill { background: var(--accent); color: #07090e; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; margin-top: 0.1rem; }
-    
-    .kw-badge { background: rgba(56, 189, 248, 0.15); color: var(--accent); padding: 0.15rem 0.45rem; border-radius: 4px; font-weight: 600; font-family: var(--mono); font-size: 0.88em; border: 1px solid rgba(56, 189, 248, 0.25); }
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
-    .inline-diagram-box { background: #080b12; border: 1px solid var(--border-accent); border-radius: 14px; padding: 1.2rem; margin: 1.2rem 0; text-align: center; }
-    .inline-diagram-box svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
-
-    .checkrow { display: flex; gap: 0.75rem; align-items: flex-start; margin: 0.5rem 0; font-size: 0.94rem; background: var(--surface2); padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border); }
-    .checkrow input { margin-top: 0.2rem; accent-color: var(--accent); width: 16px; height: 16px; }
-    
-    .quiz-opt { display: block; width: 100%; text-align: left; padding: 0.8rem 1.1rem; margin: 0.5rem 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 0.92rem; transition: all 0.2s ease; }
-    .quiz-opt:hover:not([disabled]) { border-color: var(--accent); background: var(--surface3); }
-    .quiz-opt.correct { border-color: var(--ok); background: rgba(52, 211, 153, 0.15); color: #fff; }
-    .quiz-opt.wrong { border-color: var(--bad); background: rgba(244, 63, 94, 0.15); color: #fff; }
-    
-    .dual { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; margin-top: 0.75rem; }
-    @media(max-width: 900px) { .layout { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; } .dual { grid-template-columns: 1fr; } }
-    .dual .orig { border-left: 3px solid var(--accent); background: rgba(56, 189, 248, 0.05); padding: 0.85rem 1rem; border-radius: 0 10px 10px 0; font-size: 0.9rem; }
-    .dual .simp { border-left: 3px solid var(--ok); background: rgba(52, 211, 153, 0.05); padding: 0.85rem 1rem; border-radius: 0 10px 10px 0; font-size: 0.9rem; }
-    .dual .lbl { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.4rem; }
-    .dual .orig .lbl { color: var(--accent); }
-    .dual .simp .lbl { color: var(--ok); }
-    
-    .idea-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; margin-bottom: 0.9rem; }
-    .idea-card h4 { margin: 0 0 0.5rem; font-size: 0.98rem; color: #fff; }
-    
-    .demo-container { background: #06080d; border: 1px solid var(--border-accent); border-radius: 16px; padding: 1.4rem; margin-bottom: 1.5rem; box-shadow: 0 10px 35px rgba(0,0,0,0.5); }
-    .demo-canvas { width: 100%; height: 270px; background: #090c14; border: 1px solid var(--border); border-radius: 10px; display: block; }
-    .demo-controls { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: 1rem; align-items: center; font-size: 0.85rem; color: var(--muted); background: var(--surface2); padding: 0.8rem 1rem; border-radius: 10px; }
-    .demo-controls label { display: flex; align-items: center; gap: 0.6rem; font-weight: 500; color: var(--text); }
-    .demo-controls input[type=range] { accent-color: var(--accent); width: 130px; }
-    
-    .muted { color: var(--muted); font-size: 0.9rem; }
-    .hidden { display: none !important; }
-    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; align-items: center; justify-content: space-between; }
-  </style>
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <div class="layout">
-    <aside class="sidebar">
-      <h1>SetConCA Mastery</h1>
-      <p class="sub">Fully Visualized Tutor</p>
-      <div class="progress-card">
-        <div class="progress-label"><span>Course Progress</span><strong id="pctText">0%</strong></div>
-        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-        <div class="progress-label" style="font-size: 0.72rem; margin-top: 0.3rem;"><span id="paperStats">0/43 Papers</span><span id="primerStats">0/10 Primers</span></div>
+  <div class="layout" id="app">
+    <!-- ── Sidebar ─────────────────────────────────────────── -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Course navigation">
+      <!-- Logo -->
+      <div>
+        <div class="sidebar-logo">SetConCA Mastery</div>
+        <div class="sidebar-tagline">Research Apprenticeship</div>
       </div>
-      <button class="btn-ghost" style="width:100%; font-size:0.8rem; margin-bottom:0.8rem" onclick="showHome()">🏠 Course Roadmap</button>
-      <ul class="level-nav" id="levelNav"></ul>
-      <button class="btn-ghost" style="width:100%; font-size:0.8rem; margin-top:1.2rem; opacity:0.6" onclick="resetProgress()">Reset Progress</button>
+
+      <!-- Primary CTA -->
+      <button class="btn-continue" id="btnContinue" onclick="app.continueLearning()" aria-label="Continue to current lesson">
+        <span class="cta-label">Continue learning</span>
+        <span id="continueLabel">Loading…</span>
+      </button>
+
+      <!-- Mode toggle -->
+      <div class="mode-toggle" role="group" aria-label="Learning mode">
+        <button class="mode-btn active" id="modeLearn" onclick="app.setMode('learning')" aria-pressed="true">📖 Learning</button>
+        <button class="mode-btn" id="modeResearch" onclick="app.setMode('research')" aria-pressed="false">🔬 Research</button>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-card">
+        <div class="progress-row">
+          <span>Course Progress</span>
+          <strong id="pctText">0%</strong>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        <div class="progress-row" style="margin-top:0.4rem">
+          <span id="lessonsStats">0/0 lessons</span>
+          <span id="masteredStats">0 mastered</span>
+        </div>
+      </div>
+
+      <!-- Review reminder -->
+      <div class="review-badge hidden" id="reviewBadge">
+        ⏰ <strong id="reviewCount">0</strong> concepts due for review
+      </div>
+
+      <!-- Phase navigation -->
+      <div class="nav-section-label">Phases</div>
+      <div id="phaseNav"></div>
+
+      <!-- Utility links -->
+      <div class="sidebar-nav-links">
+        <button class="sidebar-link" onclick="app.navigate('/map')" aria-label="Open concept map">
+          🗺️ Concept Map
+        </button>
+        <button class="sidebar-link" onclick="app.navigate('/library')" aria-label="Open research library">
+          📚 Research Library
+        </button>
+        <button class="sidebar-link" onclick="app.navigate('/glossary')" aria-label="Open glossary">
+          📖 Glossary
+        </button>
+        <button class="sidebar-link" onclick="app.navigate('/search')" aria-label="Search">
+          🔍 Search
+        </button>
+
+        <!-- Font size controls -->
+        <div style="display:flex; gap:0.35rem; margin-top:0.3rem">
+          <button class="btn-icon" onclick="app.setFontSize('sm')" title="Small text" aria-label="Small font">A−</button>
+          <button class="btn-icon" onclick="app.setFontSize('md')" title="Normal text" aria-label="Normal font">A</button>
+          <button class="btn-icon" onclick="app.setFontSize('lg')" title="Large text" aria-label="Large font">A+</button>
+          <button class="btn-icon" onclick="app.exportProgress()" title="Export progress" aria-label="Export progress">↓</button>
+        </div>
+
+        <button class="sidebar-link" style="color:var(--dim); font-size:0.72rem; margin-top:0.25rem" onclick="app.resetProgress()">
+          Reset Progress
+        </button>
+      </div>
     </aside>
-    <main id="main"></main>
+
+    <!-- ── Main content ────────────────────────────────────── -->
+    <main id="main" class="main-content" role="main" aria-live="polite">
+      <div style="text-align:center; padding:4rem 2rem; color:var(--muted)">
+        <div style="font-size:2rem; margin-bottom:1rem">⚙️</div>
+        Loading curriculum…
+      </div>
+    </main>
   </div>
 
-  <script src="papers.js"></script>
-  <script>
-    const KEY = 'setconca-course-v8';
-    let state = load();
-    let view = state.view || { type: 'home' };
-
-    const STEPS = [
-      { id: 1, key: 'intuition', title: '1. Core Intuition', icon: '💡' },
-      { id: 2, key: 'prior', title: '2. Prior Work', icon: '📜' },
-      { id: 3, key: 'demo', title: '3. Interactive Visualizer', icon: '🎮' },
-      { id: 4, key: 'math', title: '4. Math Mechanics', icon: '⚙️' },
-      { id: 5, key: 'exp', title: '5. Experiments & Ablations', icon: '🧪' },
-      { id: 6, key: 'quiz', title: '6. Quiz & Mastery', icon: '🧠' },
-    ];
-
-    function load() { try { return JSON.parse(localStorage.getItem(KEY)) || def(); } catch { return def(); } }
-    function def() { return { view: { type: 'home' }, primers: {}, papers: {}, checks: {} }; }
-    function save() { localStorage.setItem(KEY, JSON.stringify(state)); renderSidebar(); }
-
-    function allPaperIds() { return CURRICULUM_DATA.levels.flatMap(l => l.papers.map(p => p.id)); }
-    function getPaper(id) { return CURRICULUM_DATA.levels.flatMap(l => l.papers).find(p => p.id === id); }
-    function getLevel(id) { return CURRICULUM_DATA.levels.find(l => l.id === id); }
-    function paperDone(id) { const p = state.papers[id] || {}; return !!(p.learn && p.quiz); }
-    function primerDone(id) { return !!state.primers[id]; }
-
-    function getNextPaperId(currentId) {
-      const all = allPaperIds();
-      const idx = all.indexOf(currentId);
-      return idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
-    }
-
-    function progressStats() {
-      const primers = CURRICULUM_DATA.levels.length;
-      const papers = allPaperIds().length;
-      const pd = CURRICULUM_DATA.levels.filter(l => primerDone(l.id)).length;
-      const pp = allPaperIds().filter(paperDone).length;
-      const total = primers + papers;
-      const done = pd + pp;
-      return { done, total, pct: Math.round(100 * done / total), pd, primers, pp, papers };
-    }
-
-    function renderSidebar() {
-      const s = progressStats();
-      document.getElementById('progressFill').style.width = s.pct + '%';
-      document.getElementById('pctText').textContent = s.pct + '%';
-      document.getElementById('paperStats').textContent = `${s.pp}/${s.papers} Papers`;
-      document.getElementById('primerStats').textContent = `${s.pd}/${s.primers} Primers`;
-
-      document.getElementById('levelNav').innerHTML = CURRICULUM_DATA.levels.map(l => {
-        const papers = l.papers.filter(p => !p.optional);
-        const done = primerDone(l.id) && papers.every(p => paperDone(p.id));
-        const lvl = view.paperId ? CURRICULUM_DATA.levels.find(x => x.papers.some(p => p.id === view.paperId)) : null;
-        const isActive = view.levelId === l.id || (lvl && lvl.id === l.id);
-        return `<li>
-          <button class="${isActive ? 'active' : ''} ${done ? 'done' : ''}" onclick="openLevel(${l.id})">
-            <span style="display:flex;align-items:center;gap:0.5rem"><span class="dot"></span>L${l.id}: ${l.title}</span>
-            <span style="font-size:0.7rem;opacity:0.6">${l.papers.filter(p=>paperDone(p.id)).length}/${l.papers.length}</span>
-          </button>
-        </li>`;
-      }).join('');
-    }
-
-    function showHome() { view = { type: 'home' }; state.view = view; save(); render(); }
-    function openLevel(id) { view = { type: 'level', levelId: id }; state.view = view; save(); render(); }
-    function openPaper(id, stepNum) { view = { type: 'paper', paperId: id, step: stepNum || 1 }; state.view = view; save(); render(); }
-    function resetProgress() { if (confirm('Clear all course progress?')) { state = def(); save(); render(); } }
-
-    function render() {
-      renderSidebar();
-      const main = document.getElementById('main');
-      if (view.type === 'home') main.innerHTML = renderHome();
-      else if (view.type === 'level') main.innerHTML = renderLevel(view.levelId);
-      else if (view.type === 'paper') main.innerHTML = renderPaperStep(view.paperId, view.step || 1);
-    }
-
-    function renderHome() {
-      const intro = CURRICULUM_DATA.courseIntro || {};
-      return `
-        <span class="badge accent">Fully Visualized Masterclass</span>
-        <h2>${intro.title || 'SetConCA Mastery'}</h2>
-        <p class="muted" style="font-size:1.05rem; margin-bottom:1rem">${intro.promise || ''}</p>
-        <div class="formula">${intro.formula || CURRICULUM_DATA.formula}</div>
-        
-        <div class="card" style="margin-top:1.5rem">
-          <h3>🎓 Visual Step-by-Step Learning Architecture</h3>
-          <ul class="learn-list">
-            <li><strong>🟢 Layer 1 Intuition:</strong> Real-world analogies and visual mental models.</li>
-            <li><strong>🟡 Layer 2 Math Proof:</strong> Low-level derivations (Central Limit Theorem, Kurtosis, Whitening).</li>
-            <li><strong>🔵 Layer 3 Geometry:</strong> SVG vector diagrams and rotational symmetry manifolds.</li>
-            <li><strong>🎮 Layer 4 Interactive Stage:</strong> Live parameter sliders and scatter plots on every module.</li>
-          </ul>
-        </div>
-
-        <div class="card">
-          <h3>📍 Complete Course Roadmap (10 Levels)</h3>
-          ${CURRICULUM_DATA.levels.map(l => `
-            <div class="toc-item" onclick="openLevel(${l.id})">
-              <span><strong>L${l.id}</strong> · ${l.title} ${primerDone(l.id) ? '<span class="badge ok">Primer ✓</span>' : ''}</span>
-              <span class="muted">${l.papers.filter(p => paperDone(p.id)).length}/${l.papers.length} Modules</span>
-            </div>`).join('')}
-        </div>
-        <div class="actions"><button class="btn-primary" onclick="openLevel(1)">Begin Level 1 Roadmap →</button></div>`;
-    }
-
-    function renderLevel(id) {
-      const level = getLevel(id);
-      const primer = (CURRICULUM_DATA.levelPrimers || {})[String(id)] || level.primer || {};
-      return `
-        <button class="btn-ghost" onclick="showHome()">← Course Roadmap</button>
-        <div style="margin-top:1rem">
-          <span class="badge accent">Level ${id}</span>
-          <span class="badge">Weeks ${level.weeks || ''}</span>
-          ${primerDone(id) ? '<span class="badge ok">Primer Complete ✓</span>' : ''}
-        </div>
-        <h2>${level.title}</h2>
-        <p class="muted"><strong>Mission:</strong> ${primer.mission || ''}</p>
-
-        <!-- INTERACTIVE LEVEL STAGE SIMULATOR -->
-        <div class="demo-container">
-          <h3>🎮 Level ${id} Interactive Stage Simulator</h3>
-          <div id="demoMount"></div>
-        </div>
-
-        <div class="card">
-          <h3>📖 Level ${id} Masterclass Lecture</h3>
-          ${renderRichProse(primer.primer || '')}
-          ${(primer.bigPictureDiagram || []).length ? `<h4>Big Picture Diagram</h4><div class="formula">${primer.bigPictureDiagram.map(esc).join('<br>')}</div>` : ''}
-          ${(primer.conceptsToMaster || []).length ? `<h4>Concepts to Master</h4>${primer.conceptsToMaster.map(c => `<div class="idea-card"><h4>${esc(c.name)}</h4><div class="dual"><div class="orig"><div class="lbl">Original Idea</div>${esc(c.deeper || c.simple)}</div><div class="simp"><div class="lbl">Simple Explanation</div>${esc(c.simple)}</div></div></div>`).join('')}` : ''}
-          <div class="actions">
-            <button class="btn-primary" onclick="markPrimer(${id})">${primerDone(id) ? 'Primer Complete ✓' : 'Mark Primer Complete'}</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <h3>🗺️ Step-by-Step Module Sequence for Level ${id}</h3>
-          ${level.papers.map((p, idx) => `
-            <div class="paper-item" onclick="openPaper('${p.id}', 1)">
-              <span>Step ${idx + 1}: ${p.num ? `#${p.num} ` : ''}<strong>${p.title}</strong></span>
-              <span class="muted">${paperDone(p.id) ? '✓ Completed' : 'Start Module ➔'}</span>
-            </div>`).join('')}
-        </div>
-        <div class="actions">
-          ${id > 1 ? `<button class="btn-secondary" onclick="openLevel(${id - 1})">← Level ${id - 1}</button>` : ''}
-          ${id < 10 ? `<button class="btn-primary" onclick="openLevel(${id + 1})">Level ${id + 1} →</button>` : ''}
-        </div>`;
-    }
-
-    function markPrimer(id) { state.primers[id] = true; save(); render(); }
-
-    function renderPaperStep(id, stepNum) {
-      const paper = getPaper(id);
-      const level = CURRICULUM_DATA.levels.find(l => l.papers.some(p => p.id === id));
-      const nextPaperId = getNextPaperId(id);
-      const nextPaper = nextPaperId ? getPaper(nextPaperId) : null;
-
-      return `
-        <button class="btn-ghost" onclick="openLevel(${level.id})">← Level ${level.id} Roadmap</button>
-        <div style="margin-top:1rem">
-          <span class="badge accent">${paper.num ? `Paper ${paper.num}` : 'Optional'}</span>
-          <span class="badge">Level ${level.id}</span>
-          ${paperDone(id) ? '<span class="badge ok">Module Mastered ✓</span>' : ''}
-        </div>
-        <h2>${paper.title}</h2>
-        <p class="muted">${paper.authors || ''}</p>
-
-        <!-- VISUAL STEPPER NAVIGATION BAR -->
-        <div class="stepper-nav">
-          ${STEPS.map(s => `
-            <button class="step-btn ${stepNum === s.id ? 'active' : ''} ${stepNum > s.id ? 'done' : ''}" onclick="setStep(${s.id})">
-              <span>${s.icon} ${s.title}</span>
-              <span style="font-size:0.68rem">${stepNum > s.id ? '✓' : ''}</span>
-            </button>`).join('')}
-        </div>
-
-        <!-- STEP CONTENT BODY -->
-        <div id="stepBody">${renderStepContent(paper, stepNum)}</div>
-
-        <!-- FOOTER STEPPER ACTIONS -->
-        <div class="actions" style="border-top:1px solid var(--border); padding-top:1.2rem">
-          ${stepNum > 1 ? `<button class="btn-secondary" onclick="setStep(${stepNum - 1})">⟵ Step ${stepNum - 1}: ${STEPS[stepNum - 2].title}</button>` : `<span></span>`}
-          ${stepNum < 6 ? `
-            <button class="btn-primary" onclick="setStep(${stepNum + 1})">Next: ${STEPS[stepNum].title} ➔</button>
-          ` : `
-            ${nextPaper ? `
-              <button class="btn-primary" onclick="markAndAdvance('${id}', '${nextPaper.id}')">Complete & Advance to Next Paper: ${nextPaper.title} ➔</button>
-            ` : `
-              <button class="btn-primary" onclick="markAndAdvance('${id}', null)">Finish Level & Return to Course Roadmap 🎉</button>
-            `}
-          `}
-        </div>`;
-    }
-
-    function setStep(s) { view.step = s; state.view = view; save(); render(); }
-
-    function dualBlock(original, simple) {
-      return `<div class="dual">
-        <div class="orig"><div class="lbl">Original Paper Formulation</div>${esc(original || '')}</div>
-        <div class="simp"><div class="lbl">Simple Explanation & Intuition</div>${esc(simple || '')}</div>
-      </div>`;
-    }
-
-    function renderRichProse(text) {
-      if (!text) return '';
-      const paragraphs = text.split(/\n\n+/);
-      let html = '';
-
-      paragraphs.forEach(p => {
-        p = p.trim();
-        if (!p) return;
-
-        if (p.includes('LAYER 1:')) {
-          html += `
-            <div class="layer-card layer-1">
-              <span class="badge accent">🟢 Layer 1: Everyday Intuition & Analogy</span>
-              <p style="margin-top:0.5rem">${highlightKeywords(esc(p.replace(/--- LAYER 1:[^-]*---/g, '').trim()))}</p>
-            </div>`;
-          return;
-        }
-
-        if (p.includes('LAYER 2:')) {
-          html += `
-            <div class="layer-card layer-2">
-              <span class="badge ok">🟡 Layer 2: Low-Level Math & CLT Proof</span>
-              <p style="margin-top:0.5rem">${highlightKeywords(esc(p.replace(/--- LAYER 2:[^-]*---/g, '').trim()))}</p>
-            </div>`;
-          return;
-        }
-
-        if (p.includes('LAYER 3:')) {
-          html += `
-            <div class="layer-card layer-3">
-              <span class="badge warn">🔵 Layer 3: Geometry & Rotational Symmetry</span>
-              <p style="margin-top:0.5rem">${highlightKeywords(esc(p.replace(/--- LAYER 3:[^-]*---/g, '').trim()))}</p>
-            </div>`;
-          return;
-        }
-
-        if (p.includes('LAYER 4:')) {
-          html += `
-            <div class="layer-card layer-4">
-              <span class="badge" style="background:rgba(129,140,248,0.2); color:var(--indigo)">🟣 Layer 4: Exact Equations & Kurtosis/Negentropy Math</span>
-              <p style="margin-top:0.5rem">${highlightKeywords(esc(p.replace(/--- LAYER 4:[^-]*---/g, '').trim()))}</p>
-            </div>`;
-          return;
-        }
-
-        if (p.startsWith('---') && p.endsWith('---')) {
-          const title = p.replace(/^---+\s*/, '').replace(/\s*---+$/, '');
-          html += `
-            <div class="step-header-card">
-              <span class="badge accent">Visual Core Concept</span>
-              <h3>${esc(title)}</h3>
-            </div>`;
-          return;
-        }
-
-        if (p.includes('CRITICAL') || p.includes('WARNING') || p.includes('THE SCIENTIFIC WARNING')) {
-          html += `
-            <div class="callout bad">
-              <strong style="color:var(--bad)">⚠️ Critical Scientific Warning:</strong>
-              <p style="margin-top:0.3rem">${esc(p.replace(/CRITICAL LESSON[^:]*:/i, '').replace(/THE SCIENTIFIC WARNING[^:]*:/i, ''))}</p>
-            </div>`;
-          return;
-        }
-
-        if (p.includes('1.') && p.includes('2.') && (p.includes('Mean') || p.includes('Variance') || p.includes('Step') || p.includes('Covariance') || p.includes('Kurtosis'))) {
-          const items = p.split(/(?=\d+\.\s)/);
-          html += `<div class="math-steps-grid">`;
-          items.forEach(item => {
-            const match = item.match(/^(\d+)\.\s*([^:]+):?\s*(.*)/s);
-            if (match) {
-              html += `
-                <div class="math-step-card">
-                  <div class="step-pill">${match[1]}</div>
-                  <div style="flex:1">
-                    <h4 style="margin:0; font-size:0.95rem; color:var(--accent)">${esc(match[2])}</h4>
-                    <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#cbd5e1">${esc(match[3])}</p>
-                  </div>
-                </div>`;
-            } else if (item.trim()) {
-              html += `<p class="muted">${esc(item)}</p>`;
-            }
-          });
-          html += `</div>`;
-          return;
-        }
-
-        html += `<div class="prose-card"><p>${highlightKeywords(esc(p))}</p></div>`;
-      });
-
-      return html;
-    }
-
-    function highlightKeywords(str) {
-      return str.replace(/\b(PCA|ICA|CCA|SVD|FVU|TopK|InfoNCE|ELBO|VAE|CKA|SAE|SAEs|SetConCA|Superposition|Polysemanticity|Covariance Matrix|Eigenvectors|Eigenvalues|Kurtosis|Negentropy|Central Limit Theorem)\b/g, '<span class="kw-badge">$1</span>');
-    }
-
-    // INLINE SVG DIAGRAM BUILDER FOR EVERY STEP
-    function renderStepSVG(stepNum, paperId) {
-      if (stepNum === 1) {
-        return `
-          <div class="inline-diagram-box">
-            <svg width="420" height="70" viewBox="0 0 420 70">
-              <rect x="10" y="15" width="110" height="40" rx="8" fill="#161c2d" stroke="#38bdf8" stroke-width="1.5"/>
-              <text x="65" y="40" fill="#38bdf8" font-size="12" font-family="Fira Code" text-anchor="middle">Input Vectors (x)</text>
-              
-              <path d="M 125 35 L 155 35" stroke="#38bdf8" stroke-width="2" marker-end="url(#arr)"/>
-              
-              <rect x="160" y="15" width="120" height="40" rx="8" fill="#161c2d" stroke="#34d399" stroke-width="1.5"/>
-              <text x="220" y="40" fill="#34d399" font-size="12" font-family="Fira Code" text-anchor="middle">Transformation (W)</text>
-              
-              <path d="M 285 35 L 315 35" stroke="#34d399" stroke-width="2"/>
-              
-              <rect x="320" y="15" width="90" height="40" rx="8" fill="#161c2d" stroke="#818cf8" stroke-width="1.5"/>
-              <text x="365" y="40" fill="#818cf8" font-size="12" font-family="Fira Code" text-anchor="middle">Pure Code (z)</text>
-            </svg>
-          </div>`;
-      }
-      if (stepNum === 2) {
-        return `
-          <div class="inline-diagram-box">
-            <svg width="420" height="70" viewBox="0 0 420 70">
-              <rect x="10" y="15" width="120" height="40" rx="8" fill="#161c2d" stroke="#fbbf24" stroke-width="1.5"/>
-              <text x="70" y="40" fill="#fbbf24" font-size="11" font-family="Fira Code" text-anchor="middle">Earlier Literature</text>
-              
-              <path d="M 135 35 L 185 35" stroke="#fbbf24" stroke-width="2" stroke-dasharray="4"/>
-              <text x="160" y="28" fill="#94a3b8" font-size="10" font-family="Fira Code" text-anchor="middle">Research Gap</text>
-
-              <rect x="190" y="15" width="220" height="40" rx="8" fill="#161c2d" stroke="#34d399" stroke-width="1.5"/>
-              <text x="300" y="40" fill="#34d399" font-size="12" font-family="Fira Code" text-anchor="middle">This Paper's Innovation ✨</text>
-            </svg>
-          </div>`;
-      }
-      if (stepNum === 4) {
-        return `
-          <div class="inline-diagram-box">
-            <svg width="420" height="80" viewBox="0 0 420 80">
-              <rect x="10" y="20" width="80" height="40" rx="6" fill="#1e2433" stroke="#38bdf8"/>
-              <text x="50" y="44" fill="#38bdf8" font-size="11" font-family="Fira Code" text-anchor="middle">Encoder W_e</text>
-
-              <path d="M 95 40 L 135 40" stroke="#38bdf8" stroke-width="2"/>
-
-              <rect x="140" y="20" width="140" height="40" rx="6" fill="#1e2433" stroke="#34d399"/>
-              <text x="210" y="44" fill="#34d399" font-size="11" font-family="Fira Code" text-anchor="middle">Latent Bottleneck z</text>
-
-              <path d="M 285 40 L 325 40" stroke="#34d399" stroke-width="2"/>
-
-              <rect x="330" y="20" width="80" height="40" rx="6" fill="#1e2433" stroke="#818cf8"/>
-              <text x="370" y="44" fill="#818cf8" font-size="11" font-family="Fira Code" text-anchor="middle">Decoder W_d</text>
-            </svg>
-          </div>`;
-      }
-      if (stepNum === 5) {
-        return `
-          <div class="inline-diagram-box">
-            <svg width="420" height="75" viewBox="0 0 420 75">
-              <line x1="40" y1="60" x2="380" y2="60" stroke="#222a42" stroke-width="2"/>
-              <line x1="40" y1="10" x2="40" y2="60" stroke="#222a42" stroke-width="2"/>
-              
-              <path d="M 50 55 Q 120 40 200 25 T 370 15" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
-              <circle cx="200" cy="25" r="5" fill="#34d399"/>
-              <text x="215" y="25" fill="#34d399" font-size="11" font-family="Fira Code">Optimal Pareto Frontier</text>
-            </svg>
-          </div>`;
-      }
-      return '';
-    }
-
-    function renderStepContent(paper, stepNum) {
-      const t = paper.teach || {};
-
-      if (stepNum === 1) {
-        return `
-          <div class="card">
-            <h3>💡 Step 1: Core Problem & Multi-Layer Intuition</h3>
-            <div class="callout ok"><strong>Why We Read This:</strong> ${t.whyWeRead || paper.setconca || ''}</div>
-            <p><em>${t.oneSentence || ''}</em></p>
-            ${renderStepSVG(1, paper.id)}
-            <h4 style="margin-top:1.2rem">Tutor Multi-Layer Breakdown</h4>
-            ${renderRichProse(t.plainLanguage || '')}
-          </div>`;
-      }
-
-      if (stepNum === 2) {
-        return `
-          <div class="card">
-            <h3>📜 Step 2: Prior Work & Literature Context</h3>
-            <p class="muted">Where the field stood before this paper, what missing gap it targets, and what earlier methods it builds on or critiques.</p>
-            ${renderStepSVG(2, paper.id)}
-            ${renderRichProse(t.priorWork || 'Analyzes earlier literature and addresses missing research gaps.')}
-          </div>`;
-      }
-
-      if (stepNum === 3) {
-        return `
-          <div class="demo-container">
-            <h3>🎮 Step 3: Interactive Visual Concept & Math Simulator</h3>
-            <p class="muted" style="margin-bottom:1rem">Adjust sliders to see how vector space angles, component projections, or sparsity thresholds behave live!</p>
-            <div id="demoMount"></div>
-          </div>`;
-      }
-
-      if (stepNum === 4) {
-        return `
-          <div class="card">
-            <h3>⚙️ Step 4: Technical Architecture & Step-by-Step Math</h3>
-            ${renderStepSVG(4, paper.id)}
-            ${renderRichProse(t.paperArchitecture || 'Mathematical mechanics and step-by-step equations.')}
-            ${(t.simplifiedMath || []).length ? `<h4>Formula Decompositions</h4>${t.simplifiedMath.map(m => `
-              <div class="idea-card">
-                <h4>${esc(m.name)}</h4>
-                <div class="formula">${esc(m.formula)}</div>
-                ${dualBlock(m.original || m.formula, m.simple || m.meaning)}
-              </div>`).join('')}` : ''}
-          </div>`;
-      }
-
-      if (stepNum === 5) {
-        return `
-          <div class="card">
-            <h3>🧪 Step 5: Experiments, Datasets & Ablation Evidence</h3>
-            ${renderStepSVG(5, paper.id)}
-            ${renderRichProse(t.experimentalSetup || 'Experimental evidence and evaluation findings.')}
-          </div>
-          <div class="card">
-            <h3>💡 Key Paper Ideas Summary</h3>
-            ${(t.keyIdeas || []).map((k, i) => `
-              <div class="idea-card">
-                <h4>${i + 1}. ${esc(k.title)}</h4>
-                ${dualBlock(k.original || k.explain, k.simple || k.explain)}
-              </div>`).join('')}
-          </div>`;
-      }
-
-      if (stepNum === 6) {
-        const checks = t.masteryChecklist || [];
-        const st = state.checks[paper.id] || {};
-        const quiz = paper.quiz || t.quiz || [];
-        const shows = (t.limitPairs && t.limitPairs.length) ? t.limitPairs : (t.whatItShows || []).map(s => ({ original: s, simple: 'Evidence supports this.' }));
-        const nots = (t.nonClaimPairs && t.nonClaimPairs.length) ? t.nonClaimPairs : (t.whatItDoesNotShow || []).map(s => ({ original: s, simple: 'Do not overclaim into this.' }));
-
-        return `
-          <div class="card">
-            <h3>📊 What the Paper Proves vs What It Does NOT Establish</h3>
-            ${shows.map((x, i) => `<div class="idea-card"><h4>Supported Finding ${i + 1}</h4>${dualBlock(x.original, x.simple)}</div>`).join('')}
-            ${nots.map((x, i) => `<div class="idea-card"><h4>Limitation / Non-Claim ${i + 1}</h4>${dualBlock(x.original, x.simple)}</div>`).join('')}
-          </div>
-
-          <div class="card">
-            <h3>🎯 SetConCA Research Application</h3>
-            <div class="callout ok">${esc(paper.setconca || '')}</div>
-          </div>
-
-          <div class="card">
-            <h3>📋 Self-Assessment Mastery Checklist</h3>
-            <p class="muted" style="margin-bottom:0.8rem">Check off items as you master them.</p>
-            ${checks.map((c, i) => `<label class="checkrow"><input type="checkbox" ${st[i] ? 'checked' : ''} onchange="toggleCheck('${paper.id}',${i},this.checked)"/><span>${esc(c)}</span></label>`).join('')}
-          </div>
-
-          <div class="card">
-            <h3>❓ Concept Mastery Quiz</h3>
-            ${quiz.map((q, i) => `<div style="margin-bottom:1.4rem">
-              <div style="font-weight:600; font-size:0.95rem; margin-bottom:0.5rem">${i + 1}. ${esc(q.q)}</div>
-              ${(q.options || []).map((o, j) => `<button class="quiz-opt" onclick="answer('${paper.id}',${i},${j},${q.a},this)">${esc(o)}</button>`).join('')}
-              <div class="callout ok hidden" id="qf-${paper.id}-${i}" style="margin-top:0.5rem; font-size:0.85rem"></div>
-            </div>`).join('') || '<p class="muted">No quiz for this module.</p>'}
-          </div>`;
-      }
-
-      return '';
-    }
-
-    function esc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-    function toggleCheck(pid, i, v) { state.checks[pid] = state.checks[pid] || {}; state.checks[pid][i] = v; save(); }
-
-    function markAndAdvance(currentId, nextId) {
-      state.papers[currentId] = state.papers[currentId] || {};
-      state.papers[currentId].learn = true;
-      state.papers[currentId].quiz = true;
-      save();
-
-      if (nextId) {
-        openPaper(nextId, 1);
-      } else {
-        showHome();
-      }
-    }
-
-    function answer(pid, qi, chosen, correct, btn) {
-      const box = btn.parentElement;
-      box.querySelectorAll('.quiz-opt').forEach((b, j) => {
-        b.disabled = true;
-        if (j === correct) b.classList.add('correct');
-        else if (j === chosen) b.classList.add('wrong');
-      });
-      const paper = getPaper(pid);
-      const q = (paper.quiz || paper.teach?.quiz || [])[qi];
-      const fb = document.getElementById(`qf-${pid}-${qi}`);
-      fb.classList.remove('hidden');
-      fb.innerHTML = (chosen === correct ? '<strong>✓ Correct!</strong> ' : '<strong>✗ Incorrect.</strong> ') + esc(q?.explain || '');
-    }
-
-    // -------------------------------------------------------------
-    // INTERACTIVE VISUAL CANVAS ENGINE (PRECISION MATHER)
-    // -------------------------------------------------------------
-    function mountDemos() {
-      const id = view.paperId || (view.type === 'level' ? `level-${view.levelId}` : null);
-      const m = document.getElementById('demoMount'); if (!m) return;
-
-      if (id === 'pca-shlens' || view.levelId === 1) demoPCA(m);
-      else if (id === 'ica-shlens') demoICA(m);
-      else if (id === 'cca-uurtio') demoCCA(m);
-      else if (['ksparse','topk-sae','gated-sae','jumprelu','batchtopk','matryoshka'].includes(id) || view.levelId === 2) demoSAE(m);
-      else if (['align-unif','cpc','simclr','supcon','vicreg'].includes(id) || view.levelId === 5) demoAlign(m);
-      else if (['deepsets','set-transformer','neural-stat'].includes(id) || view.levelId === 4) demoSet(m);
-      else if (id === 'superposition' || view.levelId === 7) demoSuper(m);
-      else if (['cka','svcca'].includes(id) || view.levelId === 6) demoCKA(m);
-      else if (['probe-control','mdl-probe'].includes(id)) demoProbe(m);
-      else if (id === 'transformer-circuits') demoResidual(m);
-      else if (['absorption','non-canonical'].includes(id) || view.levelId === 9) demoAbsorption(m);
-      else demoGeneric(m);
-    }
-
-    function demoPCA(mount) {
-      mount.innerHTML = `
-        <canvas class="demo-canvas" id="c" width="440" height="260"></canvas>
-        <div class="demo-controls">
-          <label>Components (k): <input type="range" id="k" min="1" max="2" value="1"></label>
-          <span id="fvuVal" style="color:var(--accent); font-weight:600">FVU: 0.12</span>
-        </div>
-        <p class="muted" style="margin-top:0.4rem">Green = data points. Blue line = Principal axis (PC1). Red lines = perpendicular projections onto the full PC1 axis line.</p>`;
-      const canvas = document.getElementById('c');
-      const ctx = canvas.getContext('2d');
-      
-      let pts = [
-        {x: 120, y: 190}, {x: 140, y: 175}, {x: 160, y: 160}, {x: 180, y: 145},
-        {x: 200, y: 135}, {x: 220, y: 120}, {x: 240, y: 110}, {x: 260, y: 95},
-        {x: 280, y: 85},  {x: 300, y: 70},  {x: 150, y: 195}, {x: 190, y: 115},
-        {x: 230, y: 140}, {x: 270, y: 65},  {x: 310, y: 90},  {x: 130, y: 140}
-      ];
-
-      function draw() {
-        const k = +document.getElementById('k').value;
-        const w = canvas.width, h = canvas.height;
-        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, w, h);
-
-        const mx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
-        const my = pts.reduce((s, p) => s + p.y, 0) / pts.length;
-
-        let cxx = 0, cyy = 0, cxy = 0;
-        pts.forEach(p => {
-          const dx = p.x - mx, dy = p.y - my;
-          cxx += dx * dx; cyy += dy * dy; cxy += dx * dy;
-        });
-        cxx /= pts.length; cyy /= pts.length; cxy /= pts.length;
-
-        const tr = cxx + cyy, det = cxx * cyy - cxy * cxy;
-        const l1 = (tr + Math.sqrt(Math.max(0, tr * tr - 4 * det))) / 2;
-        let vx = cxy, vy = l1 - cxx;
-        const n = Math.hypot(vx, vy) || 1;
-        vx /= n; vy /= n;
-
-        ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2.5; ctx.beginPath();
-        ctx.moveTo(mx - 400 * vx, my - 400 * vy);
-        ctx.lineTo(mx + 400 * vx, my + 400 * vy);
-        ctx.stroke();
-
-        let totalErr = 0, totalVar = 0;
-        pts.forEach(p => {
-          const proj = (p.x - mx) * vx + (p.y - my) * vy;
-          let rx = p.x, ry = p.y;
-          if (k === 1) {
-            rx = mx + proj * vx;
-            ry = my + proj * vy;
-          }
-          const err = Math.hypot(p.x - rx, p.y - ry);
-          totalErr += err * err;
-          totalVar += Math.hypot(p.x - mx, p.y - my) ** 2;
-
-          ctx.strokeStyle = '#f43f5e'; ctx.lineWidth = 1.5; ctx.beginPath();
-          ctx.moveTo(p.x, p.y); ctx.lineTo(rx, ry); ctx.stroke();
-
-          ctx.fillStyle = '#34d399'; ctx.beginPath(); ctx.arc(p.x, p.y, 5, 0, Math.PI * 2); ctx.fill();
-          ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(rx, ry, 4, 0, Math.PI * 2); ctx.fill();
-        });
-
-        const fvu = k === 2 ? 0.00 : (totalErr / (totalVar || 1));
-        document.getElementById('fvuVal').textContent = `FVU: ${fvu.toFixed(2)} (${Math.round((1 - fvu) * 100)}% Variance Captured)`;
-      }
-
-      document.getElementById('k').oninput = draw; draw();
-    }
-
-    function demoICA(mount) {
-      mount.innerHTML = `
-        <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
-        <div class="demo-controls">
-          <label>Unmixing Angle (θ): <input id="a" type="range" min="0" max="90" value="35"></label>
-          <span id="kurtVal" style="color:var(--ok); font-weight:600">Kurtosis: 1.45</span>
-        </div>
-        <p class="muted" style="margin-top:0.4rem">
-          <strong>Central Limit Theorem in Action:</strong> Left = Non-Gaussian Square distribution. Right = Recovered signal. Rotate to 0°/90° to maximize Kurtosis and unmix pure independent sources!
-        </p>`;
-      const canvas = document.getElementById('c');
-      const ctx = canvas.getContext('2d');
-
-      function draw() {
-        const ang = document.getElementById('a').value * Math.PI / 180;
-        const w = canvas.width, h = canvas.height;
-        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, w, h);
-
-        ctx.strokeStyle = '#222a42'; ctx.strokeRect(20, 35, 180, 160);
-        ctx.fillStyle = '#94a3b8'; ctx.font = '11px Fira Code'; ctx.fillText('Pure Sources (Square Non-Gauss)', 25, 25);
-        
-        ctx.strokeStyle = '#222a42'; ctx.strokeRect(240, 35, 180, 160);
-        ctx.fillText('Recovered Output Signal', 255, 25);
-
-        let kurtSum = 0;
-        for (let i = 0; i < 60; i++) {
-          const sx = (Math.sin(i * 0.4) > 0 ? 35 : -35) + (Math.random() - 0.5) * 6;
-          const sy = ((i % 5) * 15 - 30) + (Math.random() - 0.5) * 6;
-
-          ctx.fillStyle = '#34d399';
-          ctx.fillRect(110 + sx, 115 + sy, 4, 4);
-
-          const mx = sx * Math.cos(ang) + sy * Math.sin(ang);
-          const my = -sx * Math.sin(ang) + sy * Math.cos(ang);
-
-          ctx.fillStyle = '#38bdf8';
-          ctx.fillRect(330 + mx, 115 + my, 4, 4);
-
-          kurtSum += Math.abs(mx ** 4);
-        }
-
-        const isUnmixed = (ang < 0.08 || Math.abs(ang - Math.PI / 2) < 0.08);
-        const kurt = isUnmixed ? 2.45 : 0.42;
-        
-        document.getElementById('kurtVal').textContent = isUnmixed 
-          ? `Kurtosis: ${kurt.toFixed(2)} (✨ PURE SOURCES UNMIXED!)`
-          : `Kurtosis: ${kurt.toFixed(2)} (Mixed Bell-Curve Gaussian)`;
-        document.getElementById('kurtVal').style.color = isUnmixed ? 'var(--ok)' : 'var(--warn)';
-      }
-
-      document.getElementById('a').oninput = draw; draw();
-    }
-
-    function demoCCA(mount) {
-      mount.innerHTML = `
-        <canvas class="demo-canvas" id="c" width="440" height="220"></canvas>
-        <div class="demo-controls"><span style="color:var(--accent)">Canonical Correlation = 0.88</span></div>
-        <p class="muted" style="margin-top:0.4rem">Blue = View A, Orange = View B. Connecting lines show aligned paired samples across views.</p>`;
-      const ctx = document.getElementById('c').getContext('2d');
-      ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 220);
-      for (let i = 0; i < 18; i++) {
-        const t = (i / 18) * 6, a = 60 + t * 14, b = 260 + t * 12;
-        const ya = 140 - Math.sin(t) * 35, yb = 140 - Math.sin(t) * 30;
-        ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(a, ya, 4, 0, 7); ctx.fill();
-        ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(b, yb, 4, 0, 7); ctx.fill();
-        ctx.strokeStyle = 'rgba(52,211,153,0.3)'; ctx.beginPath(); ctx.moveTo(a, ya); ctx.lineTo(b, yb); ctx.stroke();
-      }
-    }
-
-    function demoSAE(mount) {
-      mount.innerHTML = `
-        <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
-        <div class="demo-controls">
-          <label>TopK Sparsity (k): <input id="sk" type="range" min="1" max="16" value="4"></label>
-          <label>L1 Shrinkage: <input id="sl" type="range" min="0" max="100" value="40"></label>
-        </div>
-        <p class="muted" style="margin-top:0.4rem">Blue bars = TopK (exact magnitude preserved). Red dotted = L1 shrinkage magnitude loss.</p>`;
-      const ctx = document.getElementById('c').getContext('2d');
-      function draw() {
-        const k = +document.getElementById('sk').value, l1 = +document.getElementById('sl').value / 100;
-        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 240);
-        ctx.fillStyle = '#94a3b8'; ctx.font = '12px Fira Code'; ctx.fillText(`16 Overcomplete Features (TopK=${k})`, 20, 30);
-        for (let i = 0; i < 16; i++) {
-          const active = i < k;
-          const origH = active ? 40 + (16 - i) * 8 : 4;
-          const l1H = active ? Math.max(origH * (1 - l1), 2) : 2;
-          ctx.fillStyle = active ? '#38bdf8' : '#1e2433';
-          ctx.fillRect(30 + i * 24, 200 - origH, 18, origH);
-          if (active && l1 > 0) {
-            ctx.fillStyle = '#f43f5e';
-            ctx.fillRect(30 + i * 24, 200 - origH, 18, origH - l1H);
-          }
-        }
-      }
-      document.getElementById('sk').oninput = draw; document.getElementById('sl').oninput = draw; draw();
-    }
-
-    function demoAlign(mount) {
-      mount.innerHTML = `
-        <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
-        <div class="demo-controls">
-          <label>Alignment: <input id="aw" type="range" min="0" max="100" value="75"></label>
-          <label>Uniformity: <input id="uw" type="range" min="0" max="100" value="60"></label>
-        </div>
-        <p class="muted" style="margin-top:0.4rem">Hypersphere Unit Circle S¹: Positives pull together (Alignment), representations spread out (Uniformity).</p>`;
-      const ctx = document.getElementById('c').getContext('2d');
-      function draw() {
-        const aw = +document.getElementById('aw').value / 100, uw = +document.getElementById('uw').value / 100;
-        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 240);
-        ctx.strokeStyle = '#222a42'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(220, 120, 85, 0, 7); ctx.stroke();
-        
-        [[160, 80, '#38bdf8'], [280, 80, '#38bdf8'], [220, 185, '#fbbf24']].forEach(([cx, cy, col]) => {
-          for (let i = 0; i < 8; i++) {
-            const sp = (1 - aw) * 45 + 4;
-            let x = cx + (Math.random() - 0.5) * sp, y = cy + (Math.random() - 0.5) * sp;
-            x = 220 + (x - 220) * (0.4 + uw * 0.6); y = 120 + (y - 120) * (0.4 + uw * 0.6);
-            ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, 4, 0, 7); ctx.fill();
-          }
+  <!-- Glossary tooltip (global) -->
+  <div id="glTooltip" style="display:none; position:fixed; z-index:1000; background:var(--surface); border:1px solid var(--border-accent); border-radius:8px; padding:0.6rem 0.85rem; font-size:0.8rem; max-width:260px; pointer-events:none; box-shadow:0 8px 24px rgba(0,0,0,0.5);"></div>
+
+  <!-- Map tooltip -->
+  <div class="map-tooltip" id="mapTooltip"></div>
+
+  <!-- App modules -->
+  <script type="module">
+    import { createApp } from './app.js';
+    window.app = createApp();
+
+    // KaTeX auto-render when DOM updates
+    function renderMath() {
+      if (typeof renderMathInElement !== 'undefined') {
+        renderMathInElement(document.getElementById('main'), {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '\\[', right: '\\]', display: true },
+            { left: '$', right: '$', display: false },
+            { left: '\\(', right: '\\)', display: false }
+          ],
+          throwOnError: false,
+          errorColor: '#f43f5e'
         });
       }
-      document.getElementById('aw').oninput = draw; document.getElementById('uw').oninput = draw; draw();
     }
 
-    function demoSet(mount) {
-      mount.innerHTML = `
-        <div class="formula">Set Output: f(X) = ρ( Σ_{x∈X} φ(x) )</div>
-        <p class="muted" style="margin-bottom:0.8rem">Permutation Invariance: Changing input order gives 100% identical sum vectors. Set Transformer adds attention over elements.</p>
-        <div class="actions">
-          <button class="btn-secondary" onclick="alert('Permutation test passed: f({A,B,C}) === f({C,A,B})')">Test Permutation Invariance</button>
-        </div>`;
-    }
+    // Re-render math after every navigation
+    const observer = new MutationObserver(() => {
+      renderMath();
+    });
+    observer.observe(document.getElementById('main'), { childList: true, subtree: false });
 
-    function demoSuper(mount) {
-      mount.innerHTML = `
-        <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
-        <div class="demo-controls">
-          <label>Features (M): <input id="sn" type="range" min="2" max="16" value="8"></label>
-          <span style="color:var(--accent)">Dimensions: 2D</span>
-        </div>
-        <p class="muted" style="margin-top:0.4rem">M features packed into 2D space. Vectors form regular polygons causing neuron polysemanticity.</p>`;
-      const ctx = document.getElementById('c').getContext('2d');
-      function draw() {
-        const n = +document.getElementById('sn').value;
-        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 240);
-        for (let f = 0; f < n; f++) {
-          const a = f / n * Math.PI * 2 - Math.PI / 2;
-          ctx.strokeStyle = `hsl(${f * 360 / n}, 75%, 60%)`; ctx.lineWidth = 2; ctx.beginPath();
-          ctx.moveTo(220, 120); ctx.lineTo(220 + Math.cos(a) * 90, 120 + Math.sin(a) * 75); ctx.stroke();
-          ctx.fillStyle = `hsl(${f * 360 / n}, 75%, 60%)`; ctx.beginPath(); ctx.arc(220 + Math.cos(a) * 90, 120 + Math.sin(a) * 75, 4, 0, 7); ctx.fill();
-        }
-        ctx.fillStyle = '#f43f5e'; ctx.beginPath(); ctx.arc(220, 120, 6, 0, 7); ctx.fill();
-      }
-      document.getElementById('sn').oninput = draw; draw();
-    }
+    // Handle browser back/forward
+    window.addEventListener('popstate', () => app.handleRoute());
 
-    function demoCKA(mount) {
-      mount.innerHTML = `
-        <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
-        <div class="demo-controls"><span style="color:var(--ok); font-weight:600">Linear CKA Score = 0.94 (Orthogonally Invariant)</span></div>
-        <p class="muted" style="margin-top:0.4rem">Pairwise Example Gram Matrix K (Model A) vs L (Model B). High CKA proves similar example geometry.</p>`;
-      const ctx = document.getElementById('c').getContext('2d');
-      ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 240);
-      ctx.fillStyle = '#94a3b8'; ctx.font = '11px Fira Code'; ctx.fillText('Gram Matrix K (Model A)', 30, 25); ctx.fillText('Gram Matrix L (Model B)', 240, 25);
-      for (let i = 0; i < 8; i++) {
-        for (let j = 0; j < 8; j++) {
-          const valA = Math.abs(Math.sin(i * j + 1));
-          ctx.fillStyle = `rgba(56, 189, 248, ${valA})`; ctx.fillRect(30 + i * 22, 35 + j * 22, 20, 20);
-          ctx.fillStyle = `rgba(129, 140, 248, ${valA * 0.9 + 0.1})`; ctx.fillRect(240 + i * 22, 35 + j * 22, 20, 20);
-        }
-      }
-    }
-
-    function demoProbe(mount) {
-      mount.innerHTML = `
-        <canvas class="demo-canvas" id="c" width="440" height="220"></canvas>
-        <div class="demo-controls">
-          <label>Probe Capacity: <input id="pc" type="range" min="1" max="10" value="5"></label>
-          <span id="selText" style="color:var(--accent); font-weight:600">Selectivity = 65%</span>
-        </div>
-        <p class="muted" style="margin-top:0.4rem">Blue = Real Task Accuracy. Red = Control Task Accuracy. Selectivity = Real - Control (rules out memorization).</p>`;
-      const ctx = document.getElementById('c').getContext('2d');
-      function draw() {
-        const cap = +document.getElementById('pc').value;
-        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 220);
-        const realAcc = Math.min(95, 60 + cap * 4);
-        const ctrlAcc = Math.min(90, 10 + cap * 8);
-        const sel = realAcc - ctrlAcc;
-
-        ctx.fillStyle = '#38bdf8'; ctx.fillRect(100, 180 - realAcc * 1.4, 60, realAcc * 1.4);
-        ctx.fillStyle = '#f43f5e'; ctx.fillRect(260, 180 - ctrlAcc * 1.4, 60, ctrlAcc * 1.4);
-
-        ctx.fillStyle = '#fff'; ctx.font = '12px Fira Code';
-        ctx.fillText(`Real: ${realAcc}%`, 95, 170 - realAcc * 1.4);
-        ctx.fillText(`Control: ${ctrlAcc}%`, 255, 170 - ctrlAcc * 1.4);
-        document.getElementById('selText').textContent = `Selectivity = ${sel}%`;
-      }
-      document.getElementById('pc').oninput = draw; draw();
-    }
-
-    function demoResidual(mount) {
-      mount.innerHTML = `
-        <div class="formula">Residual Stream: x_{l+1} = x_l + Attention(x_l) + MLP(x_l)</div>
-        <p class="muted">Click to step through residual updates added linearly to the central communication vector.</p>
-        <div class="actions"><button class="btn-primary" onclick="alert('Step 1: Attn OV circuit added update vector Δx_attn to residual stream.')">Step Layer 1 Update →</button></div>`;
-    }
-
-    function demoAbsorption(mount) {
-      mount.innerHTML = `
-        <canvas class="demo-canvas" id="c" width="440" height="220"></canvas>
-        <div class="demo-controls">
-          <label>Dictionary Width: <input id="dw" type="range" min="1" max="5" value="2"></label>
-          <span id="modeText" style="color:var(--warn); font-weight:600">Feature Absorption Mode</span>
-        </div>
-        <p class="muted" style="margin-top:0.4rem">Narrow width causes Feature Absorption (merged latents). Wide width causes Feature Splitting.</p>`;
-      const ctx = document.getElementById('c').getContext('2d');
-      function draw() {
-        const w = +document.getElementById('dw').value;
-        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 220);
-        ctx.fillStyle = '#fff'; ctx.font = '12px Fira Code';
-        if (w <= 2) {
-          document.getElementById('modeText').textContent = 'Feature Absorption (Coarse Merged Latent)';
-          ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(220, 110, 40, 0, 7); ctx.fill();
-          ctx.fillStyle = '#090c14'; ctx.fillText('Concept [Animal]', 175, 115);
-        } else {
-          document.getElementById('modeText').textContent = 'Feature Splitting (Fine Sub-Latents)';
-          for (let i = 0; i < w * 2; i++) {
-            ctx.fillStyle = '#38bdf8'; ctx.beginPath(); ctx.arc(80 + i * 35, 110, 14, 0, 7); ctx.fill();
-          }
-        }
-      }
-      document.getElementById('dw').oninput = draw; draw();
-    }
-
-    function demoGeneric(mount) {
-      mount.innerHTML = `
-        <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
-        <div class="demo-controls">
-          <label>Feature Dimension d: <input id="gd" type="range" min="4" max="32" value="16"></label>
-          <label>Active Sparsity k: <input id="gk" type="range" min="1" max="10" value="3"></label>
-        </div>
-        <p class="muted" style="margin-top:0.4rem">Interactive Feature Vector Space Simulator: observe active basis projections, sparsity thresholding, and vector angles live.</p>`;
-      const ctx = document.getElementById('c').getContext('2d');
-      function draw() {
-        const d = +document.getElementById('gd').value, k = +document.getElementById('gk').value;
-        ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, 440, 240);
-        ctx.strokeStyle = '#222a42'; ctx.strokeRect(20, 20, 400, 200);
-        ctx.fillStyle = '#94a3b8'; ctx.font = '12px Fira Code'; ctx.fillText(`Vector Space (d=${d}, active k=${k})`, 35, 42);
-        const bw = (350 / d) - 2;
-        for (let i = 0; i < d; i++) {
-          const active = i < k;
-          const h = active ? 35 + (d - i) * 4 : 4;
-          ctx.fillStyle = active ? '#38bdf8' : '#1e2433';
-          ctx.fillRect(40 + i * (bw + 2), 195 - h, Math.max(bw, 2), h);
-        }
-      }
-      document.getElementById('gd').oninput = draw; document.getElementById('gk').oninput = draw; draw();
-    }
-
-    // Render hook for interactive demos
-    const _render = render;
-    render = function () { _render(); requestAnimationFrame(mountDemos); };
-
-    render();
+    // Hash-based routing
+    window.addEventListener('hashchange', () => app.handleRoute());
   </script>
 </body>
 </html>

@@ -1,0 +1,228 @@
+{
+  "id": "p00-l03",
+  "phase": 0,
+  "lesson": 3,
+  "title": "What is a representation?",
+  "estimatedMinutes": 22,
+  "status": "complete",
+  "prerequisites": ["p00-l01", "p00-l02"],
+  "learningObjectives": [
+    "Define 'representation' as a learned mapping from inputs to internal states that preserves some structure of the input",
+    "Distinguish between a representation that 'stores' information and one that 'uses' that information in computation",
+    "Explain the encoding hypothesis and state its assumptions and limits",
+    "Identify the failure mode where a representation stores a property but makes it inaccessible to downstream computation"
+  ],
+  "sections": {
+    "whyThisLesson": {
+      "text": "In the previous lesson, we saw that activation vectors encode something about tokens and context. But the word 'encode' was doing a lot of work. In this lesson, we slow down and ask: what does it actually mean for a neural network to 'represent' something? This question is not just philosophical — it has direct practical implications. A model might technically have enough information in its activations to answer a question, but if that information is not represented in a usable form, the model cannot use it. Understanding the distinction between 'stores information' and 'uses information' is crucial for correctly interpreting mechanistic interpretability experiments."
+    },
+    "bridgeFrom": {
+      "text": "In lesson p00-l02, we saw that activation vectors at deeper layers encode contextual information about tokens — the activation for 'Paris' in a geographic context is different from the one in a celebrity context. But what exactly does 'encode' mean? When is it legitimate to say that the model 'represents' a concept?"
+    },
+    "intuition": {
+      "analogy": "A map is a representation of a city. It preserves some information — relative distances between locations, the topology of street connections, which areas are north vs. south — and it discards other information — the textures of building facades, the smell of bakeries, the sounds of traffic. A map is useful precisely because it preserves the information you need for navigation while abstracting away everything else. Different maps preserve different things: a subway map preserves connection topology but distorts physical distance; a satellite image preserves visual appearance but is harder to read for navigation.",
+      "analogyLimit": "A map is a deliberately designed human artefact whose purpose and what it preserves are chosen by the cartographer. Neural network representations are not designed — they emerge from training to minimise prediction loss. The model may represent information in ways that are perfectly functional for prediction but completely opaque to humans. Furthermore, a map is a full-fidelity capture of chosen properties. Neural representations are compressed and may represent properties only approximately, partially, or in superposition with other properties.",
+      "text": "A representation is a function R : X → Z that maps inputs x in X to internal states z in Z. The representation is useful if it preserves the structure of X that is relevant to the task, in Z. For language models, X is the space of possible token-in-context combinations, and Z is R^{d_model}. The activation at layer l is a representation that has been shaped by training to preserve information useful for next-token prediction. 'Shaped by training' is the key phrase — the model does not explicitly decide to represent 'is this token a capital city?'; that property emerges as a useful intermediate computation for predicting the next token in geographic sentences."
+    },
+    "toyExample": {
+      "description": "Demonstrate the 'stores vs. uses' distinction using a simple linear probe experiment on 5 activation vectors.",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Take 5 token-in-context activations at layer 3 (3-dimensional illustration): Rome, Tokyo, Paris, London, Sydney — all capital cities of major countries.",
+          "result": "Rome:   [1.2, 0.8, 0.3]\nTokyo:  [1.1, 0.9, 0.4]\nParis:  [1.3, 0.7, 0.2]\nLondon: [1.0, 0.9, 0.5]\nSydney: [1.2, 0.8, 0.3]",
+          "insight": "All five vectors are clustered in a similar region. This is consistent with the representation storing information about 'capital city' — but it is not proof."
+        },
+        {
+          "step": 2,
+          "action": "Add 5 non-capital activations: suburb, village, hamlet, town, borough.",
+          "result": "Suburb:  [-0.4, 1.2, 0.8]\nVillage: [-0.5, 1.1, 0.9]\nHamlet:  [-0.3, 1.3, 0.7]\nTown:    [-0.5, 1.0, 0.9]\nBorough: [-0.4, 1.2, 0.8]",
+          "insight": "The non-capital settlement words cluster in a completely different region. A linear classifier can perfectly separate these two groups using only the first dimension (positive = capital, negative = non-capital). The information IS stored in the representation."
+        },
+        {
+          "step": 3,
+          "action": "Now suppose we ablate (zero out) dimension 1 of all activation vectors at layer 3, and re-run the model's subsequent layers to measure if next-token prediction accuracy for capital-city-related sentences changes.",
+          "result": "Without ablation: 92% accuracy on 'The capital of France is ___' style sentences. With ablation: 45% accuracy (near random). Prediction accuracy drops substantially.",
+          "insight": "This demonstrates that dimension 1 is not just storing the capital-city property — it is also being used by subsequent layers to make predictions. The representation stores AND uses this information. This is the ideal case for interpretability."
+        },
+        {
+          "step": 4,
+          "action": "Now consider a different property: suppose dimension 2 perfectly separates tokens by whether the city is in the Northern Hemisphere. A linear probe achieves 100% accuracy. But ablating dimension 2 has no effect on any downstream prediction task.",
+          "result": "Ablation of dimension 2: 92% accuracy on all tested tasks (same as baseline). The property is stored but not causally used.",
+          "insight": "A representation can store information about a property without that property being causally relevant to the model's computation. This is a critical distinction: probing evidence alone does not establish that a property is used by the model, only that it is stored in a linearly accessible form."
+        }
+      ]
+    },
+    "visual": {
+      "id": "scatter-covariance",
+      "question": "Which properties of the input are preserved in the representation, and which are discarded?",
+      "description": "The interactive shows a scatter plot of activation vectors (projected to 2D) for a set of words, colour-coded by a chosen property (e.g. 'is a city', 'is in Europe', 'has more than 1M population'). Toggle between properties to see which ones separate clusters and which do not. Observe that some properties create tight, linearly separable clusters (likely stored) while others are mixed (likely not stored or stored nonlinearly)."
+    },
+    "technical": {
+      "text": "The encoding hypothesis (also called the linear representation hypothesis in some literature) proposes that neural networks represent world properties as linear structure in their activation spaces — specifically, that for many properties P, there exists a linear probe (a vector w_P in R^{d_model}) such that h · w_P > threshold if and only if P holds for the input producing h. This hypothesis has been empirically productive: linear probes achieve high accuracy on many linguistic and world-knowledge properties across many models. However, it is an empirical hypothesis, not a theorem. The stronger claim — that the model uses these linear representations in its computations — requires causal evidence from intervention experiments (activation patching, ablation) rather than probing alone.",
+      "definitions": [
+        {
+          "term": "Representation",
+          "definition": "A function R : X → Z mapping inputs to internal states. A representation is useful if the structure of X relevant to the task is preserved (or can be easily recovered) from Z. In neural networks, representations are learned end-to-end rather than hand-designed."
+        },
+        {
+          "term": "Encoding hypothesis",
+          "definition": "The hypothesis that neural network representations linearly encode world properties — that a linear probe trained on activation vectors can reliably recover a property P from the activation h. This hypothesis is well-supported empirically but is not universal: some properties may be encoded nonlinearly or not at all."
+        },
+        {
+          "term": "Linear probe",
+          "definition": "A logistic regression or linear classifier trained on activation vectors to predict a property label. If the probe achieves high accuracy, the property is said to be 'linearly encoded' in the representation. High probe accuracy is evidence for storage; ablation experiments are needed to establish use."
+        },
+        {
+          "term": "Stores vs. uses information",
+          "definition": "A representation 'stores' information about property P if a probe can recover P from the activation. A representation 'uses' information about P if ablating P-related dimensions changes the model's downstream behaviour. Both conditions are required to say P is a causally relevant part of the representation."
+        }
+      ]
+    },
+    "mathematics": [
+      {
+        "id": "eq-linear-probe",
+        "label": "Linear probe classifier",
+        "latex": "\\hat{y} = \\sigma(w_P^\\top h + b)",
+        "symbols": {
+          "\\hat{y}": "Predicted probability that property P holds for the input that produced activation h; a scalar in (0, 1)",
+          "w_P": "The probe weight vector, learned by logistic regression; a vector in R^{d_model} that defines a 'feature direction' for property P",
+          "h": "The activation vector being probed; a vector in R^{d_model}",
+          "b": "The probe bias term; a scalar",
+          "\\sigma": "Sigmoid function; maps any real number to (0, 1)"
+        },
+        "plainExplanation": "The linear probe computes a dot product between the activation vector and a learned weight vector. The dot product measures how much the activation aligns with the 'direction of property P'. If this score (plus bias) is large, the probe predicts the property is present.",
+        "whyNeeded": "The linear probe is a minimal test of whether property P is linearly accessible in the representation. If a linear probe fails, we know P is not stored linearly (though it might still be stored nonlinearly). If it succeeds, we know P is accessible but not necessarily used.",
+        "ifRemoved": "Without a probe, we have no principled way to ask 'is property P encoded here?' We would have to rely on qualitative inspection of activation vectors, which is not feasible for high-dimensional spaces.",
+        "encourages": "Linear probing encourages the view that meaningful information is stored as directions in activation space — setting up the 'features as directions' view we will formalise in lesson p00-l04.",
+        "doesNotGuarantee": "Probe success does not guarantee that the model uses this direction causally. The direction might be a correlate of the model's actual computation rather than the computation itself."
+      }
+    ],
+    "methodComparison": [
+      {
+        "question": "How do we establish that a model 'knows' some property P?",
+        "methods": [
+          {
+            "name": "Behavioural testing",
+            "answer": "Design prompts that require knowledge of P to answer correctly. If the model answers correctly, P influences its outputs in the tested setting. This is the weakest form of evidence — the model might use P sometimes but not in the way we think."
+          },
+          {
+            "name": "Linear probing",
+            "answer": "Train a linear classifier on layer-l activations to predict P. If accuracy is high, P is linearly encoded in the representation at layer l. This establishes storage but not causal use."
+          },
+          {
+            "name": "Activation ablation / patching",
+            "answer": "Identify which dimensions or directions encode P (e.g., via the probe weight vector w_P). Zero them out or replace them with activations from a context where P does not hold. If downstream behaviour changes, P is causally used. This is the strongest form of evidence and is required to make causal claims."
+          }
+        ],
+        "practicalImplication": "SetConCA-related research should be careful to use the right form of evidence. Showing that SetConCA features correspond to human-labelled concepts (probing) is evidence for storage. Showing that ablating SetConCA features changes model behaviour is evidence for use. Both matter for different claims."
+      }
+    ],
+    "evidence": [
+      {
+        "claim": "Linear probes trained on activations of language models recover many linguistic and world-knowledge properties with high accuracy, consistent with these properties being linearly encoded.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "belinkov-probe-2022",
+        "section": "Survey findings",
+        "verified": true,
+        "paraphrase": "Across many studies, linear probes applied to transformer activations achieve high accuracy on properties including part-of-speech, syntactic structure, named entities, and factual attributes. This is consistent with the linear representation hypothesis but does not establish that these representations are causally used or that all properties are linearly encoded."
+      },
+      {
+        "claim": "High probing accuracy is insufficient evidence that a property is used by the model — causal interventions are required.",
+        "claimType": "warning",
+        "label": "[Warning]",
+        "sourceId": "ravichander-probing-2021",
+        "section": "Section 1",
+        "verified": true,
+        "paraphrase": "Multiple papers have argued and provided evidence that probing accuracy overstates the degree to which properties are functionally used by models. A representation that stores a property as a linear correlate of a used property will also show high probing accuracy, even though the stored property itself is not causally relevant."
+      },
+      {
+        "claim": "The distinction between 'stores information' and 'uses information' is fundamental to mechanistic interpretability and cannot be resolved by probing alone.",
+        "claimType": "course_interpretation",
+        "label": "[Course Interpretation]",
+        "sourceId": null,
+        "section": null,
+        "verified": true,
+        "paraphrase": "This is a curriculum-level framing that synthesises the probing literature. It emphasises that mechanistic interpretability requires both observational (probing) and experimental (intervention) methods."
+      }
+    ],
+    "failureModes": [
+      {
+        "name": "Probe accuracy mistaken for causal relevance",
+        "mechanism": "A linear probe achieves 95% accuracy at predicting property P from layer-5 activations. The researcher concludes 'the model uses P at layer 5 to make predictions.' But P might be stored as a by-product of some other computation, without ever being read by subsequent layers.",
+        "symptom": "Ablating the P-direction does not change model behaviour, contradicting the implied claim of causal use.",
+        "diagnosticTest": "Ablate the probe weight vector direction from activations (project it out). Does downstream behaviour change? If not, P is stored but not used.",
+        "mitigation": "Always distinguish 'stored' from 'used'. Use the phrasing 'the probe is consistent with P being stored at layer 5' rather than 'the model uses P at layer 5'.",
+        "setconcaRelevance": "When evaluating SetConCA features, evidence that features correspond to human-interpretable concepts (via probing) should be distinguished from evidence that those features causally influence model behaviour."
+      },
+      {
+        "name": "Assuming compression is faithful",
+        "mechanism": "The model compresses information from a high-dimensional input space into a d_model-dimensional vector. This compression necessarily loses some information. Researchers may assume the compression preserves everything important.",
+        "symptom": "The model fails on tasks that seem straightforward, even though probing suggests it has the relevant information — the information is stored but the compression made it inaccessible to the relevant downstream computation.",
+        "diagnosticTest": "Compare probe accuracy at layer l with behavioural accuracy on tasks requiring property P. A large gap (high probe accuracy, low task accuracy) suggests the compression is imperfect or the information is stored but not in the right form to be used.",
+        "mitigation": "Treat the model's representations as lossy compressions optimised for next-token prediction, not as complete knowledge bases.",
+        "setconcaRelevance": "SetConCA's hypothesis is that processing tokens as a set (rather than individually) enables better representations of concept-level information. But this depends on the compressed representation being accessible — a key empirical question."
+      }
+    ],
+    "setconcaConnection": {
+      "relevance": "SetConCA is motivated by the hypothesis that existing representations (pointwise SAE features) store information about concepts but may not represent them in a maximally usable form. SetConCA proposes an alternative that should represent concepts in a way that is more accessible.",
+      "whichPart": "The quality of the output representation: SetConCA aims to produce features that are both stored (linearly decodable) and meaningful (corresponding to human-interpretable concepts).",
+      "whichDesignChoice": "The set-based processing in SetConCA is designed to produce representations that encode relationships between tokens — a form of information that pointwise methods may compress away.",
+      "whichFailureExplained": "The 'stores but does not use' failure mode is directly relevant: if SetConCA produces features that are linearly decodable as concept labels but not causally linked to model behaviour, the features are interesting but not mechanistically relevant.",
+      "proposedExperiment": "For a SetConCA feature corresponding to 'European capital city', conduct two tests: (1) train a linear probe on the feature activations to predict 'European capital city' label — this tests storage; (2) ablate the feature and measure whether the model's predictions on geographic tasks change — this tests causal use.",
+      "alternativeExplanation": "An alternative view: maybe representation quality does not matter for interpretability — what matters is that the features are causally connected to behaviour, regardless of whether they are human-interpretable. SetConCA's emphasis on interpretable features assumes that interpretability is a goal alongside causal relevance."
+    },
+    "exercises": [
+      {
+        "type": "prediction",
+        "prompt": "A linear probe trained on layer-7 activations achieves 98% accuracy at predicting whether a token refers to a living organism. Does this prove that the model uses the living/non-living distinction in its computations? What additional experiment would you run to find out?",
+        "reveal": "No — 98% probe accuracy establishes that the living/non-living distinction is linearly encoded in layer-7 activations, but not that it is causally used. To test causal use, you would run an ablation experiment: project out the probe weight direction from all layer-7 activations and re-run the model. If predictions about organism-related properties (e.g., predicting 'breathes' or 'eats' in context) degrade, this is consistent with causal use. If predictions are unaffected, the property is stored but not used at layer 7."
+      },
+      {
+        "type": "construct",
+        "prompt": "Construct a specific scenario (with concrete tokens and properties) where a representation stores a property that is NOT the property the model actually uses for prediction, causing a probe to give a misleading result.",
+        "reveal": "Example: The model is predicting the next word after 'The president of ___'. The model needs to know country names for this. It encodes a 'country' feature. By coincidence, all countries in the training data with populations > 100M have a distinct activation pattern — so a probe for 'population > 100M' achieves 85% accuracy. But the model is not using population as its computation — it is using 'is a country'. The probe for population gives a misleading result because population correlates with the relevant property (country identity) in the training data."
+      },
+      {
+        "type": "diagnose",
+        "prompt": "A team reports: 'We trained linear probes on GPT-2's layer-6 activations for 50 different world-knowledge properties. Average probe accuracy was 81%. We conclude that GPT-2 has a rich world model encoded in layer 6.' Identify three potential issues with this conclusion.",
+        "reveal": "Issue 1 — Averaging across properties obscures variance: some properties may have 99% accuracy, others 51% (near chance). The average conceals which properties are reliably encoded. Issue 2 — Probe accuracy ≠ causal use: high accuracy shows storage, not that these representations drive GPT-2's predictions. Issue 3 — 'Rich world model' is an unsubstantiated qualitative leap: having linear probes succeed does not imply the model has a coherent, systematic internal world model — it may store disparate facts without any integrative structure. A more careful claim would be: 'Linear probes on layer-6 activations achieve 81% average accuracy across 50 tested properties, consistent with these properties being linearly encoded in that layer's representations.'"
+      }
+    ],
+    "masteryQuestions": [
+      {
+        "type": "open",
+        "prompt": "A colleague argues: 'If a linear probe can predict property P with 99% accuracy from a model's activations, we know the model represents P.' Construct a precise counter-example showing that this reasoning fails, and explain what would constitute stronger evidence.",
+        "rubric": [
+          "Provides a specific counter-example where probe accuracy is high but the property is not causally used (e.g., a property that correlates with a used property but is not the used property itself)",
+          "Clearly distinguishes 'stores information' (probe accuracy) from 'uses information' (causal intervention outcome)",
+          "Proposes a specific causal experiment (ablation, patching) that would provide stronger evidence",
+          "Uses appropriately hedged language: 'consistent with', 'provides evidence for', 'does not establish'"
+        ],
+        "badVersion": "My colleague is wrong because probes are not perfect. You need 100% accuracy to know the model represents something.",
+        "goodVersion": "High probe accuracy is evidence that property P is linearly encoded in the activation space, but it conflates two distinct claims: that P is stored in the representation, and that P is used in the computation. A counter-example: suppose a model represents 'country' as a feature it uses for geographic prediction. By accident, all large countries in the training data are democracies. A probe for 'is a democracy' achieves 95% accuracy, because democracy correlates with the country feature the model actually uses. But if we ablate the 'democracy' direction and re-run the model, geographic predictions are unaffected — proving the model does not use 'is a democracy'. Stronger evidence would come from an activation patching experiment: take an activation from a context where P holds, patch in an activation from a context where P does not hold (with everything else matched), and measure whether model behaviour changes as expected. If it does, P is causally relevant."
+      }
+    ],
+    "researchWorksheet": {
+      "claim": "Neural language models develop internal representations that encode semantic and world-knowledge properties in a linearly accessible form.",
+      "requiredAssumptions": "Assumes that linear probing is the appropriate test of encoding. Assumes that probe accuracy on a finite test set generalises. Assumes that the properties being probed are the right ones to test (selection bias in property choice).",
+      "evidenceProvided": "A large body of probing studies across many models and many properties provides consistent evidence for linear encoding of diverse properties. The evidence is correlational — it establishes that information is stored, not that it is used.",
+      "strongestAlternativeExplanation": "The probe might succeed because the representation is correlated with the true property through a third variable (the model actually encodes something else that happens to correlate with the tested property in the training data distribution).",
+      "missingControl": "The ideal control would be a model trained on shuffled labels (causal language modelling, but with entity labels shuffled), which should not develop the probed properties — but would the probe still succeed? If yes, the probe is picking up on surface statistics rather than semantic content.",
+      "closestBaseline": "Probing a randomly initialised (untrained) model with the same architecture. If probe accuracy on random weights is above chance, the probe is measuring something about the input tokens, not about learned representations.",
+      "falsifyingResult": "If for a property P, a probe trained on layer-l activations achieves high accuracy but activation patching experiments show that changing P in the activation has no effect on P-relevant downstream predictions, this would falsify the causal component of the representation claim.",
+      "setconcaImplication": "SetConCA's features should be evaluated with both probing (storage) and intervention (use) experiments. Claiming that SetConCA improves representations requires demonstrating not just that its features are more interpretable by probing, but that they are more causally relevant to model behaviour.",
+      "proposedExperiment": "Identify 10 features in a baseline SAE and 10 corresponding features in a SetConCA model (matched by semantic content via probing). For each feature, measure (1) probe accuracy on the corresponding property and (2) the effect of feature ablation on a downstream task requiring that property. Compare whether SetConCA features are more causally relevant (larger ablation effects) in addition to being more interpretable."
+    }
+  },
+  "bridgeToNext": {
+    "nextId": "p00-l04",
+    "text": "We now understand representations: learned mappings that preserve some input structure in a high-dimensional vector space, and where the distinction between 'storing' and 'using' information is crucial. But we have been talking about representations in the abstract. The next lesson asks a more specific question: within a representation, what is a 'feature'? If a representation can store information about 'capital city' or 'living organism', where does that information live geometrically inside the vector?"
+  },
+  "papers": [
+    "belinkov-probe-2022",
+    "ravichander-probing-2021",
+    "elhage-transformer-circuits-2021"
+  ]
+}

@@ -1,0 +1,235 @@
+{
+  "id": "p01-l05",
+  "phase": 1,
+  "lesson": 5,
+  "title": "Basis and Coordinate Systems",
+  "estimatedMinutes": 30,
+  "status": "complete",
+  "prerequisites": ["p01-l04"],
+  "learningObjectives": [
+    "Define a basis and explain what makes a set of vectors a valid basis for a vector space",
+    "Express a vector in terms of a non-standard basis and explain what changes and what stays the same",
+    "Explain the key insight: changing basis changes the components but not the geometric object",
+    "Connect the choice of basis in neural networks to the interpretability of components",
+    "Explain what it means to say that neural activations are expressed in the 'neuron basis'"
+  ],
+  "sections": {
+    "whyThisLesson": {
+      "text": "The deepest insight in mechanistic interpretability is this: neural network activations are expressed in the 'neuron basis' — where each axis corresponds to one neuron — but the MEANINGFUL directions in the representation space are NOT necessarily the neuron axes. PCA, ICA, and sparse autoencoders are all different attempts to find a BETTER basis — one where the axes correspond to interpretable features rather than arbitrary neurons. This lesson explains what 'basis' and 'coordinate system' mean mathematically, so that the idea of 'changing basis to find interpretable directions' becomes precise rather than vague."
+    },
+    "bridgeFrom": "The covariance matrix describes the shape of the data cloud in the current coordinate system. But the choice of coordinate system (basis) determines what we see. This lesson explores how changing the basis changes our view of the same data.",
+    "intuition": {
+      "analogy": "Imagine a city that lies on a grid of streets running at 45° to true north. If you navigate using a compass (true north/south/east/west), every journey involves a messy combination of oblique distances. But if you use the street grid as your reference directions (call them 'street north' and 'street east'), every journey has clean integer block counts. The city hasn't changed — only the reference directions you use to describe positions in it. Different reference systems (bases) make different aspects of the same structure easy or hard to see and describe.",
+      "analogyLimit": "In a city, we have physical intuitions about what 'north' and 'east' mean — there are two equally valid interpretations of the basis, and we can switch between them. In a 768-dimensional neural embedding space, there are infinitely many choices of basis, none of which has obvious physical meaning. We cannot visualise the difference between a 'neuron basis' and a 'PCA basis' in a 768D space — we can only use the algebra to navigate between them. Additionally, in a real city, some bases are clearly 'better' for navigation; in representation spaces, the criterion for 'better' is less obvious and is an active research question.",
+      "text": "The key insight is that the data (the geometric cloud of points) is fixed — it does not change when you change basis. Only the DESCRIPTION of each point changes. The data point that was [3, 4] in the standard basis might be [5, 0] in a different basis (if the first basis vector points toward [3,4] with length 1/5). The point is the same; the coordinates are different. This distinction — between the geometric object (invariant) and its coordinates (basis-dependent) — is the conceptual foundation for all of PCA, ICA, and SAE research. Interpretability research is asking: what basis makes neural activations easy to understand? The neuron basis, inherited from training, may be the worst possible choice."
+    },
+    "toyExample": {
+      "description": "We take the vector v = [3, 4] and express it in two different bases: the standard basis and a 45°-rotated basis. We show that the geometric point is the same while the coordinates change.",
+      "steps": [
+        {
+          "step": 1,
+          "action": "Standard basis: e₁ = [1,0], e₂ = [0,1]. Express v = [3,4] in this basis. Coordinates: 3 units along e₁ plus 4 units along e₂.",
+          "result": "v = 3e₁ + 4e₂ = 3[1,0] + 4[0,1] = [3,4]. Coordinates in standard basis: (3, 4).",
+          "insight": "In the standard basis, the components of v are directly the coordinate values. This is why we usually write vectors as [3, 4] — it implicitly assumes the standard basis."
+        },
+        {
+          "step": 2,
+          "action": "Define a new basis: b₁ = [1/√2, 1/√2] (pointing at 45°) and b₂ = [-1/√2, 1/√2] (pointing at 135°). These are unit vectors and perpendicular to each other — they form an orthonormal basis.",
+          "result": "b₁ · b₂ = (1/√2)(-1/√2) + (1/√2)(1/√2) = -1/2 + 1/2 = 0 ✓ (perpendicular). ||b₁|| = 1 ✓. ||b₂|| = 1 ✓.",
+          "insight": "An orthonormal basis (orthogonal unit vectors) is the most convenient type of basis because the coordinate formula is simple: the coordinate along each basis vector is just the dot product with that basis vector."
+        },
+        {
+          "step": 3,
+          "action": "Express v = [3,4] in the new basis. Coordinate 1 = v·b₁ = 3(1/√2) + 4(1/√2) = 7/√2 ≈ 4.95. Coordinate 2 = v·b₂ = 3(-1/√2) + 4(1/√2) = 1/√2 ≈ 0.71.",
+          "result": "In the rotated basis, v has coordinates ≈ (4.95, 0.71). The point [3,4] is now described as '4.95 units along the 45° direction, 0.71 units along the 135° direction'.",
+          "insight": "Same geometric point, completely different numbers. Neither description is 'more true' — they are both exact representations of the same vector in different coordinate systems."
+        },
+        {
+          "step": 4,
+          "action": "Verify: reconstruct v from the new coordinates. 4.95 × [1/√2, 1/√2] + 0.71 × [-1/√2, 1/√2] = [4.95/√2 - 0.71/√2, 4.95/√2 + 0.71/√2] = [4.24/√2 - ... actually: (7/√2)(1/√2) + (1/√2)(-1/√2) = 7/2 - 1/2 = 3 in x; (7/√2)(1/√2) + (1/√2)(1/√2) = 7/2 + 1/2 = 4 in y.",
+          "result": "Reconstructed: [3, 4] = v ✓. The reconstruction perfectly recovers the original vector.",
+          "insight": "Changing basis is a lossless operation for orthonormal bases. Every geometric property — length, angle, distance — is preserved. Only the coordinate numbers change."
+        }
+      ]
+    },
+    "visual": {
+      "id": "vector-space",
+      "question": "When you rotate the basis vectors in the interactive visual, do the GEOMETRIC locations of the data points change? Does the DESCRIPTION of any point (its coordinates) change?",
+      "description": "An interactive 2D space showing 3 data points and two basis vectors (arrows showing b₁ and b₂). A slider rotates the basis vectors together, keeping them perpendicular. As the basis rotates, the coordinate readouts for each data point update to show the new coordinates in the rotated basis. The geometric position of the data points never moves — only the coordinate numbers change. A toggle switches between 'standard basis coordinates' and 'current basis coordinates'."
+    },
+    "technical": {
+      "text": "A basis for ℝⁿ is a set of n linearly independent vectors {b₁, b₂, ..., bₙ} such that every vector in ℝⁿ can be written as a unique linear combination of the basis vectors: v = c₁b₁ + c₂b₂ + ... + cₙbₙ. The scalars (c₁, c₂, ..., cₙ) are the coordinates of v in this basis. For an orthonormal basis (where basis vectors are pairwise perpendicular and each has unit length), the coordinates are computed by dot products: cᵢ = v · bᵢ. Changing from one orthonormal basis to another is accomplished by multiplying by a rotation matrix (an orthogonal matrix Q with QᵀQ = I). The key invariants under any basis change are: (1) the length of any vector, (2) the angle between any two vectors, (3) the dot product between any two vectors. Everything geometric is preserved; only the numerical coordinate descriptions change. In neural network interpretability, the neuron activations are coordinates in the 'neuron basis' — the canonical basis where each axis aligns with one neuron. PCA finds a rotation of this basis to the 'PCA basis' where the first axis captures maximum variance. SAEs attempt to find a (potentially overcomplete) basis where each axis corresponds to a monosemantic feature.",
+      "definitions": [
+        {
+          "term": "Basis",
+          "definition": "A set of n linearly independent vectors {b₁, ..., bₙ} in ℝⁿ such that every vector can be uniquely expressed as a linear combination of the basis vectors. A basis defines a coordinate system."
+        },
+        {
+          "term": "Coordinates",
+          "definition": "The scalars (c₁, ..., cₙ) such that v = c₁b₁ + ... + cₙbₙ. The same geometric vector has different coordinates in different bases."
+        },
+        {
+          "term": "Orthonormal basis",
+          "definition": "A basis where every vector has unit length (||bᵢ|| = 1) and every pair of vectors is perpendicular (bᵢ · bⱼ = 0 for i ≠ j). The standard basis {e₁=[1,0,...,0], e₂=[0,1,...,0], ...} is orthonormal."
+        },
+        {
+          "term": "Change of basis",
+          "definition": "The transformation of coordinate representations when switching from one basis to another. For orthonormal bases, this is a rotation (multiplication by an orthogonal matrix)."
+        },
+        {
+          "term": "Orthogonal matrix",
+          "definition": "A square matrix Q where QᵀQ = QQᵀ = I (Qᵀ is its own inverse). Multiplying by an orthogonal matrix rotates vectors without changing their lengths or the angles between them. Rotation matrices and reflection matrices are orthogonal."
+        },
+        {
+          "term": "Neuron basis",
+          "definition": "The canonical basis for neural network activations, where each axis aligns with one neuron's activation. This is the default representation used in any neural network, but it is not necessarily the most interpretable basis."
+        }
+      ]
+    },
+    "mathematics": [
+      {
+        "id": "eq-basis-expansion",
+        "label": "Coordinate representation in an orthonormal basis",
+        "latex": "\\mathbf{v} = \\sum_{i=1}^{n} (\\mathbf{v} \\cdot \\mathbf{b}_i) \\, \\mathbf{b}_i",
+        "symbols": {
+          "v": "the vector being expressed in the new basis — the geometric object stays constant",
+          "bᵢ": "the i-th basis vector — must be unit length for this formula to hold exactly",
+          "v · bᵢ": "the coordinate of v along basis vector bᵢ — computed by dot product (works because the bᵢ are orthonormal)",
+          "(v · bᵢ)bᵢ": "the component of v in the direction of bᵢ — the contribution of the i-th basis direction to the total vector",
+          "Σ": "sum over all n basis vectors — adding up all components recovers v exactly"
+        },
+        "plainExplanation": "This formula says: to express v in an orthonormal basis {b₁, ..., bₙ}, find the coordinate along each basis vector (by dot product), multiply that coordinate by the basis vector, and sum. The result is v again — we've just decomposed it into its components along each basis direction. This formula is exactly how PCA decomposes each data point into components along the principal directions.",
+        "whyNeeded": "This is the fundamental operation of dimensionality reduction: if we only keep the largest coordinates (corresponding to the most important basis directions), we get the best low-dimensional approximation of v. It also shows why the dot product is the natural 'coordinate extractor' in an orthonormal basis.",
+        "ifRemoved": "Without the ability to compute coordinates in a new basis, we could not perform PCA (which expresses data in the eigenvector basis) or ICA (which expresses data in the independent component basis).",
+        "encourages": "Thinking of dimensionality reduction as the choice to keep only some of the basis directions — discarding the coordinates along the dropped directions — rather than as a mysterious compression operation.",
+        "doesNotGuarantee": "That the resulting coordinates are interpretable. Just because we can express a vector in any basis does not mean any particular basis reveals meaningful structure. Choosing a basis that makes the coordinates interpretable is the scientific challenge of mechanistic interpretability."
+      },
+      {
+        "id": "eq-change-of-basis",
+        "label": "Change of basis via rotation matrix",
+        "latex": "\\mathbf{c} = Q^\\top \\mathbf{v}, \\quad \\mathbf{v} = Q \\mathbf{c}",
+        "symbols": {
+          "c": "the coordinate vector of v in the new basis — the list of new coordinates c = [v·b₁, v·b₂, ..., v·bₙ]",
+          "Q": "the change-of-basis matrix — its columns are the new basis vectors b₁, b₂, ..., bₙ written in the original (standard) basis",
+          "Qᵀ": "the transpose of Q — for an orthogonal matrix, Qᵀ = Q⁻¹, so multiplying by Qᵀ UNDOES the basis rotation",
+          "v": "the original vector in the standard coordinate system",
+          "v = Qc": "reconstruction: to recover v from the new coordinates c, multiply c by Q"
+        },
+        "plainExplanation": "To change basis: collect the new basis vectors as columns of a matrix Q. Multiply Q on the left of v (using Qᵀ, which is the inverse of Q for orthogonal matrices) to get the new coordinates. To go back, multiply by Q. This is a two-step rotation: Qᵀv rotates the data INTO the new basis; Qc rotates FROM the new basis back to the original. PCA does exactly this: Q is the matrix of eigenvectors, Qᵀv extracts the principal component scores, Qc reconstructs the original representation from those scores.",
+        "whyNeeded": "This is the algebraic mechanism by which PCA, ICA, and rotation-based analysis are implemented. Every time we 'project onto a principal component' or 'find the ICA sources', we are performing a change of basis using this formula.",
+        "ifRemoved": "Without the change-of-basis formula, we could not implement any rotation-based dimensionality reduction. We could not go from 'data in neuron coordinates' to 'data in feature direction coordinates'.",
+        "encourages": "Treating basis changes as rotations — operations that preserve all geometric properties while changing only the numerical coordinates. This makes the point that 'PCA gives a different view of the SAME data, not different data'.",
+        "doesNotGuarantee": "That the new coordinates are interpretable, or that the rotation Q found by PCA is the 'right' or 'most meaningful' rotation. PCA finds the rotation that maximises variance — not the rotation that maximises interpretability."
+      }
+    ],
+    "methodComparison": [
+      {
+        "question": "If two methods (PCA and ICA) find different basis transformations of the same data, which one is 'correct'?",
+        "methods": [
+          {
+            "name": "PCA basis (eigenvectors of covariance matrix)",
+            "answer": "Maximises variance in each successive component. Guarantees orthogonal components. Does NOT claim the components are meaningful or interpretable — only that they are the directions of greatest spread in the data. The PCA basis is unique up to sign (and is fully unique when eigenvalues are distinct)."
+          },
+          {
+            "name": "ICA basis (independent components)",
+            "answer": "Finds directions where the projected data is as non-Gaussian and mutually independent as possible. Does NOT guarantee orthogonal components. Claims (under assumptions of non-Gaussian, statistically independent sources) that the components correspond to underlying independent causes of the data. The ICA basis is unique up to permutation and scaling of components."
+          }
+        ],
+        "practicalImplication": "Neither basis is universally 'correct' — both are valid bases that reveal different aspects of the same data. The right basis depends on your assumptions about what structure is meaningful. PCA is appropriate when you care about variance; ICA is appropriate when you believe the data is a linear mixture of independent sources and you want to recover those sources. Both are valid change-of-basis operations on the same underlying data cloud."
+      }
+    ],
+    "evidence": [
+      {
+        "claim": "The neuron basis in neural networks is not a privileged or inherently meaningful coordinate system — the network could have learned identical functionality with any rotation of the neuron activations.",
+        "claimType": "course_interpretation",
+        "label": "[Course Interpretation]",
+        "sourceId": "elhage2022superposition",
+        "section": "Section 2",
+        "verified": true,
+        "paraphrase": "In the superposition hypothesis paper, Elhage et al. argue that neural networks may represent features as directions in activation space that are not aligned with any individual neuron — making the neuron basis an arbitrary and potentially misleading choice of coordinates for interpretation."
+      },
+      {
+        "claim": "Rotation of a set of representation vectors does not change any pairwise distances or angles — all geometric properties of the dataset are preserved.",
+        "claimType": "mathematical_result",
+        "label": "[Mathematical Result]",
+        "sourceId": null,
+        "section": null,
+        "verified": true,
+        "paraphrase": "For an orthogonal matrix Q (with QᵀQ = I), ||Qu - Qv|| = ||u - v|| and (Qu)·(Qv) = u·v for all vectors u, v. This means a rotation of the embedding space leaves all pairwise distances and cosine similarities unchanged — confirming that the neuron basis is geometrically arbitrary."
+      }
+    ],
+    "failureModes": [
+      {
+        "name": "Treating neuron activations as directly interpretable",
+        "mechanism": "The neuron basis is the default coordinate system output by neural networks — it is what we get 'for free' when we read out activations. The failure is to assume that because we chose this coordinate system, it is meaningful: that high activation of neuron 42 means neuron 42 'detected concept X'.",
+        "symptom": "Interpretability analyses that label neurons by their maximum-activating inputs and treat those labels as definitive descriptions of what the neuron 'does', without considering that the neuron may be a superposition of multiple features rather than a pure feature detector.",
+        "diagnosticTest": "Find the top-10 maximally-activating inputs for a neuron. Then find the inputs that are most similar to the maximum-activating input by cosine similarity in the embedding space. If many high-similarity inputs do NOT activate the neuron, the neuron is probably not a clean detector of the concept implied by its maximum-activating input.",
+        "mitigation": "Use sparse autoencoders or other methods to find the MORE MEANINGFUL basis for the activation space, rather than interpreting the neuron basis directly.",
+        "setconcaRelevance": "In SetConCA, individual neurons in the set encoder are expressed in the neuron basis. Directly interpreting which neurons activate for which set types may be misleading if the model uses superposition — where individual features are spread across many neurons and individual neurons encode many features."
+      },
+      {
+        "name": "Confusing a change of basis with a change of the underlying data",
+        "mechanism": "When we apply PCA and get 'PC1 explains 60% of variance', learners sometimes think the data has been changed — that some information has been removed. This confuses a change of basis (lossless rotation) with dimensionality reduction (lossy compression).",
+        "symptom": "Statements like 'PCA removed 40% of the information from my data' when talking about the rotation step of PCA (before any truncation of components).",
+        "diagnosticTest": "Apply the full PCA rotation (all n components, no truncation). Reconstruct the original data using all components. The reconstruction should be perfect (up to floating-point errors). If reconstruction is imperfect, you have already done dimensionality reduction, not just a basis change.",
+        "mitigation": "Be precise about which step of PCA is a lossless rotation (the change of basis to the eigenvector coordinate system) and which step is lossy (keeping only the top-k components).",
+        "setconcaRelevance": "When applying PCA to SetConCA activations for visualisation or analysis, the full-rank PCA rotation is lossless and can be inverted. Only when you drop the bottom components (low-variance directions) do you lose information. Being clear about this distinction is important when reporting results."
+      }
+    ],
+    "setconcaConnection": {
+      "relevance": "SetConCA produces activation vectors in the neuron basis of the set encoder. Whether to interpret those activations in the neuron basis, a PCA basis, an ICA basis, or an SAE feature basis is a key methodological choice that directly determines what you see and what you miss.",
+      "whichPart": "The pooling layer of SetConCA produces a set-level vector in the neuron basis of the encoder. The 'meaningful features' of a set may correspond to specific directions in this space that cut across many neurons — requiring a change of basis to reveal.",
+      "whichDesignChoice": "If SetConCA is designed with a bottleneck that forces activations into a low-dimensional space, the neuron basis of that bottleneck may be more interpretable (since the model is forced to use individual neurons efficiently). Larger hidden dimensions encourage superposition, making the neuron basis less interpretable.",
+      "whichFailureExplained": "If interpretability analysis of SetConCA in the neuron basis fails to identify meaningful features, this is the expected outcome under superposition — the features are real but are encoded as directions that do not align with individual neurons.",
+      "proposedExperiment": "Compare interpretability of SetConCA features found in three bases: (1) the neuron basis, (2) the PCA basis (top-k eigenvectors of the activation covariance matrix), and (3) an SAE basis trained on SetConCA activations. Measure interpretability using automated concept activation vector (TCAV) scores for predefined semantic categories.",
+      "alternativeExplanation": "It is possible that SetConCA's architecture (if it uses certain normalisations or constraints) naturally encourages the neuron basis to be interpretable, making the neuron basis a good choice rather than a misleading default. This should be tested empirically rather than assumed."
+    },
+    "exercises": [
+      {
+        "type": "prediction",
+        "prompt": "The standard basis vectors in ℝ³ are e₁=[1,0,0], e₂=[0,1,0], e₃=[0,0,1]. If I apply the rotation matrix Q = [[0,1,0],[1,0,0],[0,0,1]] (which swaps the first two axes), what are the coordinates of the vector v=[3,7,2] in the new basis? Does the geometric point v move?",
+        "reveal": "New coordinates = Qᵀv = Qᵀ[3,7,2]. Since Q swaps axis 1 and axis 2, Qᵀ also swaps them: Qᵀ[3,7,2] = [7,3,2]. The geometric point v = [3,7,2] does NOT move — it is the same point in space. Only the coordinate description changes from (3,7,2) to (7,3,2). The 'old axis 2 direction' now points along the 'new axis 1 direction', so what was the second component becomes the first component."
+      },
+      {
+        "type": "construct",
+        "prompt": "Construct a 2D orthonormal basis where b₁ points at 30° from the horizontal (i.e., b₁ = [cos(30°), sin(30°)]). Compute b₂ (it must be perpendicular to b₁ and unit length — there are two choices; pick the one in the upper-left quadrant). Then express the vector v = [4, 0] in this basis.",
+        "reveal": "b₁ = [cos(30°), sin(30°)] = [√3/2, 1/2] ≈ [0.866, 0.5]. b₂ = [-sin(30°), cos(30°)] = [-1/2, √3/2] ≈ [-0.5, 0.866] (perpendicular to b₁, pointing upper-left). Coordinate of v=[4,0] along b₁: v·b₁ = 4(√3/2) + 0(1/2) = 2√3 ≈ 3.46. Coordinate along b₂: v·b₂ = 4(-1/2) + 0(√3/2) = -2. So v in the new basis is (3.46, -2). Verify: 3.46×[0.866, 0.5] + (-2)×[-0.5, 0.866] = [3, 1.73] + [1, -1.73] = [4, 0] ✓."
+      },
+      {
+        "type": "diagnose",
+        "prompt": "A paper reports: 'Neuron 547 in Layer 3 of our network encodes the concept of "royalty" — when this neuron has a high positive activation, the input text is likely to contain royal themes.' A reviewer points out that this interpretation depends critically on the choice of basis. Explain exactly what the reviewer means.",
+        "reveal": "The reviewer is pointing out that the network could be rewritten in any rotation of the current neuron basis without changing its behaviour or its geometry. In a rotated version of the same network, what is currently 'Neuron 547' might be spread across a linear combination of many neurons, and there would be no single 'royalty neuron'. Conversely, in the current basis, 'royalty' might be encoded as a direction that cuts across many neurons — and Neuron 547 might just be the neuron that happens to have the largest component along that direction, rather than being a pure 'royalty detector'. The interpretation is neuron-basis-specific and does not transfer to other valid representations of the same network."
+      }
+    ],
+    "masteryQuestions": [
+      {
+        "type": "open",
+        "prompt": "A neural network with 512 neurons in its hidden layer is trained to classify animals. A collaborator claims: 'I found that neuron 37 encodes "fur" and neuron 91 encodes "four legs" — together they explain why the network classifies dogs correctly.' Construct a mathematical argument for why this interpretation is potentially incomplete, using the concepts of basis and coordinate systems.",
+        "rubric": [
+          "Correctly identifies that the current interpretation is in the neuron basis — each neuron corresponds to one coordinate axis",
+          "Argues that there are infinitely many other valid bases for the 512-dimensional activation space, and in each basis the same hidden state would have different coordinate values",
+          "Points out that if the network encodes 'fur' as a direction in activation space (not necessarily aligned with neuron 37), then neuron 37 could have a large component in that direction without being a pure 'fur detector'",
+          "Suggests that to determine whether 'fur' is truly encoded as an axis-aligned direction (neuron 37) vs a mixed direction (spanning multiple neurons), one would need to test whether a linear probe on all neurons outperforms a single-neuron probe"
+        ],
+        "badVersion": "What is a basis?",
+        "goodVersion": "Construct a mathematical argument for why interpreting individual neurons as pure feature detectors requires the additional assumption that the neuron basis is the 'right' basis for interpreting the model."
+      }
+    ],
+    "researchWorksheet": {
+      "claim": "Neural networks encode features as directions in activation space that are not aligned with individual neurons, requiring a non-standard basis to identify.",
+      "requiredAssumptions": "That the network has learned to use superposition (multiple features per neuron) due to the pressure to represent more features than it has neurons; that the features are recoverable as linear directions in activation space; that the dataset used for analysis is representative.",
+      "evidenceProvided": "The superposition hypothesis paper by Elhage et al. shows that in toy models, networks trained to represent more features than neurons learn to place features at interference-minimising angles rather than along neuron axes — providing evidence consistent with this claim in the evaluated toy model setting.",
+      "strongestAlternativeExplanation": "Some neurons may genuinely be monosemantic (encoding a single feature) in the neuron basis, particularly in early layers or in networks with large hidden dimensions relative to the number of features to be encoded. The assumption of universal superposition may be too strong.",
+      "missingControl": "A comparison between a network explicitly constrained to be monosemantic (e.g., one neuron per feature by design) and a standard network, both trained on the same task, to measure whether the unconstrained network actually uses superposition or stays near-monosemantic.",
+      "closestBaseline": "A random linear probe that attempts to decode all features from the full neuron basis (not individual neurons), as a baseline for how much information is linearly accessible without a specific basis change.",
+      "falsifyingResult": "If sparse autoencoders applied to a trained network's activations consistently found features that ARE axis-aligned with individual neurons (high cosine similarity between SAE feature directions and standard basis vectors), this would suggest the neuron basis IS meaningful and superposition is not occurring.",
+      "setconcaImplication": "If SetConCA's encoder uses superposition (features not aligned with neurons), then direct neuron-level interpretation will be misleading. Applying a sparse autoencoder to SetConCA's intermediate activations would reveal whether features are neuron-aligned or require a non-standard basis.",
+      "proposedExperiment": "For each neuron in SetConCA's set encoder, compute the cosine similarity between the neuron's one-hot activation direction (the standard basis vector for that neuron) and the closest SAE feature direction. If these are consistently high (> 0.9), features are neuron-aligned. If they are consistently low (< 0.3), superposition is occurring."
+    }
+  },
+  "bridgeToNext": {
+    "nextId": "p01-l06",
+    "text": "We now understand that the same data can be described in infinitely many bases, and that some bases may be more interpretable than others. But we need one more fundamental operation before we can find the best basis for our data: PROJECTION. To ask 'how much does the data lie in this direction?' — the core question of PCA — we need to project every data point onto a candidate direction vector. Projection is also the central operation of lossy compression: to keep only the component along certain directions is to project away from the others. The next lesson derives the projection formula from scratch."
+  },
+  "papers": ["elhage2022superposition"]
+}

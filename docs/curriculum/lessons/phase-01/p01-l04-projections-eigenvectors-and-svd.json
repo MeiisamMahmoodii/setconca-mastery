@@ -52,9 +52,9 @@
       ]
     },
     "visual": {
-      "id": "pca-direction-variance",
-      "question": "Which assumption behind projections, eigenvectors, and svd changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "eigen-stretch",
+      "question": "Why do eigenvectors keep their direction under a matrix while ordinary directions rotate?",
+      "description": "Change the transformation and compare an eigenvector with a non-eigenvector before connecting the result to SVD and PCA."
     },
     "technical": {
       "text": "Projection keeps the part of a vector along a chosen direction. Eigenvectors and SVD give useful directions for transforming or compressing a whole dataset. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."

@@ -52,9 +52,9 @@
       ]
     },
     "visual": {
-      "id": "pca-direction-variance",
-      "question": "Which assumption behind vectors as locations and directions changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "vector-space",
+      "question": "How can the same vector be read as a point, an arrow, and a coordinate list?",
+      "description": "Change the vector dimension and active coordinates. Notice that changing coordinates is not the same as changing the underlying state."
     },
     "technical": {
       "text": "A vector is an ordered list of numbers, but geometrically it is a point or an arrow. Which view is useful depends on whether you care about state or change. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."

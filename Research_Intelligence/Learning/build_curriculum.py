@@ -391,9 +391,17 @@ if __name__ == "__main__":
     parser.add_argument("--format", choices=("papers", "json"), default="papers", help="Legacy paper bundle or modular lesson JSON")
     args = parser.parse_args()
     if args.format == "json":
-        from generate_redesign import main as generate_json_curriculum
-        generate_json_curriculum()
-        print("Wrote modular curriculum JSON under docs/curriculum")
+        curriculum_root = ROOT.parent.parent / "docs" / "curriculum"
+        phases = json.loads((curriculum_root / "phases.json").read_text(encoding="utf-8"))
+        lesson_count = 0
+        for phase in phases:
+            for lesson in phase["lessons"]:
+                path = curriculum_root / "lessons" / f"phase-{phase['id']:02d}" / lesson["file"]
+                data = json.loads(path.read_text(encoding="utf-8"))
+                if data["id"] != lesson["id"]:
+                    raise ValueError(f"Lesson id mismatch: {path}")
+                lesson_count += 1
+        print(f"Validated {len(phases)} phases / {lesson_count} authored lesson files")
         raise SystemExit(0)
     prefix = "RAW/" if args.web else "../../../RAW/"
     write_papers_js(prefix, args.out)

@@ -1153,113 +1153,65 @@ register('residual-stream', (container) => {
 // ── 14. SetConCA Lab ──────────────────────────────────────────────────────────
 register('setconca-lab', (container) => {
   container.innerHTML = `
-    <div class="demo-question">Configure a toy SetConCA experiment. All effects are labelled [Hypothesis].</div>
-    <canvas id="scCanvas" style="width:100%;height:260px;display:block;background:#090c14;border-radius:8px"></canvas>
+    <div class="demo-question">A real toy model: each dot is a noisy partial view of one known 2D latent direction. Compare a single view with the pooled set estimate.</div>
+    <canvas id="scCanvas" style="width:100%;height:280px;display:block;background:#090c14;border-radius:8px"></canvas>
     <div class="demo-controls" style="flex-wrap:wrap; gap:0.65rem">
-      <label>Tokens per set: <input type="range" id="scTokens" min="2" max="16" step="1" value="5" style="width:80px"></label>
-      <label>SAE width: <input type="range" id="scWidth" min="64" max="2048" step="64" value="512" style="width:80px"></label>
-      <label>Contrastive τ: <input type="range" id="scTemp" min="0.05" max="0.5" step="0.05" value="0.1" style="width:80px"></label>
-      <label>Recon weight: <input type="range" id="scRecon" min="0" max="1" step="0.1" value="0.5" style="width:80px"></label>
+      <label>Views per set <input type="range" id="scViews" min="1" max="12" value="5" style="width:90px"></label>
+      <label>View noise <input type="range" id="scNoise" min="0" max="100" value="35" style="width:90px"></label>
+      <label>Intruders <input type="range" id="scIntruders" min="0" max="50" value="0" style="width:90px"></label>
+      <button class="btn-ghost" id="scResample" style="padding:0.3rem 0.6rem;font-size:0.8rem">New sample</button>
     </div>
-    <div style="background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.2); border-radius:8px; padding:0.75rem; margin-top:0.5rem; font-size:0.83rem">
-      <strong style="color:#a78bfa">[Hypothesis]</strong> Expected effects based on theoretical reasoning — not measured results:
-      <ul style="margin:0.4rem 0 0 1.2rem; color:#94a3b8">
-        <li id="scH1">More tokens per set → better shared concept isolation [Hypothesis]</li>
-        <li id="scH2">Wider SAE → lower reconstruction error but more feature splitting [Hypothesis]</li>
-        <li id="scH3">Lower temperature → sharper alignment but more false-negative sensitivity [Hypothesis]</li>
-        <li id="scH4">Higher recon weight → better reconstruction but weaker conceptual coordination [Hypothesis]</li>
-      </ul>
-    </div>
+    <p class="muted" id="scReadout" style="margin-top:0.6rem;font-size:0.83rem"></p>
   `;
   const canvas = container.querySelector('#scCanvas');
   const ctx = canvas.getContext('2d');
+  let seed = 17;
+  const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+  const gaussian = () => Math.sqrt(-2 * Math.log(Math.max(rand(), 1e-8))) * Math.cos(2 * Math.PI * rand());
+  const norm = ([x, y]) => Math.hypot(x, y);
+  const cosine = (a, b) => (a[0] * b[0] + a[1] * b[1]) / Math.max(norm(a) * norm(b), 1e-8);
 
   function draw() {
-    const tokens = parseInt(container.querySelector('#scTokens').value);
-    const width = parseInt(container.querySelector('#scWidth').value);
-    const temp = parseFloat(container.querySelector('#scTemp').value);
-    const recon = parseFloat(container.querySelector('#scRecon').value);
-
-    const W = canvas.clientWidth, H = canvas.clientHeight;
-    canvas.width = W * devicePixelRatio;
-    canvas.height = H * devicePixelRatio;
-    ctx.scale(devicePixelRatio, devicePixelRatio);
-    ctx.clearRect(0, 0, W, H);
-
-    const pad = 30;
-    const flowY = H * 0.35;
-
-    // Draw set of tokens
-    const tokenR = 14, tokenSpacing = (W * 0.25) / Math.max(tokens, 1);
-    for (let i = 0; i < tokens; i++) {
-      const x = pad + i * tokenSpacing + tokenR;
-      ctx.beginPath(); ctx.arc(x, flowY, tokenR, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(129,140,248,0.2)';
-      ctx.strokeStyle = '#818cf8'; ctx.lineWidth = 1.5;
-      ctx.fill(); ctx.stroke();
-      ctx.font = '10px Inter'; ctx.fillStyle = '#818cf8'; ctx.textAlign = 'center';
-      ctx.fillText(`t${i+1}`, x, flowY + 3);
+    const views = +container.querySelector('#scViews').value;
+    const noise = +container.querySelector('#scNoise').value / 100;
+    const intruderRate = +container.querySelector('#scIntruders').value / 100;
+    const latent = [Math.cos(0.68), Math.sin(0.68)];
+    const samples = [];
+    for (let i = 0; i < views; i++) {
+      const intruder = rand() < intruderRate;
+      const base = intruder ? [Math.cos(2.7), Math.sin(2.7)] : latent;
+      samples.push({ point: [base[0] + gaussian() * noise, base[1] + gaussian() * noise], intruder });
     }
-    labelText(ctx, 'Semantic set', pad + tokens * tokenSpacing / 2, flowY - 26, '#64748b');
-
-    // Arrow to SAE
-    const saeX = W * 0.4;
-    ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(pad + tokens * tokenSpacing, flowY); ctx.lineTo(saeX - 20, flowY); ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(saeX - 25, flowY - 6); ctx.lineTo(saeX - 15, flowY); ctx.lineTo(saeX - 25, flowY + 6);
-    ctx.fillStyle = '#38bdf8'; ctx.fill();
-
-    // SAE box
-    const saeW = 60, saeH = 80;
-    ctx.fillStyle = 'rgba(56,189,248,0.1)';
-    ctx.strokeStyle = '#38bdf8'; ctx.lineWidth = 2;
-    ctx.fillRect(saeX, flowY - saeH/2, saeW, saeH);
-    ctx.strokeRect(saeX, flowY - saeH/2, saeW, saeH);
-    labelText(ctx, 'SAE', saeX + saeW/2, flowY - 4, '#38bdf8');
-    labelText(ctx, `d=${width}`, saeX + saeW/2, flowY + 12, '#64748b');
-
-    // Arrow to set encoder
-    const setEncX = W * 0.65;
-    ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.moveTo(saeX + saeW, flowY); ctx.lineTo(setEncX - 20, flowY); ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(setEncX - 25, flowY - 6); ctx.lineTo(setEncX - 15, flowY); ctx.lineTo(setEncX - 25, flowY + 6);
-    ctx.fillStyle = '#a78bfa'; ctx.fill();
-
-    // Set encoder box
-    ctx.fillStyle = 'rgba(167,139,250,0.1)';
-    ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2;
-    ctx.fillRect(setEncX, flowY - saeH/2, saeW, saeH);
-    ctx.strokeRect(setEncX, flowY - saeH/2, saeW, saeH);
-    labelText(ctx, 'Set enc', setEncX + saeW/2, flowY - 4, '#a78bfa');
-    labelText(ctx, 'ρ = pool', setEncX + saeW/2, flowY + 12, '#64748b');
-
-    // Expected metrics (simulated)
-    const hypFVU = Math.max(0.02, 0.3 * Math.exp(-width * 0.002) * (2 - recon));
-    const hypAlign = 0.5 + (1/temp) * 0.05 * tokens / 10;
-    const hypConc = tokens > 4 ? 0.7 : 0.4;
-
-    const metricsX = W * 0.82, metricsY = pad;
-    ctx.fillStyle = 'rgba(15,19,31,0.85)';
-    ctx.strokeStyle = '#1e2640';
-    ctx.fillRect(metricsX, metricsY, W - metricsX - 10, 110);
-    ctx.strokeRect(metricsX, metricsY, W - metricsX - 10, 110);
-    labelText(ctx, 'Expected (H)', metricsX + (W-metricsX)/2 - 5, metricsY + 14, '#a78bfa');
-    [
-      [`FVU`, hypFVU.toFixed(3), hypFVU < 0.1 ? '#34d399' : '#fbbf24'],
-      [`Align`, Math.min(1, hypAlign).toFixed(2), '#34d399'],
-      [`Conc`, hypConc.toFixed(2), '#a78bfa'],
-    ].forEach(([label, val, color], i) => {
-      const y = metricsY + 34 + i * 22;
-      labelText(ctx, label, metricsX + 22, y, '#64748b');
-      labelText(ctx, val, metricsX + (W-metricsX)/2 + 10, y, color);
+    const pooled = samples.reduce((sum, s) => [sum[0] + s.point[0] / views, sum[1] + s.point[1] / views], [0, 0]);
+    const meanSingle = samples.reduce((sum, s) => sum + cosine(s.point, latent), 0) / views;
+    const pooledScore = cosine(pooled, latent);
+    const W = canvas.clientWidth, H = canvas.clientHeight, cx = W * 0.42, cy = H * 0.56, scale = Math.min(W, H) * 0.22;
+    canvas.width = W * devicePixelRatio; canvas.height = H * devicePixelRatio; ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    ctx.fillStyle = '#090c14'; ctx.fillRect(0, 0, W, H);
+    drawAxis(ctx, cx, cy, scale * 2.2, scale * 2.2);
+    const arrow = (vec, color, label, width = 2) => {
+      const x = cx + vec[0] * scale, y = cy - vec[1] * scale;
+      ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width;
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke();
+      const a = Math.atan2(y - cy, x - cx); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 9 * Math.cos(a - .45), y - 9 * Math.sin(a - .45)); ctx.lineTo(x - 9 * Math.cos(a + .45), y - 9 * Math.sin(a + .45)); ctx.fill();
+      labelText(ctx, label, x + 14, y - 10, color);
+    };
+    arrow(latent, '#34d399', 'known latent', 3);
+    samples.forEach((s, i) => {
+      const x = cx + s.point[0] * scale, y = cy - s.point[1] * scale;
+      ctx.fillStyle = s.intruder ? '#f43f5e' : '#38bdf8'; ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2); ctx.fill();
+      labelText(ctx, s.intruder ? 'intruder' : `view ${i + 1}`, x, y + 16, s.intruder ? '#f43f5e' : '#94a3b8');
     });
+    arrow(pooled, '#a78bfa', 'pooled set', 3);
+    ctx.fillStyle = 'rgba(15,19,31,.92)'; ctx.strokeStyle = '#1e2640'; ctx.fillRect(W * .7, 24, W * .27, 118); ctx.strokeRect(W * .7, 24, W * .27, 118);
+    labelText(ctx, 'Measured in this toy', W * .835, 42, '#a78bfa');
+    [['single-view cosine', meanSingle.toFixed(2), '#38bdf8'], ['pooled cosine', pooledScore.toFixed(2), '#a78bfa'], ['improvement', (pooledScore - meanSingle).toFixed(2), pooledScore >= meanSingle ? '#34d399' : '#fbbf24']].forEach(([key, value, color], i) => {
+      labelText(ctx, key, W * .76, 70 + i * 26, '#94a3b8'); labelText(ctx, value, W * .93, 70 + i * 26, color);
+    });
+    container.querySelector('#scReadout').textContent = 'This is computed from the displayed synthetic data. More clean views usually make the pooled estimate closer to the known latent direction; intruders can reverse that gain. It is a test bed, not evidence about language models.';
   }
-
-  ['scTokens', 'scWidth', 'scTemp', 'scRecon'].forEach(id => {
-    container.querySelector(`#${id}`).addEventListener('input', draw);
-  });
+  ['scViews', 'scNoise', 'scIntruders'].forEach(id => container.querySelector(`#${id}`).addEventListener('input', draw));
+  container.querySelector('#scResample').addEventListener('click', () => { seed = Math.floor(Math.random() * 2 ** 32); draw(); });
   draw();
 });
 

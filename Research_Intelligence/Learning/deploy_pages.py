@@ -22,11 +22,6 @@ def main() -> None:
         [sys.executable, str(LEARNING / "build_curriculum.py"), "--web", "--out", str(DOCS / "papers.js")],
         cwd=str(LEARNING),
     )
-    subprocess.check_call(
-        [sys.executable, str(LEARNING / "build_curriculum.py"), "--format", "json"],
-        cwd=str(LEARNING),
-    )
-
     shutil.copy2(APP / "index.html", DOCS / "index.html")
 
     if INCLUDE_PDFS:

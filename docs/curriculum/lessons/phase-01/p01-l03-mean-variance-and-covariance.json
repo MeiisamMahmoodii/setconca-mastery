@@ -52,9 +52,9 @@
       ]
     },
     "visual": {
-      "id": "pca-direction-variance",
-      "question": "Which assumption behind mean, variance, and covariance changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "scatter-covariance",
+      "question": "How does a tilted cloud create covariance, and why does centering matter before measuring it?",
+      "description": "Adjust the scatter cloud. Read the mean, spread, and covariance ellipse as separate geometric facts."
     },
     "technical": {
       "text": "The mean locates a cloud, variance measures spread along one coordinate, and covariance records whether two coordinates move together. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."

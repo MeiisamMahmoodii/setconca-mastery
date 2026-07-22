@@ -3,6 +3,7 @@
     "id": 0,
     "title": "Phase 0 — Orientation",
     "description": "Build the vocabulary for looking inside a neural network.",
+    "rawSources": ["transformer-circuits", "superposition", "monosemanticity", "cunningham-sae"],
     "lessons": [
       {
         "id": "p00-l01",
@@ -46,6 +47,7 @@
     "id": 1,
     "title": "Phase 1 — Geometry of representations",
     "description": "Learn the geometry needed to measure, rotate, compress, and compare activation spaces.",
+    "rawSources": ["pca-shlens", "ica-shlens", "cca-uurtio"],
     "lessons": [
       {
         "id": "p01-l01",
@@ -89,6 +91,7 @@
     "id": 2,
     "title": "Phase 2 — Latent sources and identifiability",
     "description": "Understand when hidden causes can be recovered from observations—and when they cannot.",
+    "rawSources": ["ica-shlens", "cl-inverts", "mv-causal", "conca"],
     "lessons": [
       {
         "id": "p02-l01",
@@ -132,6 +135,7 @@
     "id": 3,
     "title": "Phase 3 — Sparse representation learning",
     "description": "See why overcomplete dictionaries need sparse codes and how SAEs trade fidelity for selectivity.",
+    "rawSources": ["ksparse", "cunningham-sae", "topk-sae", "gated-sae", "jumprelu"],
     "lessons": [
       {
         "id": "p03-l01",
@@ -175,6 +179,7 @@
     "id": 4,
     "title": "Phase 4 — Multi-view representation learning",
     "description": "Coordinate information shared across views without erasing view-specific information.",
+    "rawSources": ["cca-uurtio", "dcca", "dccae", "vcca", "dgcca"],
     "lessons": [
       {
         "id": "p04-l01",
@@ -218,6 +223,7 @@
     "id": 5,
     "title": "Phase 5 — Learning representations of sets",
     "description": "Represent unordered collections while retaining the relationships that matter.",
+    "rawSources": ["deepsets", "neural-stat", "set-transformer", "multi-set-transformer"],
     "lessons": [
       {
         "id": "p05-l01",
@@ -261,6 +267,7 @@
     "id": 6,
     "title": "Phase 6 — Contrastive coordination",
     "description": "Use positive and negative relationships carefully, with explicit control of geometry and false negatives.",
+    "rawSources": ["cpc", "simclr", "supcon", "align-unif", "vicreg", "cl-inverts"],
     "lessons": [
       {
         "id": "p06-l01",
@@ -304,6 +311,7 @@
     "id": 7,
     "title": "Phase 7 — Transformer and mechanistic interpretability",
     "description": "Connect representation geometry to residual streams, features, circuits, and interventions.",
+    "rawSources": ["transformer-circuits", "superposition", "monosemanticity", "cunningham-sae", "scaling-mono"],
     "lessons": [
       {
         "id": "p07-l01",
@@ -347,6 +355,7 @@
     "id": 8,
     "title": "Phase 8 — Evaluating representations honestly",
     "description": "Match each claim to an evaluation that can actually test it.",
+    "rawSources": ["svcca", "cka", "probe-control", "mdl-probe", "principled-eval", "saebench"],
     "lessons": [
       {
         "id": "p08-l01",
@@ -390,6 +399,7 @@
     "id": 9,
     "title": "Phase 9 — SAE limitations and open problems",
     "description": "Treat splitting, absorption, non-canonicality, and scaling as testable failure modes.",
+    "rawSources": ["absorption", "non-canonical", "saebench", "bench-reliable", "feature-hedging", "geometric-wall"],
     "lessons": [
       {
         "id": "p09-l01",
@@ -433,6 +443,7 @@
     "id": 10,
     "title": "Phase 10 — SetConCA research synthesis",
     "description": "Turn the curriculum into a falsifiable research program and a realistic experimental lab.",
+    "rawSources": ["temporal-sae", "conca", "mv-causal", "topk-sae", "absorption"],
     "lessons": [
       {
         "id": "p10-l01",

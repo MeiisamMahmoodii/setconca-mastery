@@ -23,31 +23,31 @@
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A good toy problem has known latent causes, partial views, nuisance variation, and a metric that can distinguish recovery of the intended factor from a shortcut. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Before training on language-model activations, use a toy world where the answer is known. The toy needs a latent concept, several partial views, nuisance variation, and deliberate intruders. Then you can tell whether set pooling recovers the intended direction or merely exploits an easier cue."
     },
     "bridgeFrom": "p10-l02",
     "intuition": {
-      "analogy": "A toy experiment is a wind tunnel: simplified enough to know the ground truth, but rich enough that the method can fail for the same kinds of reasons it might fail in practice. A good toy problem has known latent causes, partial views, nuisance variation, and a metric that can distinguish recovery of the intended factor from a shortcut.",
+      "analogy": "A toy experiment is a wind tunnel. It is simpler than a real aircraft, but it must still contain the forces that could make the design fail. Here, the known latent direction is the thing we want to recover; view noise and intruders are the ways the experiment can fool us.",
       "analogyLimit": "The toy model tests a mechanism under controlled assumptions. It does not predict a gain on language-model activations until that experiment is run.",
       "text": "A good toy problem has known latent causes, partial views, nuisance variation, and a metric that can distinguish recovery of the intended factor from a shortcut."
     },
     "toyExample": {
-      "description": "Sample known latent concepts, render several noisy partial views per concept, and compare a pointwise SAE with a set-coordinated variant under equal capacity and compute.",
+      "description": "Sample a two-dimensional latent direction for each concept. Produce several noisy views around it, with some views replaced by intruders. Compare the cosine of one view with the cosine of the pooled set estimate against the known latent direction.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what a realistic toy experiment should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "action": "Choose a known latent direction",
+          "result": "For example, let the latent concept be a unit vector at 40 degrees in a two-dimensional space.",
+          "insight": "The ground truth lets you measure recovery directly instead of judging a visually plausible feature label."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "action": "Create views and pool them",
+          "result": "Add independent noise to each view, then average the views. Compare the pooled vector and a single view with the known latent direction using cosine similarity.",
+          "insight": "Independent noise averages out; a shared shortcut or an intruder does not."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "action": "Add intruders",
+          "result": "Replace some valid views with samples from a different latent direction and repeat the comparison.",
+          "insight": "If the pooled estimate collapses under a few intruders, the set encoder needs a robustness mechanism, not a stronger claim."
         }
       ]
     },
@@ -57,7 +57,7 @@
       "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
     },
     "technical": {
-      "text": "A good toy problem has known latent causes, partial views, nuisance variation, and a metric that can distinguish recovery of the intended factor from a shortcut. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The lab implements the data-generating side of the experiment, not a trained language model. A latent vector c is sampled first. Each clean view is c plus independent noise; an intruder is sampled around a different direction. Mean pooling is the baseline set estimator. Its recovery score is cosine(pool(x_i), c). This isolates one question: when does combining several views improve recovery of a known shared factor?"
     },
     "mathematics": [
       {
@@ -97,12 +97,12 @@
     ],
     "evidence": [
       {
-        "claim": "A good toy problem has known latent causes, partial views, nuisance variation, and a metric that can distinguish recovery of the intended factor from a shortcut.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Multi-view causal representation learning studies when partial views can identify latent variables under explicit assumptions.",
+        "claimType": "paper_finding",
+        "sourceId": "mv-causal",
+        "section": "abstract and method",
+        "verified": true,
+        "note": "The toy borrows the discipline of known latent variables and controlled views; it does not reproduce the paper's full theorem."
       }
     ],
     "failureModes": [

@@ -608,10 +608,12 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
     // Find phase title
     let phaseTitle = '';
     let phaseId = null;
+    let phaseData = null;
     if (phases) {
       const phase = phases.find(p => p.lessons.some(l => l.id === id));
-      if (phase) { phaseTitle = phase.title; phaseId = phase.id; }
+      if (phase) { phaseTitle = phase.title; phaseId = phase.id; phaseData = phase; }
     }
+    const nextLesson = lessonData.bridgeToNext || sections.nextLesson;
 
     const stubBanner = isStub ? `
       <div class="stub-banner">
@@ -665,16 +667,26 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
     ].filter(Boolean).join('');
 
     // Bridge to next
-    const bridgeNext = lessonData.bridgeToNext ? `
+    const bridgeNext = nextLesson ? `
       <div class="callout purple" style="margin-top:1rem">
-        <strong>Coming up:</strong> ${esc(lessonData.bridgeToNext.text || '')}
-        ${lessonData.bridgeToNext.nextId ? `
+        <strong>Coming up:</strong> ${esc(nextLesson.text || nextLesson.bridge || '')}
+        ${nextLesson.nextId || nextLesson.id ? `
           <div style="margin-top:0.5rem">
-            <button class="btn-primary" onclick="app.navigate('/lesson/${lessonData.bridgeToNext.nextId}')">
-              Next: ${esc(lessonData.bridgeToNext.nextTitle || 'Continue')} →
+            <button class="btn-primary" onclick="app.navigate('/lesson/${nextLesson.nextId || nextLesson.id}')">
+              Next: ${esc(nextLesson.nextTitle || 'Continue')} →
             </button>
           </div>
         ` : ''}
+      </div>
+    ` : '';
+
+    const rawSources = (phaseData?.rawSources || []).length ? `
+      <div class="card-sm" style="margin-bottom:1rem">
+        <div style="font-size:0.73rem; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--dim); margin-bottom:0.5rem; font-family:var(--mono)">RAW paper grounding for this phase</div>
+        <div style="display:flex; flex-wrap:wrap; gap:0.4rem">
+          ${phaseData.rawSources.map(sourceId => `<button class="btn-ghost" style="padding:0.3rem 0.55rem; font-size:0.78rem" onclick="app.navigate('/paper/${sourceId}')">${esc(sourceId)}</button>`).join('')}
+        </div>
+        <p class="muted" style="font-size:0.78rem; margin-top:0.55rem">The lesson explains these sources in course language. Paper-level findings remain labelled and linked to their local PDFs.</p>
       </div>
     ` : '';
 
@@ -696,6 +708,7 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
       ${whyBlock}
       ${bridgeFrom}
       ${objBlock}
+      ${rawSources}
 
       <div style="margin-top:0.5rem">
         ${disclosureSections}
@@ -706,8 +719,8 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
 
       <div class="actions">
         <button class="btn-ghost" onclick="app.navigate('/phase/${phaseId}')">← Back to phase</button>
-        ${lessonData.bridgeToNext?.nextId ? `
-          <button class="btn-primary" onclick="app.navigate('/lesson/${lessonData.bridgeToNext.nextId}')">
+        ${nextLesson?.nextId || nextLesson?.id ? `
+          <button class="btn-primary" onclick="app.navigate('/lesson/${nextLesson.nextId || nextLesson.id}')">
             Continue →
           </button>
         ` : `
@@ -865,7 +878,7 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
 
       <div class="card">
         <h3>Main contribution</h3>
-        <p>${esc(paper.contribution || 'Not yet documented.')}</p>
+          <p>${esc(paper.contribution || paper.summary || 'Not yet documented.')}</p>
       </div>
 
       ${paper.concepts && paper.concepts.length > 0 ? `

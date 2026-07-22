@@ -1,11 +1,14 @@
 """Generate papers.js for SetConCA Mastery interactive curriculum."""
 import argparse
 import json
-import shutil
+import sys
 from pathlib import Path
 from superposition_rich import SUPERPOSITION_RICH
 
 ROOT = Path(__file__).parent
+sys.path.insert(0, str(ROOT))
+from content import ALL_PAPERS, COURSE_INTRO, LEVEL_PRIMERS  # noqa: E402
+
 RAW = ROOT.parent.parent / "RAW"
 EXTRACTS = json.loads((ROOT / "_extracts.json").read_text(encoding="utf-8"))
 
@@ -327,22 +330,38 @@ def write_papers_js(pdf_prefix: str, out_path: Path) -> None:
         "title": output_base["title"],
         "subtitle": output_base["subtitle"],
         "formula": output_base["formula"],
+        "courseIntro": COURSE_INTRO,
+        "levelPrimers": {str(k): v for k, v in LEVEL_PRIMERS.items()},
         "levels": CURRICULUM,
         "metricTable": METRIC_TABLE,
         "schedule16Weeks": output_base["schedule16Weeks"],
     }))
+    missing = []
     for level in data["levels"]:
+        level["primer"] = LEVEL_PRIMERS.get(level["id"])
         for paper in level["papers"]:
             fname = paper.get("file")
             if fname:
                 paper["pdfPath"] = f"{pdf_prefix}{fname}"
-            if paper["id"] in QUIZ_BANK:
-                paper["quiz"] = QUIZ_BANK[paper["id"]]
+            teach = ALL_PAPERS.get(paper["id"])
+            if teach:
+                paper["teach"] = teach
+                paper["quiz"] = teach.get("quiz") or QUIZ_BANK.get(paper["id"], [])
+            else:
+                missing.append(paper["id"])
+                if paper["id"] in QUIZ_BANK:
+                    paper["quiz"] = QUIZ_BANK[paper["id"]]
+            if paper["id"] == "superposition":
+                paper["richContent"] = SUPERPOSITION_RICH
+    if missing:
+        print("WARNING: no teach module for:", ", ".join(missing))
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(
         "window.CURRICULUM_DATA = " + json.dumps(data, indent=2, ensure_ascii=False) + ";\n",
         encoding="utf-8",
     )
+    n_teach = sum(1 for l in data["levels"] for p in l["papers"] if p.get("teach"))
+    print(f"  teach modules attached: {n_teach}/{sum(len(l['papers']) for l in data['levels'])}")
 
 
 output_base = {

@@ -1,814 +1,498 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SetConCA Mastery — Interactive Research Curriculum</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SetConCA Mastery — Self-contained Course</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0f1117;
-      --surface: #171b26;
-      --surface2: #1e2433;
-      --border: #2a3144;
-      --text: #e8ecf4;
-      --muted: #8b95a8;
-      --accent: #6c9eff;
-      --accent2: #7ee787;
-      --warn: #f0b060;
-      --danger: #f07178;
-      --radius: 10px;
-      --font: 'IBM Plex Sans', system-ui, sans-serif;
-      --mono: 'IBM Plex Mono', monospace;
+      --bg:#0f1117; --surface:#171b26; --surface2:#1e2433; --border:#2a3144;
+      --text:#e8ecf4; --muted:#8b95a8; --accent:#6c9eff; --ok:#7ee787; --warn:#f0b060; --bad:#f07178;
+      --font:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',monospace;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.55; min-height: 100vh; }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    button { font-family: inherit; cursor: pointer; border: none; border-radius: 8px; padding: 0.55rem 1rem; font-weight: 500; transition: 0.15s; }
-    .btn-primary { background: var(--accent); color: #0a0e18; }
-    .btn-primary:hover { filter: brightness(1.1); }
-    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { border-color: var(--accent); }
-    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
-    .layout { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
-    .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 1.25rem; overflow-y: auto; position: sticky; top: 0; height: 100vh; }
-    .sidebar h1 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; }
-    .sidebar .sub { font-size: 0.78rem; color: var(--muted); margin-bottom: 1rem; line-height: 1.4; }
-    .progress-wrap { margin: 1rem 0; }
-    .progress-bar { height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width 0.4s; }
-    .progress-label { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; }
-    .level-nav { list-style: none; }
-    .level-nav li { margin-bottom: 0.35rem; }
-    .level-nav button { width: 100%; text-align: left; background: transparent; color: var(--muted); padding: 0.5rem 0.65rem; border-radius: 8px; font-size: 0.82rem; display: flex; align-items: center; gap: 0.5rem; border: 1px solid transparent; }
-    .level-nav button.active { background: var(--surface2); color: var(--text); border-color: var(--border); }
-    .level-nav button.done .dot { background: var(--accent2); }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
-    main { padding: 1.5rem 2rem 3rem; max-width: 960px; }
-    .hero { margin-bottom: 2rem; }
-    .hero h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .hero p { color: var(--muted); max-width: 60ch; }
-    .formula { font-family: var(--mono); font-size: 0.85rem; background: var(--surface2); border: 1px solid var(--border); padding: 0.75rem 1rem; border-radius: var(--radius); margin-top: 1rem; color: var(--accent2); }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; }
-    .card h3 { font-size: 1rem; margin-bottom: 0.75rem; }
-    .badge { display: inline-block; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.15rem 0.45rem; border-radius: 4px; background: var(--surface2); color: var(--muted); margin-right: 0.35rem; }
-    .badge.accent { background: rgba(108,158,255,0.15); color: var(--accent); }
-    .badge.done { background: rgba(126,231,135,0.15); color: var(--accent2); }
-    .paper-list { display: flex; flex-direction: column; gap: 0.5rem; }
-    .paper-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: 0.15s; }
-    .paper-item:hover, .paper-item.active { border-color: var(--accent); }
-    .paper-item .num { font-family: var(--mono); color: var(--muted); font-size: 0.8rem; min-width: 2rem; }
-    .paper-item .title { flex: 1; font-size: 0.9rem; }
-    .paper-item .status { font-size: 0.75rem; color: var(--muted); }
-    .pass-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
-    .pass-tab { padding: 0.45rem 0.9rem; border-radius: 99px; font-size: 0.82rem; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
-    .pass-tab.active { background: rgba(108,158,255,0.15); color: var(--accent); border-color: var(--accent); }
-    .learn-list { list-style: none; margin: 0.75rem 0; }
-    .learn-list li { padding: 0.35rem 0 0.35rem 1.25rem; position: relative; font-size: 0.9rem; }
-    .learn-list li::before { content: '→'; position: absolute; left: 0; color: var(--accent); }
-    .callout { border-left: 3px solid var(--accent); padding: 0.75rem 1rem; background: rgba(108,158,255,0.06); border-radius: 0 8px 8px 0; margin: 1rem 0; font-size: 0.88rem; }
-    .callout.warn { border-color: var(--warn); background: rgba(240,176,96,0.06); }
-    .callout.setconca { border-color: var(--accent2); background: rgba(126,231,135,0.06); }
-    .media-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
-    @media (max-width: 800px) { .media-grid { grid-template-columns: 1fr; } .layout { grid-template-columns: 1fr; } .sidebar { position: relative; height: auto; } }
-    .demo-canvas { width: 100%; background: #0a0e14; border: 1px solid var(--border); border-radius: 8px; display: block; }
-    .demo-controls { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.5rem; align-items: center; }
-    .demo-controls label { font-size: 0.8rem; color: var(--muted); }
-    .demo-controls input[type=range] { width: 120px; accent-color: var(--accent); }
-    .quiz { margin-top: 1rem; }
-    .quiz-q { font-weight: 500; margin-bottom: 0.75rem; }
-    .quiz-opt { display: block; width: 100%; text-align: left; padding: 0.6rem 0.85rem; margin-bottom: 0.4rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 0.88rem; }
-    .quiz-opt:hover { border-color: var(--accent); }
-    .quiz-opt.correct { border-color: var(--accent2); background: rgba(126,231,135,0.1); }
-    .quiz-opt.wrong { border-color: var(--danger); background: rgba(240,113,120,0.1); }
-    .quiz-feedback { font-size: 0.85rem; margin-top: 0.5rem; padding: 0.65rem; border-radius: 8px; }
-    .table-wrap { overflow-x: auto; margin: 1rem 0; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
-    th, td { padding: 0.55rem 0.75rem; border: 1px solid var(--border); text-align: left; }
-    th { background: var(--surface2); color: var(--muted); font-weight: 600; }
-    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.25rem; }
-    .research-prompts { display: grid; gap: 0.75rem; margin-top: 0.75rem; }
-    .research-prompts textarea { width: 100%; min-height: 70px; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 0.65rem; font-family: var(--font); font-size: 0.85rem; resize: vertical; }
-    .hidden { display: none !important; }
-    .schedule-row { display: grid; grid-template-columns: 4rem 1fr 1fr; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-    .video-wrap { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 8px; border: 1px solid var(--border); margin-top: 0.5rem; }
-    .video-wrap iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
-    .three-col-compare { display: grid; grid-template-columns: repeat(3,1fr); gap: 0.75rem; text-align: center; font-size: 0.82rem; }
-    .three-col-compare div { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem; }
-    .three-col-compare strong { display: block; color: var(--accent); margin-bottom: 0.35rem; }
-  </style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.55;min-height:100vh}
+    button{font-family:inherit;cursor:pointer;border:none;border-radius:8px;padding:.55rem 1rem;font-weight:500}
+    .btn-primary{background:var(--accent);color:#0a0e18}
+    .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+    .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+    .layout{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+    .sidebar{background:var(--surface);border-right:1px solid var(--border);padding:1.1rem;overflow-y:auto;position:sticky;top:0;height:100vh}
+    .sidebar h1{font-size:1.05rem;margin-bottom:.25rem}
+    .sub{font-size:.78rem;color:var(--muted);margin-bottom:.9rem}
+    .progress-bar{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--ok));width:0;transition:width .3s}
+    .progress-label{font-size:.75rem;color:var(--muted);margin:.35rem 0 1rem}
+    .level-nav{list-style:none}
+    .level-nav button{width:100%;text-align:left;background:transparent;color:var(--muted);padding:.45rem .6rem;border-radius:8px;font-size:.8rem;border:1px solid transparent;display:flex;gap:.45rem;align-items:center}
+    .level-nav button.active{background:var(--surface2);color:var(--text);border-color:var(--border)}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0}
+    .level-nav button.done .dot{background:var(--ok)}
+    main{padding:1.4rem 1.8rem 3rem;max-width:900px}
+    .badge{display:inline-block;font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding:.15rem .45rem;border-radius:4px;background:var(--surface2);color:var(--muted);margin-right:.3rem}
+    .badge.accent{background:rgba(108,158,255,.15);color:var(--accent)}
+    .badge.ok{background:rgba(126,231,135,.15);color:var(--ok)}
+    h2{font-size:1.55rem;margin:.4rem 0 .6rem}
+    h3{font-size:1.05rem;margin:0 0 .7rem}
+    h4{font-size:.92rem;margin:1rem 0 .45rem;color:var(--accent)}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1.15rem;margin-bottom:1rem}
+    .callout{border-left:3px solid var(--accent);padding:.7rem 1rem;background:rgba(108,158,255,.06);border-radius:0 8px 8px 0;margin:.8rem 0;font-size:.9rem}
+    .callout.ok{border-color:var(--ok);background:rgba(126,231,135,.06)}
+    .callout.warn{border-color:var(--warn);background:rgba(240,176,96,.06)}
+    .callout.bad{border-color:var(--bad);background:rgba(240,113,120,.06)}
+    .formula{font-family:var(--mono);font-size:.84rem;background:var(--surface2);border:1px solid var(--border);padding:.65rem .85rem;border-radius:8px;color:var(--ok);margin:.5rem 0}
+    .learn-list{list-style:none}
+    .learn-list li{padding:.3rem 0 .3rem 1.15rem;position:relative;font-size:.9rem}
+    .learn-list li::before{content:'→';position:absolute;left:0;color:var(--accent)}
+    .paper-item,.toc-item{display:flex;justify-content:space-between;align-items:center;gap:.75rem;padding:.7rem .9rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;margin-bottom:.45rem;font-size:.9rem}
+    .paper-item:hover,.toc-item:hover{border-color:var(--accent)}
+    .tabs{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+    .tab{padding:.4rem .85rem;border-radius:99px;font-size:.8rem;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+    .tab.active{background:rgba(108,158,255,.15);color:var(--accent);border-color:var(--accent)}
+    .checkrow{display:flex;gap:.6rem;align-items:flex-start;margin:.35rem 0;font-size:.9rem}
+    .checkrow input{margin-top:.25rem}
+    .quiz-opt{display:block;width:100%;text-align:left;padding:.55rem .8rem;margin:.35rem 0;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.88rem}
+    .quiz-opt.correct{border-color:var(--ok);background:rgba(126,231,135,.1)}
+    .quiz-opt.wrong{border-color:var(--bad);background:rgba(240,113,120,.1)}
+    .vocab{display:grid;gap:.5rem}
+    .vocab div{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.65rem .8rem;font-size:.88rem}
+    .vocab strong{color:var(--accent)}
+    .two-col{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+    @media(max-width:850px){.layout{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.two-col{grid-template-columns:1fr}}
+    .actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+    .demo-canvas{width:100%;background:#0a0e14;border:1px solid var(--border);border-radius:8px;display:block}
+    .demo-controls{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem;align-items:center;font-size:.8rem;color:var(--muted)}
+    .demo-controls input[type=range]{width:120px;accent-color:var(--accent)}
+    .muted{color:var(--muted);font-size:.88rem}
+    .prose p{margin:.55rem 0;white-space:pre-wrap}
+    table{width:100%;border-collapse:collapse;font-size:.82rem}
+    th,td{padding:.5rem .65rem;border:1px solid var(--border);text-align:left}
+    th{background:var(--surface2);color:var(--muted)}
+    .dual{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-top:.55rem}
+    @media(max-width:850px){.dual{grid-template-columns:1fr}}
+    .dual .orig{border-left:3px solid var(--accent);background:rgba(108,158,255,.06);padding:.7rem .85rem;border-radius:0 8px 8px 0;font-size:.88rem}
+    .dual .simp{border-left:3px solid var(--ok);background:rgba(126,231,135,.06);padding:.7rem .85rem;border-radius:0 8px 8px 0;font-size:.88rem}
+    .dual .lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.35rem;opacity:.9}
+    .dual .orig .lbl{color:var(--accent)}
+    .dual .simp .lbl{color:var(--ok)}
+    .idea-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.75rem}
+    .idea-card h4{margin:0 0 .5rem;font-size:.95rem;color:var(--text)}
+    .hidden{display:none!important}
+    </style>
 </head>
 <body>
   <div class="layout">
     <aside class="sidebar">
       <h1>SetConCA Mastery</h1>
-      <p class="sub">10 levels · 43 papers · 3-pass learning · interactive demos</p>
-      <div class="progress-wrap">
-        <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-        <div class="progress-label" id="progressLabel">0 / 43 papers started</div>
-      </div>
+      <p class="sub">Self-contained course · no PDF required</p>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-label" id="progressLabel">0%</div>
+      <button class="btn-ghost" style="width:100%;font-size:.78rem;margin-bottom:.8rem" onclick="showHome()">Course home</button>
       <ul class="level-nav" id="levelNav"></ul>
-      <div style="margin-top:1.5rem">
-        <button class="btn-ghost" style="width:100%;font-size:0.8rem" onclick="resetProgress()">Reset progress</button>
-      </div>
+      <button class="btn-ghost" style="width:100%;font-size:.78rem;margin-top:1rem" onclick="resetProgress()">Reset progress</button>
     </aside>
-    <main id="mainContent"></main>
+    <main id="main"></main>
   </div>
   <script src="papers.js"></script>
   <script>
-    const STORAGE_KEY = 'setconca-mastery-v1';
-    let state = loadState();
-    let currentLevel = state.currentLevel || 1;
-    let currentPaperId = state.currentPaperId || null;
-    let currentPass = state.currentPass || 'concept';
+    const KEY = 'setconca-course-v2';
+    let state = load();
+    let view = state.view || {type:'home'};
 
-    function loadState() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || defaultState(); }
-      catch { return defaultState(); }
-    }
-    function defaultState() {
-      return { currentLevel: 1, currentPaperId: null, currentPass: 'concept', papers: {}, notes: {} };
-    }
-    function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateProgress(); renderSidebar(); }
-    function resetProgress() { if (confirm('Clear all progress and notes?')) { state = defaultState(); saveState(); render(); } }
+    function load(){ try{return JSON.parse(localStorage.getItem(KEY))||def()}catch{return def()} }
+    function def(){ return {view:{type:'home'}, primers:{}, papers:{}, checks:{}, notes:{}} }
+    function save(){ localStorage.setItem(KEY, JSON.stringify(state)); renderSidebar(); }
 
-    function allPapers() {
-      return CURRICULUM_DATA.levels.flatMap(l => l.papers);
-    }
-    function getPaper(id) { return allPapers().find(p => p.id === id); }
-    function getLevel(id) { return CURRICULUM_DATA.levels.find(l => l.id === id); }
+    function allPaperIds(){ return CURRICULUM_DATA.levels.flatMap(l=>l.papers.map(p=>p.id)); }
+    function getPaper(id){ return CURRICULUM_DATA.levels.flatMap(l=>l.papers).find(p=>p.id===id); }
+    function getLevel(id){ return CURRICULUM_DATA.levels.find(l=>l.id===id); }
+    function paperDone(id){ const p=state.papers[id]||{}; return !!(p.learn && p.quiz); }
+    function primerDone(id){ return !!state.primers[id]; }
 
-    function paperProgress(id) {
-      const p = state.papers[id] || {};
-      const passes = ['concept','technical','research'];
-      const done = passes.filter(x => p[x]).length;
-      return { done, total: 3, complete: done === 3 };
+    function progressStats(){
+      const primers = CURRICULUM_DATA.levels.length;
+      const papers = allPaperIds().length;
+      const pd = CURRICULUM_DATA.levels.filter(l=>primerDone(l.id)).length;
+      const pp = allPaperIds().filter(paperDone).length;
+      const total = primers + papers;
+      const done = pd + pp;
+      return {done,total,pct: Math.round(100*done/total), pd, primers, pp, papers};
     }
 
-    function updateProgress() {
-      const papers = allPapers();
-      const started = papers.filter(p => paperProgress(p.id).done > 0).length;
-      const complete = papers.filter(p => paperProgress(p.id).complete).length;
-      document.getElementById('progressFill').style.width = (complete / papers.length * 100) + '%';
-      document.getElementById('progressLabel').textContent = `${complete} complete · ${started} started · ${papers.length} total`;
-    }
-
-    function renderSidebar() {
-      const nav = document.getElementById('levelNav');
-      nav.innerHTML = CURRICULUM_DATA.levels.map(l => {
-        const papers = l.papers.filter(p => !p.optional);
-        const done = papers.every(p => paperProgress(p.id).complete);
-        return `<li><button class="${l.id === currentLevel ? 'active' : ''} ${done ? 'done' : ''}" onclick="goLevel(${l.id})"><span class="dot"></span>L${l.id}: ${l.title}</button></li>`;
+    function renderSidebar(){
+      const s = progressStats();
+      document.getElementById('progressFill').style.width = s.pct+'%';
+      document.getElementById('progressLabel').textContent = `${s.pct}% · ${s.pp}/${s.papers} papers · ${s.pd}/${s.primers} primers`;
+      document.getElementById('levelNav').innerHTML = CURRICULUM_DATA.levels.map(l=>{
+        const papers=l.papers.filter(p=>!p.optional);
+        const done = primerDone(l.id) && papers.every(p=>paperDone(p.id));
+        const active = view.type!=='home' && (view.levelId===l.id || (view.paperId && getLevel(CURRICULUM_DATA.levels.find(x=>x.papers.some(p=>p.id===view.paperId))?.id)?.id===l.id));
+        const lvl = view.paperId ? CURRICULUM_DATA.levels.find(x=>x.papers.some(p=>p.id===view.paperId)) : null;
+        const isActive = view.levelId===l.id || (lvl && lvl.id===l.id);
+        return `<li><button class="${isActive?'active':''} ${done?'done':''}" onclick="openLevel(${l.id})"><span class="dot"></span>L${l.id}: ${l.title}</button></li>`;
       }).join('');
     }
 
-    function goLevel(id) { currentLevel = id; currentPaperId = null; saveState(); render(); }
-    function goPaper(id) { currentPaperId = id; currentPass = 'concept'; state.currentLevel = currentLevel; state.currentPaperId = id; saveState(); render(); }
-    function goBack() { currentPaperId = null; state.currentPaperId = null; saveState(); render(); }
-    function setPass(p) { currentPass = p; state.currentPass = p; saveState(); renderPaperView(); }
-    function markPassDone() {
-      if (!currentPaperId) return;
-      state.papers[currentPaperId] = state.papers[currentPaperId] || {};
-      state.papers[currentPaperId][currentPass] = true;
-      saveState();
-      renderPaperView();
-    }
+    function showHome(){ view={type:'home'}; state.view=view; save(); render(); }
+    function openLevel(id){ view={type:'level', levelId:id}; state.view=view; save(); render(); }
+    function openPaper(id){ view={type:'paper', paperId:id, section:'learn'}; state.view=view; save(); render(); }
+    function resetProgress(){ if(confirm('Clear all course progress?')){ state=def(); save(); render(); } }
 
-    function render() {
+    function render(){
       renderSidebar();
-      updateProgress();
-      if (currentPaperId) renderPaperView();
-      else renderLevelView();
+      const main=document.getElementById('main');
+      if(view.type==='home') main.innerHTML = renderHome();
+      else if(view.type==='level') main.innerHTML = renderLevel(view.levelId);
+      else if(view.type==='paper') main.innerHTML = renderPaper(view.paperId, view.section||'learn');
     }
 
-    function renderLevelView() {
-      const level = getLevel(currentLevel);
-      const main = document.getElementById('mainContent');
-      main.innerHTML = `
-        <div class="hero">
-          <span class="badge accent">Level ${level.id}</span>
-          <span class="badge">Weeks ${level.weeks}</span>
-          <h2>${level.title}</h2>
-          ${level.central_question ? `<p style="margin-top:0.75rem;font-style:italic;color:var(--warn)">${level.central_question}</p>` : ''}
-          ${level.key_lesson ? `<div class="callout warn">${level.key_lesson}</div>` : ''}
+    function renderHome(){
+      const intro = CURRICULUM_DATA.courseIntro || {};
+      return `
+        <span class="badge accent">Start here</span>
+        <h2>${intro.title||'SetConCA Mastery'}</h2>
+        <p class="muted">${intro.promise||''}</p>
+        <div class="formula">${intro.formula||CURRICULUM_DATA.formula}</div>
+        <div class="card"><h3>How to use this course</h3>
+          <ul class="learn-list">${(intro.howToUse||[]).map(x=>`<li>${x}</li>`).join('')}</ul>
+          <p class="muted" style="margin-top:.7rem">${intro.pathMap||''}</p>
         </div>
-        ${level.id === 1 ? renderCompareBox() : ''}
-        ${level.id === 6 ? renderMetricTable() : ''}
-        ${level.checkpoint ? `<div class="card"><h3>🧪 Practical checkpoint</h3><p>${level.checkpoint}</p></div>` : ''}
-        ${level.questions ? `<div class="card"><h3>Questions you should answer</h3><ul class="learn-list">${level.questions.map(q=>`<li>${q}</li>`).join('')}</ul></div>` : ''}
+        <div class="card"><h3>Your path (10 levels)</h3>
+          ${CURRICULUM_DATA.levels.map(l=>`
+            <div class="toc-item" onclick="openLevel(${l.id})">
+              <span><strong>L${l.id}</strong> · ${l.title} ${primerDone(l.id)?'<span class="badge ok">primer ✓</span>':''}</span>
+              <span class="muted">${l.papers.filter(p=>paperDone(p.id)).length}/${l.papers.length}</span>
+            </div>`).join('')}
+        </div>
+        <div class="actions"><button class="btn-primary" onclick="openLevel(1)">Begin Level 1 →</button></div>`;
+    }
+
+    function renderLevel(id){
+      const level = getLevel(id);
+      const primer = (CURRICULUM_DATA.levelPrimers||{})[String(id)] || level.primer || {};
+      return `
+        <button class="btn-ghost" onclick="showHome()">← Course home</button>
+        <div style="margin-top:.8rem">
+          <span class="badge accent">Level ${id}</span>
+          <span class="badge">Weeks ${level.weeks||''}</span>
+          ${primerDone(id)?'<span class="badge ok">Primer done</span>':''}
+        </div>
+        <h2>${level.title}</h2>
+        <p class="muted"><strong>Mission:</strong> ${primer.mission||''}</p>
+        <p class="muted"><strong>Before you start:</strong> ${primer.beforeYouStart||''}</p>
+
         <div class="card">
-          <h3>Papers in this level</h3>
-          <div class="paper-list">
-            ${level.papers.map(p => {
-              const prog = paperProgress(p.id);
-              return `<div class="paper-item" onclick="goPaper('${p.id}')">
-                <span class="num">${p.num ?? '·'}</span>
-                <span class="title">${p.title}${p.optional ? ' <span class="badge">optional</span>' : ''}${p.missing_local ? ' <span class="badge" style="color:var(--warn)">web only</span>' : ''}</span>
-                <span class="status">${prog.complete ? '✓ done' : prog.done ? `${prog.done}/3` : 'start →'}</span>
-              </div>`;
-            }).join('')}
+          <h3>Level primer (read this first)</h3>
+          <div class="prose">${(primer.primer||'').split(/\n\n+/).map(p=>`<p>${esc(p)}</p>`).join('')}</div>
+          ${(primer.bigPictureDiagram||[]).length?`<h4>Big picture</h4><div class="formula">${primer.bigPictureDiagram.map(esc).join('<br>')}</div>`:''}
+          ${(primer.conceptsToMaster||[]).length?`<h4>Concepts to master</h4>${primer.conceptsToMaster.map(c=>`<div class="idea-card"><h4>${esc(c.name)}</h4><div class="dual"><div class="orig"><div class="lbl">Original idea</div>${esc(c.deeper||c.simple)}</div><div class="simp"><div class="lbl">Simple explanation</div>${esc(c.simple)}</div></div></div>`).join('')}`:''}
+          <div class="actions">
+            <button class="btn-primary" onclick="markPrimer(${id})">${primerDone(id)?'Primer marked done ✓':'Mark primer complete'}</button>
           </div>
         </div>
-        ${currentLevel === 1 ? renderSchedule() : ''}
-      `;
-    }
 
-    function renderCompareBox() {
-      return `<div class="card"><h3>PCA vs ICA vs CCA</h3>
-        <div class="three-col-compare">
-          <div><strong>PCA</strong>Preserve variance within one view</div>
-          <div><strong>ICA</strong>Recover statistically independent sources</div>
-          <div><strong>CCA</strong>Recover correlated info across two views</div>
-        </div></div>`;
-    }
+        ${level.id===6?renderMetricTable():''}
+        ${primer.checkpoint?`<div class="card"><h3>Practical checkpoint</h3>
+          <p><strong>Goal:</strong> ${primer.checkpoint.goal}</p>
+          <ul class="learn-list">${(primer.checkpoint.steps||[]).map(s=>`<li>${s}</li>`).join('')}</ul>
+          <p class="muted"><strong>Success looks like:</strong> ${primer.checkpoint.successLooksLike||''}</p>
+        </div>`:''}
 
-    function renderMetricTable() {
-      const rows = CURRICULUM_DATA.metricTable.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
-      return `<div class="card"><h3>What each test establishes (and does not)</h3>
-        <div class="table-wrap"><table><thead><tr><th>Test</th><th>Supports</th><th>Does NOT establish</th></tr></thead><tbody>${rows}</tbody></table></div>
-        <p style="font-size:0.85rem;color:var(--muted);margin-top:0.5rem">A strong paper needs several complementary tests — no single metric measures interpretability.</p></div>`;
-    }
+        ${(level.questions||[]).length?`<div class="card"><h3>You should be able to answer</h3><ul class="learn-list">${level.questions.map(q=>`<li>${q}</li>`).join('')}</ul></div>`:''}
 
-    function renderSchedule() {
-      return `<div class="card"><h3>16-week schedule</h3>
-        ${CURRICULUM_DATA.schedule16Weeks.map(s => `<div class="schedule-row"><span>${s.weeks}</span><span>${s.topic}</span><span style="color:var(--muted)">${s.output}</span></div>`).join('')}
-        <div class="formula" style="margin-top:1rem">${CURRICULUM_DATA.formula}</div></div>`;
-    }
-
-    function renderPaperView() {
-      const paper = getPaper(currentPaperId);
-      const level = CURRICULUM_DATA.levels.find(l => l.papers.some(p => p.id === paper.id));
-      const prog = paperProgress(paper.id);
-      const main = document.getElementById('mainContent');
-      main.innerHTML = `
-        <div style="margin-bottom:1rem"><button class="btn-ghost" id="backBtn" onclick="goBack()">← Back to Level ${level.id}</button></div>
-        <div class="hero">
-          ${paper.num ? `<span class="badge accent">Paper ${paper.num}</span>` : '<span class="badge">Optional</span>'}
-          <span class="badge">${prog.done}/3 passes</span>
-          <h2>${paper.title}</h2>
-          <p>${paper.authors}${paper.pages ? ` · ${paper.pages} pages` : ''}</p>
+        <div class="card"><h3>Modules in this level</h3>
+          ${level.papers.map(p=>`
+            <div class="paper-item" onclick="openPaper('${p.id}')">
+              <span>${p.num?`#${p.num} `:''}${p.title}${p.optional?' <span class="badge">optional</span>':''}</span>
+              <span class="muted">${paperDone(p.id)?'✓ done':'study →'}</span>
+            </div>`).join('')}
         </div>
-        <div class="pass-tabs">
-          ${['concept','technical','research'].map(p => `<button class="pass-tab ${currentPass===p?'active':''} ${state.papers[paper.id]?.[p]?'done':''}" onclick="setPass('${p}')">${p.charAt(0).toUpperCase()+p.slice(1)} pass ${state.papers[paper.id]?.[p]?'✓':''}</button>`).join('')}
-        </div>
-        <div id="passContent"></div>
+        <p class="muted">${primer.bridgeToNext||''}</p>
         <div class="actions">
-          ${paper.pdfPath ? `<a href="${paper.pdfPath}" target="_blank"><button class="btn-secondary">📄 Open local PDF</button></a>` : ''}
-          ${paper.url ? `<a href="${paper.url}" target="_blank"><button class="btn-secondary">🌐 Open online</button></a>` : ''}
-          <button class="btn-secondary" onclick="speakSummary()">🔊 Listen to summary</button>
-          <button class="btn-primary" onclick="markPassDone()">Mark ${currentPass} pass complete</button>
+          ${id>1?`<button class="btn-secondary" onclick="openLevel(${id-1})">← Level ${id-1}</button>`:''}
+          ${id<10?`<button class="btn-primary" onclick="openLevel(${id+1})">Level ${id+1} →</button>`:''}
+        </div>`;
+    }
+
+    function renderMetricTable(){
+      const rows=(CURRICULUM_DATA.metricTable||[]).map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+      return `<div class="card"><h3>What each test establishes</h3>
+        <table><thead><tr><th>Test</th><th>Supports</th><th>Does NOT establish</th></tr></thead><tbody>${rows}</tbody></table>
+        <p class="muted" style="margin-top:.5rem">Memorise this table. No single metric = interpretability.</p></div>`;
+    }
+
+    function markPrimer(id){ state.primers[id]=true; save(); render(); }
+
+    function renderPaper(id, section){
+      const paper=getPaper(id);
+      const level=CURRICULUM_DATA.levels.find(l=>l.papers.some(p=>p.id===id));
+      const t=paper.teach||{};
+      const sections=[
+        ['learn','Learn'],
+        ['ideas','Key ideas'],
+        ['math','Math'],
+        ['limits','Shows / not'],
+        ['apply','SetConCA'],
+        ['check','Mastery'],
+        ['quiz','Quiz'],
+      ];
+      if(hasDemo(id)) sections.splice(2,0,['demo','Interactive']);
+      if(paper.id==='superposition' && paper.richContent) sections.splice(2,0,['charts','Charts']);
+
+      return `
+        <button class="btn-ghost" id="backBtn" onclick="openLevel(${level.id})">← Back to Level ${level.id}</button>
+        <div style="margin-top:.8rem">
+          <span class="badge accent">${paper.num?`Paper ${paper.num}`:'Optional'}</span>
+          ${paperDone(id)?'<span class="badge ok">Module complete</span>':''}
         </div>
-      `;
-      renderPassContent(paper);
+        <h2>${paper.title}</h2>
+        <p class="muted">${paper.authors||''}${paper.pages?` · ${paper.pages} pages (reference only)`:''}</p>
+        <div class="callout ok"><strong>Why we read this:</strong> ${t.whyWeRead||paper.setconca||''}</div>
+        <p><em>${t.oneSentence||''}</em></p>
+
+        <div class="tabs">
+          ${sections.map(([k,lab])=>`<button class="tab ${section===k?'active':''}" onclick="setSection('${k}')">${lab}</button>`).join('')}
+        </div>
+        <div id="sectionBody">${renderSection(paper, section)}</div>
+        <div class="actions">
+          ${paper.pdfPath?`<a href="${paper.pdfPath}" target="_blank"><button class="btn-secondary">Optional PDF</button></a>`:''}
+          ${paper.url?`<a href="${paper.url}" target="_blank"><button class="btn-secondary">Online source</button></a>`:''}
+          <button class="btn-secondary" onclick="speakTeach()">Listen</button>
+          <button class="btn-primary" onclick="markLearn('${id}')">Mark learning complete</button>
+        </div>`;
     }
 
-    function renderPassContent(paper) {
-      const el = document.getElementById('passContent');
-      const rich = paper.richContent ? renderRichPaperContent(paper, currentPass) : '';
-      if (currentPass === 'concept') {
-        el.innerHTML = rich + `
-          <div class="card">
-            <h3>Concept pass — Big picture</h3>
-            <p style="margin-bottom:0.75rem;color:var(--muted);font-size:0.88rem">Read: abstract, figures, introduction, conclusion.</p>
-            ${paper.richContent?.abstract ? `<p>${paper.richContent.abstract}</p>` : paper.abstract ? `<p>${paper.abstract}</p>` : '<p class="callout warn">Open the PDF and read the abstract and introduction.</p>'}
-            ${paper.richContent?.keyResults ? `<h4 style="margin:1rem 0 0.5rem;font-size:0.9rem">Key results from the paper</h4><ul class="learn-list">${paper.richContent.keyResults.map(r=>`<li>${r}</li>`).join('')}</ul>` : ''}
-            <h4 style="margin:1rem 0 0.5rem;font-size:0.9rem">What you'll learn</h4>
-            <ul class="learn-list">${paper.learn.map(l=>`<li>${l}</li>`).join('')}</ul>
-            <div class="callout setconca"><strong>SetConCA connection:</strong> ${paper.setconca}</div>
-          </div>
-          ${renderDemoForPaper(paper.id)}
-          ${paper.video ? `<div class="card"><h3>📺 Supplementary video</h3><div class="video-wrap"><iframe src="${paper.video.replace('watch?v=','embed/')}" allowfullscreen></iframe></div></div>` : ''}
-          ${paper.quiz ? renderQuiz(paper) : ''}
-        `;
-      } else if (currentPass === 'technical') {
-        el.innerHTML = rich + `
-          <div class="card">
-            <h3>Technical pass — Method & evaluation</h3>
-            <p style="color:var(--muted);font-size:0.88rem;margin-bottom:1rem">Focus: objective function, assumptions, architecture, baselines, ablations, limitations.</p>
-            <ul class="learn-list">${paper.learn.map(l=>`<li><strong>Deep dive:</strong> ${l}</li>`).join('')}</ul>
-            ${getTechnicalNotes(paper.id)}
-          </div>
-          ${renderDemoForPaper(paper.id, true)}
-        `;
-      } else {
-        el.innerHTML = rich + `
-          <div class="card">
-            <h3>Research pass — Challenge, reproduce, apply</h3>
-            <p style="color:var(--muted);font-size:0.88rem;margin-bottom:1rem">Identify one assumption to challenge, one experiment to reproduce, one idea for SetConCA.</p>
-            ${paper.richContent?.openQuestions ? `<div class="callout warn"><strong>Open questions from the paper:</strong><ul class="learn-list">${paper.richContent.openQuestions.map(q=>`<li>${q}</li>`).join('')}</ul></div>` : ''}
-            ${paper.richContent?.setconcaLinks ? `<div class="callout setconca"><strong>SetConCA research links:</strong><ul class="learn-list">${paper.richContent.setconcaLinks.map(l=>`<li>${l}</li>`).join('')}</ul></div>` : ''}
-            <div class="research-prompts">
-              <label><strong>Assumption to challenge</strong></label>
-              <textarea id="noteChallenge" placeholder="What does this paper assume that might not hold for multi-view SAE codes?" onchange="saveNote('challenge')">${state.notes[paper.id]?.challenge||''}</textarea>
-              <label><strong>Experiment to reproduce</strong></label>
-              <textarea id="noteReproduce" placeholder="Minimum viable replication on Gemma activations..." onchange="saveNote('reproduce')">${state.notes[paper.id]?.reproduce||''}</textarea>
-              <label><strong>Idea for SetConCA</strong></label>
-              <textarea id="noteApply" placeholder="How does this change your method or evaluation?" onchange="saveNote('apply')">${state.notes[paper.id]?.apply||''}</textarea>
-            </div>
-            <div class="callout setconca">${paper.setconca}</div>
-          </div>
-        `;
+    function setSection(s){ view.section=s; state.view=view; save(); render(); }
+
+    function dualBlock(original, simple){
+      return `<div class="dual">
+        <div class="orig"><div class="lbl">Original idea</div>${esc(original||'')}</div>
+        <div class="simp"><div class="lbl">Simple explanation</div>${esc(simple||'')}</div>
+      </div>`;
+    }
+
+    function renderSection(paper, section){
+      const t=paper.teach||{};
+      if(section==='learn'){
+        return `<div class="card"><h3>Core claim</h3>
+          ${dualBlock(t.originalIdea||t.oneSentence, (t.simpleLesson||t.plainLanguage||'').split(/\n\n+/)[0]||t.oneSentence)}
+          <h4 style="margin-top:1.1rem">Full lesson (simple walkthrough)</h4>
+          <div class="prose">${(t.plainLanguage||'Content loading…').split(/\n\n+/).map(p=>`<p>${esc(p)}</p>`).join('')}</div>
+          <h4>Vocabulary</h4>
+          ${(t.vocabulary||[]).map(v=>`<div class="idea-card"><h4>${esc(v.term)}</h4>${dualBlock(v.original||('Technical term: '+v.term), v.simple||v.def)}</div>`).join('')||'<p class="muted">—</p>'}
+          ${(t.commonConfusions||[]).length?`<h4>Common confusions</h4>${t.commonConfusions.map(c=>`<div class="callout bad"><strong>Wrong:</strong> ${esc(c.wrong)}<br><strong>Right:</strong> ${esc(c.right)}</div>`).join('')}`:''}
+        </div>`;
       }
-    }
-
-    function renderRichPaperContent(paper, pass) {
-      const r = paper.richContent;
-      if (!r || paper.id !== 'superposition') return '';
-      let html = '';
-      if (pass === 'concept') {
-        html += `<div class="card"><h3>Representation hierarchy (from paper)</h3>
-          <div class="table-wrap"><table><thead><tr><th>Property</th><th>Meaning</th></tr></thead><tbody>
-          ${r.hierarchy.map(h=>`<tr><td><strong>${h.level}</strong></td><td>${h.desc}</td></tr>`).join('')}
-          </tbody></table></div></div>`;
-        html += `<div class="card"><h3>Competing forces</h3><div class="three-col-compare">
-          ${r.forces.map(f=>`<div><strong>${f.name}</strong>${f.desc}</div>`).join('')}
-          </div></div>`;
+      if(section==='ideas'){
+        return `<div class="card"><h3>Key ideas — original + simple</h3>
+          <p class="muted" style="margin-bottom:.8rem">Left = how the paper/field states it. Right = beginner explanation. You need both.</p>
+          ${(t.keyIdeas||[]).map((k,i)=>`<div class="idea-card"><h4>${i+1}. ${esc(k.title)}</h4>${dualBlock(k.original||k.explain, k.simple||k.explain)}</div>`).join('')||'<p class="muted">—</p>'}
+        </div>`;
       }
-      if (pass === 'concept' || pass === 'technical') {
-        html += `<div class="card"><h3>Toy model architectures</h3>
-          ${r.models.map(m=>`<div style="margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid var(--border)">
-            <strong>${m.name}</strong><div class="formula" style="margin:0.5rem 0;font-size:0.8rem">${m.eq}</div><p style="font-size:0.88rem;color:var(--muted)">${m.behavior}</p></div>`).join('')}
-          <p style="font-size:0.85rem"><strong>Loss:</strong> <span class="formula" style="display:inline;padding:0.2rem 0.5rem">${r.loss}</span></p>
-          <h4 style="margin:1rem 0 0.5rem">Synthetic data assumptions</h4>
-          <ul class="learn-list">${r.syntheticData.map(s=>`<li>${s}</li>`).join('')}</ul>
-          </div>`;
-        html += `<div class="card"><h3>📊 Phase diagram — when does superposition win?</h3>
-          <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.75rem">${r.phaseDiagram.description}</p>
-          <canvas class="demo-canvas" id="phaseDiagram" width="480" height="300"></canvas>
-          <div class="demo-controls"><label>Sparsity S: <input type="range" id="phaseSparsity" min="1" max="99" value="85"></label>
-          <label>Extra feature importance: <input type="range" id="phaseImportance" min="1" max="100" value="50"></label></div>
-          <p id="phaseOutcome" style="font-size:0.88rem;margin-top:0.5rem"></p></div>`;
-        html += `<div class="card"><h3>📊 Feature dimensionality — sticky geometric points</h3>
-          <p style="font-size:0.85rem;color:var(--muted)">${r.featureDimensionality.interpretation}</p>
-          <div class="formula" style="margin:0.75rem 0">${r.featureDimensionality.formula}</div>
-          <canvas class="demo-canvas" id="dimChart" width="480" height="260"></canvas>
-          <div class="demo-controls"><label>Sparsity (1−S): <input type="range" id="dimSparsity" min="1" max="99" value="60"></label></div>
-          <div class="table-wrap" style="margin-top:0.75rem"><table><thead><tr><th>D_i</th><th>Geometry</th></tr></thead><tbody>
-          ${r.featureDimensionality.stickyPoints.map(p=>`<tr><td>${p.dim}</td><td>${p.geometry}</td></tr>`).join('')}
-          </tbody></table></div></div>`;
-        html += `<div class="card"><h3>📊 5 features in 2D — dense vs sparse</h3>
-          <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem">Classic paper figure: with dense features, model learns top-2 (PCA-like). As sparsity increases, extra features appear in superposition (antipodal pairs first).</p>
-          <canvas class="demo-canvas" id="fiveTwoDemo" width="480" height="280"></canvas>
-          <div class="demo-controls"><label>Activation density (1−S): <input type="range" id="fiveSparsity" min="0" max="100" value="30"></label></div></div>`;
-        html += `<div class="card"><h3>Geometry of superposition</h3>
-          <canvas class="demo-canvas" id="geometryGraph" width="480" height="280"></canvas>
-          <div class="demo-controls"><button class="btn-secondary" onclick="setGeometry('pentagon')">Pentagon</button>
-          <button class="btn-secondary" onclick="setGeometry('triangle')">Triangle</button>
-          <button class="btn-secondary" onclick="setGeometry('antipodal')">Antipodal pairs</button>
-          <button class="btn-secondary" onclick="setGeometry('tetra')">Tetrahedron (proj)</button></div>
-          <ul class="learn-list" style="margin-top:0.75rem">${r.geometrySection.map(g=>`<li>${g}</li>`).join('')}</ul></div>`;
+      if(section==='math'){
+        if(!(t.simplifiedMath||[]).length) return `<div class="card"><p class="muted">This module is mostly conceptual — no required formulas beyond vocabulary.</p></div>`;
+        return `<div class="card"><h3>Math — formula + meaning</h3>
+          ${t.simplifiedMath.map(m=>`<div class="idea-card"><h4>${esc(m.name)}</h4>
+            <div class="formula">${esc(m.formula)}</div>
+            ${dualBlock(m.original||m.formula, m.simple||m.meaning)}
+          </div>`).join('')}
+        </div>`;
       }
-      if (pass === 'technical') {
-        html += `<div class="card"><h3>Computation in superposition</h3>
-          <ul class="learn-list">${r.computationInSuperposition.map(c=>`<li>${c}</li>`).join('')}</ul></div>`;
-        html += `<div class="card"><h3>Adversarial robustness link</h3>
-          <p>${r.adversarial}</p></div>`;
-        html += `<div class="card"><h3>Predictions for real models</h3>
-          <ul class="learn-list">${r.predictions.map(p=>`<li>${p}</li>`).join('')}</ul></div>`;
+      if(section==='limits'){
+        const shows=(t.limitPairs&&t.limitPairs.length)?t.limitPairs:(t.whatItShows||[]).map(s=>({original:s,simple:'Evidence supports this — nothing more.'}));
+        const nots=(t.nonClaimPairs&&t.nonClaimPairs.length)?t.nonClaimPairs:(t.whatItDoesNotShow||[]).map(s=>({original:s,simple:'Do not stretch the paper into this claim.'}));
+        return `<div class="card"><h3>What the results support</h3>
+          ${shows.map((x,i)=>`<div class="idea-card"><h4>Shows ${i+1}</h4>${dualBlock(x.original,x.simple)}</div>`).join('')}
+          <h3 style="margin-top:1rem">What they do not establish</h3>
+          ${nots.map((x,i)=>`<div class="idea-card"><h4>Not shown ${i+1}</h4>${dualBlock(x.original,x.simple)}</div>`).join('')}
+        </div>`;
       }
-      if (pass === 'research' || pass === 'technical') {
-        html += `<div class="card"><h3>Three ways out → SAE connection</h3>
-          ${r.threeWaysOut.map(w=>`<div style="margin-bottom:1rem;padding:0.75rem;background:var(--surface2);border-radius:8px;border:1px solid var(--border)">
-            <strong>${w.approach}</strong><p style="font-size:0.88rem;margin:0.35rem 0">${w.desc}</p>
-            <p style="font-size:0.82rem;color:var(--accent2)">SAE link: ${w.saes}</p></div>`).join('')}
-          </div>`;
-        html += `<div class="card"><h3>Comparison: PCA vs Superposition vs SAE vs SetConCA</h3>
-          <div class="table-wrap"><table><thead><tr><th>Method</th><th>Objective</th><th>Capacity</th><th>Interference</th><th>Interpretability</th></tr></thead><tbody>
-          ${r.comparisonTable.map(row=>`<tr>${row.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}
-          </tbody></table></div></div>`;
-        html += `<div class="card"><h3>Paper sections (62 pages)</h3>
-          <ol style="font-size:0.85rem;padding-left:1.25rem;color:var(--muted)">${r.sections.map(s=>`<li style="margin:0.25rem 0">${s}</li>`).join('')}</ol></div>`;
+      if(section==='apply'){
+        const pairs=(t.setconcaPairs&&t.setconcaPairs.length)?t.setconcaPairs:(t.setconcaUse||[paper.setconca]).map(u=>({original:u,simple:u}));
+        return `<div class="card"><h3>SetConCA — claim vs action</h3>
+          ${pairs.map((x,i)=>`<div class="idea-card"><h4>Use ${i+1}</h4>${dualBlock(x.original,x.simple)}</div>`).join('')}
+          <div class="callout ok">${esc(paper.setconca||'')}</div>
+        </div>`;
       }
-      return html;
+      if(section==='check'){
+        const checks=t.masteryChecklist||[];
+        const st=state.checks[paper.id]||{};
+        return `<div class="card"><h3>Mastery checklist</h3>
+          <p class="muted">Check each item only when you can state both the original idea and a simple explanation without looking.</p>
+          ${checks.map((c,i)=>`<label class="checkrow"><input type="checkbox" ${st[i]?'checked':''} onchange="toggleCheck('${paper.id}',${i},this.checked)"/><span>${esc(c)}</span></label>`).join('')}
+        </div>`;
+      }
+      if(section==='quiz'){
+        const quiz=paper.quiz||t.quiz||[];
+        return `<div class="card"><h3>Quiz</h3>
+          ${quiz.map((q,i)=>`<div style="margin-bottom:1.1rem">
+            <div style="font-weight:500;margin-bottom:.4rem">${i+1}. ${esc(q.q)}</div>
+            ${(q.options||[]).map((o,j)=>`<button class="quiz-opt" onclick="answer('${paper.id}',${i},${j},${q.a},this)">${esc(o)}</button>`).join('')}
+            <div class="muted hidden" id="qf-${paper.id}-${i}" style="margin-top:.4rem"></div>
+          </div>`).join('')||'<p class="muted">No quiz.</p>'}
+          <button class="btn-primary" onclick="markQuiz('${paper.id}')">Mark quiz complete</button>
+        </div>`;
+      }
+      if(section==='demo') return `<div class="card"><h3>Interactive demo</h3><div id="demoMount"></div></div>`;
+      if(section==='charts') return renderSuperCharts(paper);
+      return '';
     }
 
-    function saveNote(field) {
-      const id = currentPaperId;
-      state.notes[id] = state.notes[id] || {};
-      const map = { challenge: 'noteChallenge', reproduce: 'noteReproduce', apply: 'noteApply' };
-      state.notes[id][field] = document.getElementById(map[field])?.value || '';
-      saveState();
-    }
+    function esc(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-    function getTechnicalNotes(id) {
-      const notes = {
-        'pca-shlens': '<div class="callout">Key equation: maximise uᵀCu subject to ||u||=1. SVD: X = UΣVᵀ. FVU = 1 − (explained variance fraction).</div>',
-        'ksparse': '<div class="callout">Encoder outputs all activations; only top-k survive. No L1 shrinkage on magnitudes of kept features.</div>',
-        'topk-sae': '<div class="callout">Compare SAEs at matched L0 or matched reconstruction (FVU). Plot Pareto curves, not single hyperparameter points.</div>',
-        'supcon': '<div class="callout">Loss averages over all positives in a class. Critical for multi-view: each activation view of same concept = positive.</div>',
-        'temporal-sae': '<div class="callout">Ask: does improvement come from semantic consistency or local similarity? Ablate pair definition.</div>',
-        'conca': '<div class="callout">ConCA: linear unmixing with identifiability assumptions. SAE: overcomplete dictionary with sparsity. Different generative stories.</div>',
-        'superposition': '<div class="callout">D_i = ||W_i||² / Σ_j (Ŵ_i·W_j)². Phase change at antipodal W=[1,−1]. ReLU makes negative interference free in 1-sparse case. SAEs = Approach 2 (overcomplete basis).</div>',
-      };
-      return notes[id] || '';
-    }
+    function toggleCheck(pid,i,v){ state.checks[pid]=state.checks[pid]||{}; state.checks[pid][i]=v; save(); }
+    function markLearn(id){ state.papers[id]=state.papers[id]||{}; state.papers[id].learn=true; save(); render(); }
+    function markQuiz(id){ state.papers[id]=state.papers[id]||{}; state.papers[id].quiz=true; save(); render(); }
 
-    function renderQuiz(paper) {
-      return `<div class="card quiz" id="quizBlock"><h3>Quick check</h3>${paper.quiz.map((q,i)=>`
-        <div class="quiz-item" data-qi="${i}">
-          <div class="quiz-q">${i+1}. ${q.q}</div>
-          ${q.options.map((o,j)=>`<button class="quiz-opt" onclick="answerQuiz(${i},${j},${q.a},this)">${o}</button>`).join('')}
-          <div class="quiz-feedback hidden" id="qf${i}"></div>
-        </div>`).join('')}</div>`;
-    }
-
-    function answerQuiz(qi, chosen, correct, btn) {
-      const item = btn.closest('.quiz-item');
-      item.querySelectorAll('.quiz-opt').forEach((b,j) => {
-        b.disabled = true;
-        if (j === correct) b.classList.add('correct');
-        else if (j === chosen) b.classList.add('wrong');
-      });
-      const fb = document.getElementById('qf'+qi);
+    function answer(pid,qi,chosen,correct,btn){
+      const box=btn.parentElement;
+      box.querySelectorAll('.quiz-opt').forEach((b,j)=>{ b.disabled=true; if(j===correct)b.classList.add('correct'); else if(j===chosen)b.classList.add('wrong'); });
+      const paper=getPaper(pid); const q=(paper.quiz||paper.teach?.quiz||[])[qi];
+      const fb=document.getElementById(`qf-${pid}-${qi}`);
       fb.classList.remove('hidden');
-      fb.style.background = chosen === correct ? 'rgba(126,231,135,0.1)' : 'rgba(240,113,120,0.1)';
-      fb.textContent = (chosen === correct ? '✓ ' : '✗ ') + getPaper(currentPaperId).quiz[qi].explain;
+      fb.textContent=(chosen===correct?'✓ ':'✗ ')+(q?.explain||'');
     }
 
-    function speakSummary() {
-      const paper = getPaper(currentPaperId);
-      const text = `${paper.title} by ${paper.authors}. ${paper.setconca}`;
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.95;
-      speechSynthesis.speak(u);
+    function speakTeach(){
+      const p=getPaper(view.paperId); const t=p.teach||{};
+      const u=new SpeechSynthesisUtterance(`${p.title}. ${t.whyWeRead||''}. ${t.oneSentence||''}`);
+      u.rate=.95; speechSynthesis.speak(u);
     }
 
-    // ─── Interactive demos ───
-    function renderDemoForPaper(id, technical) {
-      const demos = {
-        'pca-shlens': demoPCA,
-        'ica-shlens': demoICA,
-        'cca-uurtio': demoCCA,
-        'ksparse': demoSAE,
-        'align-unif': demoHypersphere,
-        'deepsets': demoSetAgg,
-        'superposition': demoSuperposition,
-      };
-      if (!demos[id]) return '';
-      return `<div class="card"><h3>${technical ? 'Interactive visualisation' : '🎮 Interactive demo'}</h3><div id="demoMount"></div></div>`;
+    function hasDemo(id){ return ['pca-shlens','ica-shlens','cca-uurtio','ksparse','align-unif','deepsets','superposition'].includes(id); }
+
+    // demos (simplified)
+    function mountDemos(){
+      if(view.type!=='paper'||view.section!=='demo') return;
+      const m=document.getElementById('demoMount'); if(!m) return;
+      const id=view.paperId;
+      if(id==='pca-shlens') demoPCA(m);
+      else if(id==='ica-shlens') demoICA(m);
+      else if(id==='cca-uurtio') demoCCA(m);
+      else if(id==='ksparse') demoSAE(m);
+      else if(id==='align-unif') demoAlign(m);
+      else if(id==='deepsets') demoSet(m);
+      else if(id==='superposition') demoSuper(m);
     }
 
-    function mountDemo(fn) {
-      requestAnimationFrame(() => { const m = document.getElementById('demoMount'); if (m) fn(m); });
-    }
-
-    function demoPCA(mount) {
-      mount.innerHTML = `<canvas class="demo-canvas" id="pcaCanvas" width="440" height="280"></canvas>
-        <div class="demo-controls"><label>Components: <input type="range" id="pcaK" min="1" max="2" value="1"></label>
-        <button class="btn-secondary" onclick="runPCA()">Recompute PCA</button></div>
-        <p style="font-size:0.8rem;color:var(--muted);margin-top:0.5rem">Drag points. Watch reconstruction error grow when you drop components.</p>`;
-      const canvas = document.getElementById('pcaCanvas');
-      const ctx = canvas.getContext('2d');
-      let pts = Array.from({length:12}, (_,i) => ({x: 80+Math.random()*280, y: 40+Math.random()*200, ox:0, oy:0}));
-      let drag = null;
-      canvas.onmousedown = e => { const r=canvas.getBoundingClientRect(); const x=e.clientX-r.left,y=e.clientY-r.top; drag=pts.find(p=>Math.hypot(p.x-x,p.y-y)<10); };
-      canvas.onmousemove = e => { if(!drag)return; const r=canvas.getBoundingClientRect(); drag.x=e.clientX-r.left; drag.y=e.clientY-r.top; drawPCA(); };
-      canvas.onmouseup = () => drag=null;
-      function drawPCA() {
-        const k = +document.getElementById('pcaK').value;
-        ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,280);
+    function demoPCA(mount){
+      mount.innerHTML=`<canvas class="demo-canvas" id="c" width="440" height="260"></canvas>
+        <div class="demo-controls"><label>Components <input type="range" id="k" min="1" max="2" value="1"></label></div>
+        <p class="muted">Green=data, blue=reconstruction. Dropping components increases error (FVU↑).</p>`;
+      const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+      let pts=Array.from({length:14},()=>({x:70+Math.random()*300,y:40+Math.random()*180}));
+      function draw(){
+        const k=+document.getElementById('k').value;
+        ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,260);
         const mx=pts.reduce((s,p)=>s+p.x,0)/pts.length, my=pts.reduce((s,p)=>s+p.y,0)/pts.length;
-        let cxx=0,cyy=0,cxy=0;
-        pts.forEach(p=>{ const dx=p.x-mx, dy=p.y-my; cxx+=dx*dx; cyy+=dy*dy; cxy+=dx*dy; });
-        cxx/=pts.length; cyy/=pts.length; cxy/=pts.length;
-        const tr=cxx+cyy, det=cxx*cyy-cxy*cxy;
-        const l1=(tr+Math.sqrt(tr*tr-4*det))/2;
-        let vx=cxy, vy=l1-cxx; const n=Math.hypot(vx,vy)||1; vx/=n; vy/=n;
-        ctx.strokeStyle='#6c9eff'; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.moveTo(mx-80*vx,my-80*vy); ctx.lineTo(mx+80*vx,my+80*vy); ctx.stroke();
+        let cxx=0,cyy=0,cxy=0; pts.forEach(p=>{const dx=p.x-mx,dy=p.y-my;cxx+=dx*dx;cyy+=dy*dy;cxy+=dx*dy});
+        cxx/=pts.length;cyy/=pts.length;cxy/=pts.length;
+        const tr=cxx+cyy,det=cxx*cyy-cxy*cxy,l1=(tr+Math.sqrt(tr*tr-4*det))/2;
+        let vx=cxy,vy=l1-cxx; const n=Math.hypot(vx,vy)||1; vx/=n;vy/=n;
+        ctx.strokeStyle='#6c9eff'; ctx.beginPath(); ctx.moveTo(mx-90*vx,my-90*vy); ctx.lineTo(mx+90*vx,my+90*vy); ctx.stroke();
         pts.forEach(p=>{
-          let rx=p.x, ry=p.y;
-          if(k===1){ const dx=p.x-mx, dy=p.y-my; const proj=dx*vx+dy*vy; rx=mx+proj*vx; ry=my+proj*vy; }
-          ctx.fillStyle='#7ee787'; ctx.beginPath(); ctx.arc(p.x,p.y,5,0,7); ctx.fill();
+          let rx=p.x,ry=p.y; if(k===1){const proj=(p.x-mx)*vx+(p.y-my)*vy; rx=mx+proj*vx; ry=my+proj*vy;}
+          ctx.fillStyle='#7ee787'; ctx.beginPath(); ctx.arc(p.x,p.y,4,0,7); ctx.fill();
           ctx.strokeStyle='#f07178'; ctx.beginPath(); ctx.moveTo(p.x,p.y); ctx.lineTo(rx,ry); ctx.stroke();
-          ctx.fillStyle='#6c9eff'; ctx.beginPath(); ctx.arc(rx,ry,4,0,7); ctx.fill();
+          ctx.fillStyle='#6c9eff'; ctx.beginPath(); ctx.arc(rx,ry,3,0,7); ctx.fill();
         });
-        ctx.fillStyle='#8b95a8'; ctx.font='12px IBM Plex Mono'; ctx.fillText(`PC1 explains major variance axis (k=${k})`, 12, 20);
       }
-      window.runPCA = drawPCA;
-      document.getElementById('pcaK').oninput = drawPCA;
-      drawPCA();
+      document.getElementById('k').oninput=draw; draw();
     }
-
-    function demoICA(mount) {
-      mount.innerHTML = `<canvas class="demo-canvas" id="icaCanvas" width="440" height="280"></canvas>
-        <div class="demo-controls"><label>Mixing angle: <input type="range" id="icaAngle" min="0" max="90" value="40"></label></div>`;
-      const canvas = document.getElementById('icaCanvas');
-      const ctx = canvas.getContext('2d');
-      function draw() {
-        const ang = document.getElementById('icaAngle').value * Math.PI/180;
-        ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,280);
-        const cx=120, cy=140;
-        for(let i=0;i<8;i++){
-          const t=i/8*Math.PI*2;
-          const sx=Math.cos(t)*50, sy=Math.sin(t)*20;
-          const mx=sx*Math.cos(ang)+sy*Math.sin(ang);
-          const my=-sx*Math.sin(ang)+sy*Math.cos(ang);
-          ctx.fillStyle='#7ee787'; ctx.fillRect(cx+sx-3,cy+sy-3,6,6);
-          ctx.fillStyle='#6c9eff'; ctx.fillRect(220+cx+mx-3,cy+my-3,6,6);
+    function demoICA(mount){
+      mount.innerHTML=`<canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
+        <div class="demo-controls"><label>Mixing <input id="a" type="range" min="0" max="90" value="35"></label></div>
+        <p class="muted">Left: independent sources. Right: mixed observations. ICA seeks a rotation back to independence.</p>`;
+      const ctx=document.getElementById('c').getContext('2d');
+      function draw(){
+        const ang=document.getElementById('a').value*Math.PI/180;
+        ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,240);
+        for(let i=0;i<10;i++){
+          const t=i/10*Math.PI*2, sx=Math.cos(t)*45, sy=Math.sin(t)*16;
+          const mx=sx*Math.cos(ang)+sy*Math.sin(ang), my=-sx*Math.sin(ang)+sy*Math.cos(ang);
+          ctx.fillStyle='#7ee787'; ctx.fillRect(110+sx,120+sy,5,5);
+          ctx.fillStyle='#6c9eff'; ctx.fillRect(300+mx,120+my,5,5);
         }
-        ctx.fillStyle='#8b95a8'; ctx.font='11px IBM Plex Mono';
-        ctx.fillText('Independent sources', 60, 30);
-        ctx.fillText('Mixed (correlated)', 280, 30);
-        ctx.fillText('ICA rotates to recover independence', 100, 260);
+        ctx.fillStyle='#8b95a8'; ctx.font='12px IBM Plex Mono'; ctx.fillText('sources',80,30); ctx.fillText('mixed',290,30);
       }
-      document.getElementById('icaAngle').oninput = draw;
-      draw();
+      document.getElementById('a').oninput=draw; draw();
     }
-
-    function demoCCA(mount) {
-      mount.innerHTML = `<canvas class="demo-canvas" id="ccaCanvas" width="440" height="280"></canvas>
-        <p style="font-size:0.8rem;color:var(--muted)">Blue = view A, orange = view B. CCA finds directions where both views correlate.</p>`;
-      const ctx = document.getElementById('ccaCanvas').getContext('2d');
-      ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,280);
-      for(let i=0;i<20;i++){
-        const t=Math.random()*6;
-        const a=80+t*15+Math.random()*20, b=280+t*12+Math.random()*25;
-        ctx.fillStyle='#6c9eff'; ctx.beginPath(); ctx.arc(a,180-Math.sin(t)*40,4,0,7); ctx.fill();
-        ctx.fillStyle='#f0b060'; ctx.beginPath(); ctx.arc(b,180-Math.sin(t)*35+Math.random()*10,4,0,7); ctx.fill();
-        ctx.strokeStyle='rgba(126,231,135,0.3)'; ctx.beginPath(); ctx.moveTo(a,180-Math.sin(t)*40); ctx.lineTo(b,180-Math.sin(t)*35); ctx.stroke();
+    function demoCCA(mount){
+      mount.innerHTML=`<canvas class="demo-canvas" id="c" width="440" height="220"></canvas>
+        <p class="muted">Blue view A, orange view B. Lines = paired samples. CCA finds projections that maximise correlation.</p>`;
+      const ctx=document.getElementById('c').getContext('2d');
+      ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,220);
+      for(let i=0;i<18;i++){
+        const t=Math.random()*6, a=60+t*14+Math.random()*15, b=260+t*12+Math.random()*20;
+        const ya=150-Math.sin(t)*35, yb=150-Math.sin(t)*30+Math.random()*8;
+        ctx.fillStyle='#6c9eff'; ctx.beginPath(); ctx.arc(a,ya,3,0,7); ctx.fill();
+        ctx.fillStyle='#f0b060'; ctx.beginPath(); ctx.arc(b,yb,3,0,7); ctx.fill();
+        ctx.strokeStyle='rgba(126,231,135,.25)'; ctx.beginPath(); ctx.moveTo(a,ya); ctx.lineTo(b,yb); ctx.stroke();
       }
-      ctx.fillStyle='#8b95a8'; ctx.font='12px IBM Plex Mono';
-      ctx.fillText('View A', 30, 30); ctx.fillText('View B', 350, 30);
     }
-
-    function demoSAE(mount) {
-      mount.innerHTML = `<svg viewBox="0 0 440 200" style="width:100%;background:#0a0e14;border-radius:8px;border:1px solid var(--border)">
-        <text x="20" y="30" fill="#8b95a8" font-size="11" font-family="IBM Plex Mono">Dense activation x</text>
-        <rect x="20" y="40" width="60" height="120" fill="#2a3144" stroke="#6c9eff"/>
-        ${Array.from({length:8},(_,i)=>`<rect x="${25+i*7}" y="45" width="5" height="${30+Math.random()*80}" fill="#6c9eff" opacity="0.8"/>`).join('')}
-        <text x="110" y="105" fill="#7ee787" font-size="20">→ Encoder →</text>
-        <rect x="180" y="40" width="120" height="120" fill="#2a3144" stroke="#7ee787"/>
-        ${Array.from({length:20},(_,i)=>`<rect x="${185+(i%5)*22}" y="${45+Math.floor(i/5)*28}" width="18" height="22" fill="${i<3?'#7ee787':'#1e2433'}" stroke="#7ee787" opacity="${i<3?1:0.3}"/>`).join('')}
-        <text x="185" y="175" fill="#8b95a8" font-size="10" font-family="IBM Plex Mono">TopK=3 of 20 features active</text>
-        <text x="320" y="105" fill="#7ee787" font-size="20">→ Decoder →</text>
-        <rect x="360" y="40" width="60" height="120" fill="#2a3144" stroke="#f0b060"/>
-        ${Array.from({length:8},(_,i)=>`<rect x="${365+i*7}" y="45" width="5" height="${30+Math.random()*80}" fill="#f0b060" opacity="0.8"/>`).join('')}
-        <text x="355" y="30" fill="#8b95a8" font-size="11" font-family="IBM Plex Mono">Reconstruction x̂</text>
-      </svg>`;
+    function demoSAE(mount){
+      mount.innerHTML=`<p class="muted">Dense input → overcomplete encoder → TopK keeps k features → decoder reconstructs.</p>
+        <div class="formula">z = TopK(enc(x), k) ··· x̂ = dec(z) ··· L = ||x−x̂||²</div>
+        <div class="callout">Without sparsity, overcomplete codes need not specialise. TopK forces specialisation.</div>`;
     }
-
-    function demoHypersphere(mount) {
-      mount.innerHTML = `<canvas class="demo-canvas" id="sphereCanvas" width="440" height="280"></canvas>
-        <div class="demo-controls"><label>Alignment weight: <input type="range" id="alignW" min="0" max="100" value="70"></label>
-        <label>Uniformity weight: <input type="range" id="unifW" min="0" max="100" value="50"></label></div>`;
-      const canvas = document.getElementById('sphereCanvas');
-      const ctx = canvas.getContext('2d');
-      function draw() {
-        const aw=+document.getElementById('alignW').value/100, uw=+document.getElementById('unifW').value/100;
-        ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,280);
-        ctx.strokeStyle='#2a3144'; ctx.beginPath(); ctx.arc(220,140,100,0,7); ctx.stroke();
-        const clusters = [[160,100,'#6c9eff'],[280,100,'#6c9eff'],[220,200,'#f0b060']];
-        clusters.forEach(([cx,cy,col])=>{
-          for(let i=0;i<12;i++){
-            const spread = (1-aw)*60 + 5;
-            const x=cx+(Math.random()-0.5)*spread, y=cy+(Math.random()-0.5)*spread;
-            const nx=220+(x-220)*(0.5+uw*0.5), ny=140+(y-140)*(0.5+uw*0.5);
-            ctx.fillStyle=col; ctx.globalAlpha=0.7;
-            ctx.beginPath(); ctx.arc(nx,ny,4,0,7); ctx.fill();
+    function demoAlign(mount){
+      mount.innerHTML=`<canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
+        <div class="demo-controls"><label>Alignment <input id="aw" type="range" min="0" max="100" value="70"></label>
+        <label>Uniformity <input id="uw" type="range" min="0" max="100" value="55"></label></div>`;
+      const ctx=document.getElementById('c').getContext('2d');
+      function draw(){
+        const aw=+document.getElementById('aw').value/100, uw=+document.getElementById('uw').value/100;
+        ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,240);
+        ctx.strokeStyle='#2a3144'; ctx.beginPath(); ctx.arc(220,120,85,0,7); ctx.stroke();
+        [[160,90,'#6c9eff'],[280,90,'#6c9eff'],[220,170,'#f0b060']].forEach(([cx,cy,col])=>{
+          for(let i=0;i<10;i++){
+            const sp=(1-aw)*50+4; let x=cx+(Math.random()-.5)*sp, y=cy+(Math.random()-.5)*sp;
+            x=220+(x-220)*(.45+uw*.55); y=120+(y-120)*(.45+uw*.55);
+            ctx.fillStyle=col; ctx.globalAlpha=.75; ctx.beginPath(); ctx.arc(x,y,3,0,7); ctx.fill();
           }
         });
         ctx.globalAlpha=1;
-        ctx.fillStyle='#8b95a8'; ctx.font='11px IBM Plex Mono';
-        ctx.fillText('High alignment → tight clusters | High uniformity → spread on sphere', 40, 265);
       }
-      document.getElementById('alignW').oninput = draw;
-      document.getElementById('unifW').oninput = draw;
-      draw();
+      document.getElementById('aw').oninput=draw; document.getElementById('uw').oninput=draw; draw();
     }
-
-    function demoSetAgg(mount) {
-      mount.innerHTML = `<canvas class="demo-canvas" id="setCanvas" width="440" height="280"></canvas>
-        <div class="demo-controls"><button class="btn-secondary" onclick="setMode('mean')">Mean pool</button>
-        <button class="btn-secondary" onclick="setMode('max')">Max pool</button>
-        <button class="btn-secondary" onclick="setMode('sum')">Sum pool</button></div>`;
-      const canvas = document.getElementById('setCanvas');
-      const ctx = canvas.getContext('2d');
-      const members = Array.from({length:5},()=>({x:80+Math.random()*120,y:80+Math.random()*120,v:Math.random()}));
-      window.setMode = mode => {
-        ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,280);
-        members.forEach(m=>{ ctx.fillStyle='#6c9eff'; ctx.beginPath(); ctx.arc(m.x,m.y,8,0,7); ctx.fill(); });
-        let ax,ay;
-        if(mode==='mean'){ ax=members.reduce((s,m)=>s+m.x,0)/5; ay=members.reduce((s,m)=>s+m.y,0)/5; }
-        else if(mode==='max'){ const best=members.reduce((a,b)=>b.v>a.v?b:a); ax=best.x; ay=best.y; }
-        else { ax=members.reduce((s,m)=>s+m.x,0); ay=members.reduce((s,m)=>s+m.y,0); }
-        ctx.fillStyle='#7ee787'; ctx.beginPath(); ctx.arc(mode==='sum'?ax/3+200:ax, mode==='sum'?ay/3+50:ay, 14,0,7); ctx.fill();
-        ctx.fillStyle='#8b95a8'; ctx.font='12px IBM Plex Mono'; ctx.fillText(`${mode} aggregation`, 12, 20);
-      };
-      setMode('mean');
+    function demoSet(mount){
+      mount.innerHTML=`<div class="formula">f(X)=ρ( Σ φ(x) )</div>
+        <p class="muted">Permutation invariance: order of views must not change the concept code. Mean pooling is a special case; attention helps when relations matter.</p>`;
     }
-
-    function demoSuperposition(mount) {
-      mount.innerHTML = `<p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.5rem">Rotate: each colored ray is a feature direction. With n features in m=2 dimensions, directions cannot all be orthogonal — they interfere.</p>
-        <canvas class="demo-canvas" id="superCanvas" width="440" height="280"></canvas>
-        <div class="demo-controls"><label>Features n: <input type="range" id="nFeat" min="2" max="12" value="8"></label>
-        <label>Dimensions m: <input type="range" id="mDim" min="2" max="4" value="2"></label></div>`;
-      drawSuperCanvas();
-      document.getElementById('nFeat').oninput = drawSuperCanvas;
-      document.getElementById('mDim').oninput = drawSuperCanvas;
-    }
-    function drawSuperCanvas() {
-      const canvas = document.getElementById('superCanvas');
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const n = +document.getElementById('nFeat').value;
-      const m = +document.getElementById('mDim').value;
-      ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,280);
-      ctx.fillStyle='#8b95a8'; ctx.font='12px IBM Plex Mono';
-      ctx.fillText(`${n} features in ${m}D space — superposition required when n > ${m}`, 12, 22);
-      const cx=220, cy=150;
-      for(let f=0; f<n; f++){
-        const angle = f/n * Math.PI * 2 - Math.PI/2;
-        const col = `hsl(${f*360/n},70%,60%)`;
-        ctx.strokeStyle=col; ctx.lineWidth=2;
-        ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+Math.cos(angle)*95, cy+Math.sin(angle)*75); ctx.stroke();
-        ctx.fillStyle=col; ctx.beginPath(); ctx.arc(cx+Math.cos(angle)*95, cy+Math.sin(angle)*75, 5,0,7); ctx.fill();
-      }
-      ctx.fillStyle='#f07178'; ctx.beginPath(); ctx.arc(cx,cy,8,0,7); ctx.fill();
-      ctx.fillStyle='#8b95a8'; ctx.fillText('Neuron / dimension mixes all features (polysemantic)', 80, 265);
-    }
-
-    // ─── Superposition paper charts (2209.pdf) ───
-    function mountSuperpositionCharts() {
-      drawPhaseDiagram();
-      drawDimChart();
-      drawFiveTwoDemo();
-      drawGeometryGraph('pentagon');
-      const ps = document.getElementById('phaseSparsity');
-      const pi = document.getElementById('phaseImportance');
-      const ds = document.getElementById('dimSparsity');
-      const fs = document.getElementById('fiveSparsity');
-      if (ps) { ps.oninput = drawPhaseDiagram; pi.oninput = drawPhaseDiagram; }
-      if (ds) ds.oninput = drawDimChart;
-      if (fs) fs.oninput = drawFiveTwoDemo;
-    }
-
-    function drawPhaseDiagram() {
-      const c = document.getElementById('phaseDiagram');
-      if (!c) return;
-      const ctx = c.getContext('2d');
-      const S = +document.getElementById('phaseSparsity').value / 100;
-      const imp = +document.getElementById('phaseImportance').value / 100;
-      const density = 1 - S;
-      ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,480,300);
-      // Axes: x = sparsity (1-S), y = relative importance of extra feature
-      ctx.strokeStyle='#2a3144'; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.moveTo(50,250); ctx.lineTo(450,250); ctx.lineTo(450,30); ctx.stroke();
-      ctx.fillStyle='#8b95a8'; ctx.font='11px IBM Plex Mono';
-      ctx.fillText('Activation density (1−S) →', 180, 285);
-      ctx.save(); ctx.translate(18,160); ctx.rotate(-Math.PI/2); ctx.fillText('Extra feature importance →', 0,0); ctx.restore();
-      // Phase regions (simplified from paper's 2-in-1 experiment)
-      for(let x=0;x<400;x++){
-        for(let y=0;y<220;y++){
-          const d = x/400, im = 0.1 + (y/220)*9.9;
-          let phase;
-          if (d < 0.15) phase = im > 1.5 ? '#7ee78744' : '#8b95a844';
-          else if (d < 0.35 + im*0.05) phase = '#f0b06044';
-          else phase = im > 0.8 ? '#7ee78744' : '#f0b06044';
-          if (d > 0.5 && im < 1.2) phase = '#f0b06066';
-          if (d > 0.65) phase = '#7ee78766';
-          ctx.fillStyle=phase; ctx.fillRect(50+x, 30+y, 1, 1);
+    function demoSuper(mount){
+      mount.innerHTML=`<canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
+        <div class="demo-controls"><label>Features <input id="n" type="range" min="2" max="12" value="8"></label></div>
+        <p class="muted">More features than 2D → almost-orthogonal packing = superposition → polysemantic neurons.</p>`;
+      const ctx=document.getElementById('c').getContext('2d');
+      function draw(){
+        const n=+document.getElementById('n').value;
+        ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,240);
+        for(let f=0;f<n;f++){
+          const a=f/n*Math.PI*2-Math.PI/2;
+          ctx.strokeStyle=`hsl(${f*360/n},70%,60%)`; ctx.beginPath();
+          ctx.moveTo(220,120); ctx.lineTo(220+Math.cos(a)*90,120+Math.sin(a)*70); ctx.stroke();
         }
+        ctx.fillStyle='#f07178'; ctx.beginPath(); ctx.arc(220,120,7,0,7); ctx.fill();
       }
-      const px = 50 + density*400, py = 250 - imp*220;
-      ctx.fillStyle='#fff'; ctx.beginPath(); ctx.arc(px,py,8,0,7); ctx.fill();
-      ctx.strokeStyle='#6c9eff'; ctx.lineWidth=2; ctx.stroke();
-      let outcome = 'Superposition (antipodal pair W=[1,−1])';
-      if (density < 0.12) outcome = imp > 1.2 ? 'Dedicated dimension for extra feature' : 'Extra feature not learned';
-      else if (density > 0.55 && imp > 0.6) outcome = 'Dedicated dimension — dense enough for orthogonal storage';
-      else if (density > 0.3) outcome = 'Superposition — tolerates interference because features are sparse';
-      document.getElementById('phaseOutcome').innerHTML = `<strong>Current point:</strong> density=${(density*100).toFixed(0)}%, importance=${(imp*10).toFixed(1)} → <span style="color:var(--accent2)">${outcome}</span>`;
-      ctx.fillStyle='#f0b060'; ctx.fillRect(60,40,12,12); ctx.fillStyle='#8b95a8'; ctx.fillText('Not learned', 78, 50);
-      ctx.fillStyle='#f0b060'; ctx.fillRect(160,40,12,12); ctx.fillText('Superposition', 178, 50);
-      ctx.fillStyle='#7ee787'; ctx.fillRect(280,40,12,12); ctx.fillText('Dedicated dim', 298, 50);
+      document.getElementById('n').oninput=draw; draw();
     }
 
-    function drawDimChart() {
-      const c = document.getElementById('dimChart');
-      if (!c) return;
-      const ctx = c.getContext('2d');
-      const density = +document.getElementById('dimSparsity').value / 100;
-      const sticky = [
-        {d:1.0,c:'#7ee787',l:'1 dedicated'},{d:0.75,c:'#6c9eff',l:'¾ tetrahedron'},{d:0.667,c:'#a78bfa',l:'⅔ triangle'},
-        {d:0.5,c:'#f0b060',l:'½ antipodal'},{d:0.4,c:'#f07178',l:'⅖ pentagon'},{d:0.375,c:'#56d4dd',l:'⅜ sq antiprism'}
-      ];
-      ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,480,260);
-      ctx.strokeStyle='#2a3144';
-      ctx.beginPath(); ctx.moveTo(40,220); ctx.lineTo(460,220); ctx.stroke();
-      sticky.forEach(s=>{
-        const y = 220 - s.d * 180;
-        ctx.strokeStyle=s.c; ctx.setLineDash([4,4]); ctx.lineWidth=1;
-        ctx.beginPath(); ctx.moveTo(40,y); ctx.lineTo(460,y); ctx.stroke();
-        ctx.setLineDash([]); ctx.fillStyle=s.c; ctx.font='10px IBM Plex Mono';
-        ctx.fillText(s.l, 42, y-3);
-      });
-      // Simulated feature points clustering at sticky values as sparsity increases
-      const nPts = 30;
-      for(let i=0;i<nPts;i++){
-        const x = 40 + (i/nPts)*420;
-        const t = density * (0.5 + 0.5*Math.sin(i*0.7));
-        let d = t < 0.15 ? 0 : t < 0.25 ? 0.5 : t < 0.4 ? 0.667 : t < 0.55 ? 0.75 : t < 0.7 ? 0.5 : 1.0;
-        d += (Math.random()-0.5)*0.04;
-        const y = 220 - d * 180;
-        ctx.fillStyle='rgba(108,158,255,0.7)'; ctx.beginPath(); ctx.arc(x,y,3,0,7); ctx.fill();
-      }
-      ctx.fillStyle='#8b95a8'; ctx.font='11px IBM Plex Mono';
-      ctx.fillText('D_i (feature dimensionality)', 160, 250);
-      ctx.fillText(`Activation density = ${(density*100).toFixed(0)}% — sticky points from paper Fig (uniform superposition)`, 40, 18);
+    function renderSuperCharts(paper){
+      const r=paper.richContent;
+      return `<div class="card"><h3>From Toy Models of Superposition</h3>
+        <ul class="learn-list">${(r.keyResults||[]).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+        <h4>Three ways out → SAEs</h4>
+        ${(r.threeWaysOut||[]).map(w=>`<div class="callout"><strong>${esc(w.approach)}</strong><br>${esc(w.desc)}<br><span class="muted">${esc(w.saes)}</span></div>`).join('')}
+        <div class="formula">${esc(r.featureDimensionality?.formula||'')}</div>
+        <p class="muted">${esc(r.featureDimensionality?.interpretation||'')}</p>
+      </div>`;
     }
 
-    function drawFiveTwoDemo() {
-      const c = document.getElementById('fiveTwoDemo');
-      if (!c) return;
-      const ctx = c.getContext('2d');
-      const density = +document.getElementById('fiveSparsity').value / 100;
-      const cx=140, cy=140, cx2=340;
-      const importances = [1, 0.7, 0.49, 0.34, 0.24];
-      const colors = ['#7ee787','#6c9eff','#f0b060','#f07178','#a78bfa'];
-      ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,480,280);
-      ctx.fillStyle='#8b95a8'; ctx.font='11px IBM Plex Mono';
-      ctx.fillText('Linear / dense: top-2 PCA', 60, 25);
-      ctx.fillText(`ReLU + sparsity (density=${(density*100).toFixed(0)}%)`, 260, 25);
-      // Left: PCA - only top 2
-      ctx.strokeStyle='#2a3144'; ctx.beginPath(); ctx.moveTo(cx-60,cy); ctx.lineTo(cx+60,cy); ctx.moveTo(cx,cy-60); ctx.lineTo(cx,cy+60); ctx.stroke();
-      for(let i=0;i<5;i++){
-        const angle = i/5*Math.PI*2;
-        const r = importances[i] > 0.45 ? 50 : 0;
-        if(r>0){ ctx.fillStyle=colors[i]; ctx.beginPath(); ctx.arc(cx+Math.cos(angle)*r,cy+Math.sin(angle)*r,6,0,7); ctx.fill(); }
-        else { ctx.fillStyle='#8b95a8'; ctx.font='9px IBM Plex Mono'; ctx.fillText('×', cx+Math.cos(angle)*35-3, cy+Math.sin(angle)*35+3); }
-      }
-      // Right: superposition - more features as density drops
-      ctx.strokeStyle='#2a3144'; ctx.beginPath(); ctx.moveTo(cx2-60,cy); ctx.lineTo(cx2+60,cy); ctx.moveTo(cx2,cy-60); ctx.lineTo(cx2,cy+60); ctx.stroke();
-      const nRep = density < 0.2 ? 5 : density < 0.4 ? 4 : density < 0.6 ? 3 : 2;
-      for(let i=0;i<5;i++){
-        const angle = i/5*Math.PI*2 - Math.PI/2;
-        const rep = i < nRep;
-        if(rep){
-          const r = rep ? (i<2 ? 50 : 35) : 0;
-          ctx.strokeStyle=colors[i]; ctx.lineWidth=2;
-          ctx.beginPath(); ctx.moveTo(cx2,cy); ctx.lineTo(cx2+Math.cos(angle)*r,cy+Math.sin(angle)*r*0.8); ctx.stroke();
-          ctx.fillStyle=colors[i]; ctx.beginPath(); ctx.arc(cx2+Math.cos(angle)*r,cy+Math.sin(angle)*r*0.8,5,0,7); ctx.fill();
-        } else {
-          ctx.fillStyle='#8b95a8'; ctx.fillText('×', cx2+Math.cos(angle)*20-3, cy+Math.sin(angle)*20+3);
-        }
-      }
-      ctx.fillStyle='#8b95a8'; ctx.font='10px IBM Plex Mono';
-      ctx.fillText(`${nRep}/5 features represented`, 300, 260);
-    }
+    // after render hook for demos
+    const _render=render;
+    render=function(){ _render(); requestAnimationFrame(mountDemos); };
 
-    window.setGeometry = function(type) { drawGeometryGraph(type); };
-
-    function drawGeometryGraph(type) {
-      const c = document.getElementById('geometryGraph');
-      if (!c) return;
-      const ctx = c.getContext('2d');
-      const cx=240, cy=140, R=90;
-      ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,480,280);
-      let pts = [], edges = [];
-      if(type==='pentagon'){
-        for(let i=0;i<5;i++){ const a=i/5*Math.PI*2-Math.PI/2; pts.push([cx+Math.cos(a)*R,cy+Math.sin(a)*R]); }
-        edges = [[0,1],[1,2],[2,3],[3,4],[4,0],[0,2],[1,3]];
-      } else if(type==='triangle'){
-        for(let i=0;i<3;i++){ const a=i/3*Math.PI*2-Math.PI/2; pts.push([cx+Math.cos(a)*R,cy+Math.sin(a)*R]); }
-        edges = [[0,1],[1,2],[2,0]];
-      } else if(type==='antipodal'){
-        pts=[[cx-R,cy],[cx+R,cy],[cx,cy-R],[cx,cy+R]];
-        edges=[[0,1],[2,3]];
-      } else {
-        pts=[[cx,cy-70],[cx-60,cy+40],[cx+60,cy+40],[cx,cy+10]];
-        edges=[[0,1],[0,2],[0,3],[1,2],[1,3],[2,3]];
-      }
-      edges.forEach(([a,b])=>{
-        const w = Math.abs(Math.cos((a-b)*0.5));
-        ctx.strokeStyle=`rgba(126,231,135,${0.2+w*0.5})`; ctx.lineWidth=1+w;
-        ctx.beginPath(); ctx.moveTo(pts[a][0],pts[a][1]); ctx.lineTo(pts[b][0],pts[b][1]); ctx.stroke();
-      });
-      pts.forEach((p,i)=>{
-        ctx.fillStyle=`hsl(${i*60},70%,60%)`; ctx.beginPath(); ctx.arc(p[0],p[1],8,0,7); ctx.fill();
-        ctx.fillStyle='#8b95a8'; ctx.font='10px IBM Plex Mono'; ctx.fillText('f'+i, p[0]-8, p[1]-12);
-      });
-      const labels = {pentagon:'Pentagon (D=⅖) — 5 features in 2D',triangle:'Triangle (D=⅔)',antipodal:'Antipodal digons (D=½ each)',tetra:'Tetrahedron projection (D=¾)'};
-      ctx.fillStyle='#8b95a8'; ctx.font='12px IBM Plex Mono'; ctx.fillText(labels[type]||type, 12, 20);
-      ctx.fillText('Edges = feature interference (|dot product|)', 12, 265);
-    }
-
-    // Hook demos after render
-    const origRenderPass = renderPassContent;
-    renderPassContent = function(paper) {
-      origRenderPass(paper);
-      const demos = { 'pca-shlens': demoPCA, 'ica-shlens': demoICA, 'cca-uurtio': demoCCA, 'ksparse': demoSAE, 'align-unif': demoHypersphere, 'deepsets': demoSetAgg, 'superposition': demoSuperposition };
-      if (demos[paper.id]) mountDemo(demos[paper.id]);
-      if (paper.id === 'superposition') requestAnimationFrame(() => mountSuperpositionCharts());
-    };
-
-    // Init
-    if (!currentPaperId) {
-      const level = getLevel(currentLevel);
-      if (level?.papers?.length) currentPaperId = null;
-    }
-    state.currentLevel = currentLevel;
     render();
   </script>
 </body>

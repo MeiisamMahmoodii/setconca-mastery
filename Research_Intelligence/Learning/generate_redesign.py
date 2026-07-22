@@ -40,20 +40,129 @@ TOPICS = {
     "What SetConCA is trying to improve": ("SetConCA tests whether coordinating sparse codes across multiple views of the same underlying item improves stability, specificity, and causal usefulness.", "Instead of judging a feature from one photograph, compare several photographs of the same object and ask what survives the viewpoint change.", r"\mathcal L=\mathcal L_{recon}+\lambda_s\mathcal L_{sparse}+\lambda_c\mathcal L_{coord}", "This is a research hypothesis, not an established result; the lab must measure gains against matched pointwise baselines."),
 }
 
+# Each lesson gets a concrete claim. This keeps the course from sounding like a
+# template with a topic name pasted into it.
+LESSON_FOCUSES = {
+    "Vectors as locations and directions": "A vector is an ordered list of numbers, but geometrically it is a point or an arrow. Which view is useful depends on whether you care about state or change.",
+    "Distance, dot products, and cosine similarity": "Euclidean distance asks how far two states are apart; the dot product asks how much they point together; cosine similarity removes length so it compares direction alone.",
+    "Mean, variance, and covariance": "The mean locates a cloud, variance measures spread along one coordinate, and covariance records whether two coordinates move together.",
+    "Projections, eigenvectors, and SVD": "Projection keeps the part of a vector along a chosen direction. Eigenvectors and SVD give useful directions for transforming or compressing a whole dataset.",
+    "PCA: what it reveals and what it hides": "PCA keeps directions of high variance. That is valuable for compression and visualization, but the directions can mix several semantic causes.",
+    "Observed variables versus latent causes": "We observe activations and labels; latent causes are the hidden variables proposed to explain why those observations covary.",
+    "Correlation is not independence": "Two variables can have zero correlation and still depend on one another. Independence rules out every statistical dependence, not just a linear one.",
+    "ICA and the cocktail-party problem": "ICA assumes observations are mixtures of independent, non-Gaussian sources and searches for an unmixing transformation.",
+    "Identifiability: what can be uniquely recovered?": "A latent variable is identifiable only when the stated assumptions rule out alternative explanations for the same observations, apart from known symmetries such as permutation or scaling.",
+    "Interventions and causal representation claims": "If changing a representation component changes a target behaviour while relevant alternatives are controlled, that is stronger evidence than a correlation or probe score.",
+    "Undercomplete and overcomplete codes": "An undercomplete code compresses into fewer dimensions. An overcomplete code offers more feature directions than input dimensions, so it must be constrained to avoid arbitrary dense solutions.",
+    "L0, L1, and TopK sparsity": "L0 counts active features, L1 penalizes their magnitude, and TopK keeps exactly the largest k activations. They impose different trade-offs during training.",
+    "The sparse autoencoder objective": "A sparse autoencoder must reconstruct activations while using a small, selective code. Its objective determines which reconstruction--sparsity compromise it learns.",
+    "Dead features, shrinkage, and dictionary width": "A feature can die when it rarely receives gradient; L1 can shrink useful magnitudes; a wider dictionary can reduce merging but can also split broad patterns into many fragments.",
+    "Reconstruction is not interpretability": "Low reconstruction error says the decoder retained information. It does not say the individual latent features line up with human concepts or causal variables.",
+    "What counts as a view?": "A view is a second observation of the same underlying item that changes some information while preserving something you want to identify.",
+    "CCA: align shared variation": "CCA finds one direction in each view whose projected values are maximally correlated. It recovers shared variation, not necessarily the causal factor that generated it.",
+    "Deep multi-view models": "Deep CCA-style models learn nonlinear encoders before applying an alignment objective, which increases flexibility but also creates more ways to discard useful information.",
+    "Shared and private latent variables": "A good multi-view model separates what should agree across views from details that belong to one view only.",
+    "Alignment versus information preservation": "Forcing two representations to agree can erase view-specific signal. Reconstruction and private-latent controls tell you whether alignment is buying agreement by throwing information away.",
+    "Sets, sequences, and permutation invariance": "A set has members but no meaningful order. A set encoder should give the same answer after permuting those members, unlike a sequence model.",
+    "Deep Sets and sum decomposition": "Deep Sets uses a function of the form rho(sum(phi(x))) so each member is encoded before a permutation-invariant aggregation.",
+    "Attention over set members": "Attention lets a set encoder weigh relationships between members instead of treating every member as equally informative.",
+    "Set statistics and intruder robustness": "A useful set representation should retain the shared structure of its members and degrade predictably when unrelated intruders are added.",
+    "Why SetConCA needs a set encoder": "If several activation views belong to one semantic item, the aggregation rule decides what evidence becomes shared supervision and what variation is discarded.",
+    "What makes a positive pair?": "A positive pair is not automatically meaningful. It encodes the invariance you want the model to learn, so its construction is part of the hypothesis.",
+    "InfoNCE and temperature": "InfoNCE raises the similarity of positives relative to negatives; temperature controls how sharply the loss concentrates on the hardest comparisons.",
+    "Alignment and uniformity": "Contrastive learning needs positives to come together and the overall representation distribution to remain spread out enough to avoid collapse.",
+    "False negatives and shortcut solutions": "A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics.",
+    "Contrastive coordination for sparse features": "For SetConCA, a coordination loss should encourage related views to use compatible sparse codes without making all features identical.",
+    "The residual stream as a communication bus": "The residual stream is the running vector state that attention and MLP blocks read from and write updates into.",
+    "Attention and MLP circuit hypotheses": "Circuit analysis proposes a specific path through attention heads, MLPs, and residual additions that contributes to a behaviour; the proposal needs intervention tests.",
+    "Superposition and polysemanticity": "Superposition allows more features than dimensions by placing feature directions non-orthogonally. A neuron can then respond to several unrelated features.",
+    "SAEs as overcomplete dictionaries": "An SAE offers a larger set of candidate directions and activates only a few at once, aiming to resolve features that were superposed in the original coordinates.",
+    "From feature correlation to mechanism": "A feature that correlates with a behaviour is a candidate explanation. Necessity and sufficiency require targeted interventions and controls.",
+    "Reconstruction, FVU, and loss recovery": "FVU measures how much activation variance reconstruction misses; loss recovery tests whether replacing activations preserves the model's next-token behaviour.",
+    "Probes and control tasks": "A probe shows that information can be decoded. Control tasks test whether the probe learned an accidental lookup table rather than a useful organization of the representation.",
+    "CKA, SVCCA, and representation similarity": "Similarity metrics compare geometry or subspaces across models and runs. They do not establish one-to-one correspondence between features.",
+    "Stability across seeds and models": "A result that survives random seeds, model families, layers, and sampling changes is more credible than a single attractive run.",
+    "Causal faithfulness and steering": "Faithfulness asks whether an explanation tracks the computation that causes behaviour. Steering tests effects of changing a component, but requires dosage and off-target controls.",
+    "Feature splitting and granularity": "A broad feature can split into finer features as dictionary capacity grows. This changes the level of abstraction, not necessarily the quality of the representation.",
+    "Feature absorption and missed distinctions": "A narrow or heavily constrained dictionary can use one feature for several related causes, hiding distinctions that matter for analysis or intervention.",
+    "Non-canonical dictionaries": "Different training seeds can find different sparse dictionaries with similar reconstruction and sparsity, so an SAE basis should not be treated as the unique ground truth.",
+    "Automated interpretability and metric validity": "Automated descriptions are useful measurements only if they are calibrated against controls, human checks, and causal tests rather than judged by plausibility alone.",
+    "A rigorous SAE evaluation protocol": "A credible SAE evaluation reports fidelity, sparsity, interpretability, stability, and intervention outcomes, with seeds and matched baselines.",
+    "SetConCA: the full objective": "SetConCA combines reconstruction, sparsity, and cross-view coordination. Each term needs a separate ablation because a combined loss can hide where a gain comes from.",
+    "Designing multi-view activation sets": "A multi-view set should contain observations of the same intended concept under controlled variation, with a documented rule for positives, negatives, and intruders.",
+    "A realistic toy experiment": "A good toy problem has known latent causes, partial views, nuisance variation, and a metric that can distinguish recovery of the intended factor from a shortcut.",
+    "Hypotheses, baselines, and ablations": "A research hypothesis should predict a directional change on a named metric, against a matched baseline, and specify what result would count as failure.",
+    "Writing the research claim without overclaiming": "Write only what the experiment measures: coordination can improve a chosen metric under stated conditions without proving that the learned features are the true concepts.",
+}
+
+PHASE_GUIDES = {
+    0: (r"h_{l,t}=f_l(h_{l-1,1:T})", "Track one token through two contexts and compare its activation at the same layer. The changing vector is the object the later lessons will analyze.", "A diagram of activations makes the pipeline visible, but it does not identify a concept or a mechanism."),
+    1: (r"\mathrm{Var}(w^\top x)=w^\top\Sigma w", "Draw a small cloud of points, rotate an axis through it, and compare the projection spread with the residual error.", "Geometric summaries depend on centering, normalization, and the metric. A clean plot can still merge causes."),
+    2: (r"x=As+\epsilon", "Mix two non-Gaussian sources, then change the mixing matrix. Ask which assumptions make unmixing possible and which leave several answers equally valid.", "Latent recovery claims are conditional: remove an assumption and the same observations can support a different latent explanation."),
+    3: (r"\mathcal L=\|x-\hat{x}\|_2^2+\lambda\|z\|_1", "Generate activations from a few sparse ground-truth factors, then compare an L1 code and a TopK code at similar reconstruction error.", "A sparse code can still be unstable, polysemantic, or aligned to a convenient decomposition rather than the intended factors."),
+    4: (r"\max_{u,v}\;\mathrm{corr}(u^\top X,v^\top Y)", "Create two views with one shared factor and one private factor. Increase private signal and watch an alignment-only objective ignore it.", "Correlation identifies agreement, not necessarily cause. A shared nuisance can look just as attractive as a shared concept."),
+    5: (r"f(X)=\rho(\sum_{x\in X}\phi(x))", "Make sets from the same latent class, permute them, then inject unrelated members. Compare mean pooling with a learned aggregation rule.", "Permutation invariance is necessary for sets but it does not guarantee robustness to bad members or preserve all relations."),
+    6: (r"\mathcal L_{\mathrm{NCE}}=-\log\frac{e^{s(z,z^+)/\tau}}{\sum_j e^{s(z,z_j)/\tau}}", "Give each item two legitimate views and several near-duplicate negatives. Sweep temperature and inspect when the loss starts punishing semantically valid neighbours.", "A lower contrastive loss can come from a shortcut in the views, not from recovery of the intended invariant."),
+    7: (r"x_{l+1}=x_l+\mathrm{Attn}_l(x_l)+\mathrm{MLP}_l(x_l)", "Choose a small behaviour, name a candidate feature path, then ablate or patch it while holding the prompt family fixed.", "A descriptive feature label is not a circuit. The explanation must survive causal intervention and negative controls."),
+    8: (r"\mathrm{FVU}=\frac{\|X-\hat X\|_F^2}{\|X-\bar X\|_F^2}", "Run two methods across several seeds and plot fidelity, sparsity, similarity, and intervention effects separately instead of collapsing them into one score.", "No single metric measures interpretability. Every metric needs an explicit non-claim beside it."),
+    9: (r"x\approx\sum_i z_i d_i", "Train dictionaries at two widths on the same synthetic factors and inspect when one factor merges, splits, or changes identity across seeds.", "A feature inventory is resolution-dependent. A label can be useful without being an atomic or canonical unit."),
+    10: (r"\mathcal L=\mathcal L_{\mathrm{recon}}+\lambda_s\mathcal L_{\mathrm{sparse}}+\lambda_c\mathcal L_{\mathrm{set}}", "Sample known latent concepts, render several noisy partial views per concept, and compare a pointwise SAE with a set-coordinated variant under equal capacity and compute.", "The toy model tests a mechanism under controlled assumptions. It does not predict a gain on language-model activations until that experiment is run."),
+}
+
+PHASE_ANALOGIES = {
+    1: "Imagine a sheet of graph paper laid over a cloud of points. Rotating the paper changes the coordinates, not the points themselves.",
+    2: "Think of hearing several instruments through a wall. The sound at the wall is observable; the instruments are the proposed hidden causes.",
+    3: "Think of an overcomplete dictionary as a large box of labelled tools. Sparsity says that only a few tools may be taken out for any one job.",
+    4: "Two cameras can film the same event from different angles. What both cameras see is shared; their lighting, occlusion, and viewpoint are private.",
+    5: "A bowl of fruit has members but no first apple. A good set representation should not change when you stir the bowl.",
+    6: "Contrastive learning is a sorting game: place genuine variants of the same item close together without piling every item into one corner.",
+    7: "Treat a transformer as a busy workshop with a shared workbench. Each component adds or reads a mark, but a mark is not an explanation until changing it changes the job's outcome.",
+    8: "Evaluation is a medical panel, not a single thermometer. One number can be reassuring while another reveals the problem.",
+    9: "A dictionary is like a map drawn at a chosen zoom level. Zooming in can split one region into many roads; zooming out can merge distinct places.",
+    10: "A toy experiment is a wind tunnel: simplified enough to know the ground truth, but rich enough that the method can fail for the same kinds of reasons it might fail in practice.",
+}
+
+COMPARISONS = {
+    0: ("What is being named?", "A coordinate", "A feature direction", "A human concept", "Keep the measurement separate from the interpretation."),
+    1: ("Which property is preserved?", "Euclidean distance", "Angular direction", "Variance under projection", "Different geometric choices answer different questions."),
+    2: ("What does the assumption buy?", "Correlation: a linear summary", "Independence: stronger separation", "Causal model: intervention predictions", "Do not upgrade one kind of evidence into another."),
+    3: ("How is sparsity imposed?", "L1: soft magnitude penalty", "TopK: exact activity budget", "Dense AE: no sparse constraint", "Compare methods at matched fidelity and activity."),
+    4: ("What information is rewarded?", "CCA: shared correlation", "Reconstruction: within-view fidelity", "Shared/private model: both", "Alignment alone can discard valuable private signal."),
+    5: ("How are members combined?", "Mean pooling: equal weight", "Deep Sets: learned member map", "Attention: relational weighting", "Choose the simplest aggregator that passes the required robustness checks."),
+    6: ("What prevents collapse?", "InfoNCE: negatives", "VICReg: variance and covariance terms", "Supervised contrastive: class positives", "The positive-pair definition is usually the highest-leverage choice."),
+    7: ("What kind of claim is made?", "Activation correlation", "Feature description", "Causal circuit test", "Only the last tests whether the component contributes to the behaviour."),
+    8: ("What does the metric measure?", "FVU: reconstruction", "CKA: geometry similarity", "Intervention: causal effect", "Report the metric's non-claim beside its result."),
+    9: ("What changes with capacity or seed?", "Absorption: factors merge", "Splitting: factors divide", "Non-canonicality: bases differ", "None of these can be diagnosed from a single run."),
+    10: ("What must be held fixed?", "Pointwise SAE: no set signal", "SetConCA: coordination term", "Ablation: remove one term", "The ablation identifies which added component caused a gain."),
+}
+
+COMPARISON_NAMES = {
+    0: ("Neuron coordinate", "Feature", "Concept label"), 1: ("Distance", "Cosine", "Variance"),
+    2: ("Correlation", "Independence", "Causal model"), 3: ("L1 SAE", "TopK SAE", "Dense AE"),
+    4: ("CCA", "Reconstruction", "Shared/private model"), 5: ("Mean pooling", "Deep Sets", "Attention pooling"),
+    6: ("InfoNCE", "VICReg", "Supervised contrastive"), 7: ("Correlation", "Feature label", "Circuit intervention"),
+    8: ("FVU", "CKA", "Intervention"), 9: ("Absorption", "Splitting", "Non-canonicality"),
+    10: ("Pointwise SAE", "SetConCA", "Term ablation"),
+}
+
 def topic_for(title: str, phase: int) -> tuple[str, str, str, str]:
     if title in TOPICS:
         return TOPICS[title]
-    phase_desc = PHASES[phase][2]
+    focus = LESSON_FOCUSES[title]
+    equation, _, warning = PHASE_GUIDES[phase]
     return (
-        f"{title} is a working tool for {phase_desc.lower()}",
-        f"Think of {title.lower()} as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
-        r"\mathcal L=\mathcal L_{task}+\lambda\mathcal L_{regularizer}",
-        "The method answers only the property its objective and evaluation measure; a good score cannot silently establish a stronger claim.",
+        focus,
+        f"{PHASE_ANALOGIES[phase]} {focus}",
+        equation,
+        warning,
     )
 
 def lesson(phase: int, index: int, title: str, previous: str | None, next_title: str | None, visual: str) -> dict:
     definition, intuition, equation, warning = topic_for(title, phase)
     phase_name = PHASES[phase][1]
+    _, toy_description, phase_warning = PHASE_GUIDES[phase]
+    comparison_question, pca, ica, cca, implication = COMPARISONS[phase]
+    name_a, name_b, name_c = COMPARISON_NAMES[phase]
     lid = f"p{phase:02d}-l{index:02d}"
     return {
         "id": lid, "phase": phase_name, "phaseIndex": phase, "lessonIndex": index,
@@ -62,18 +171,18 @@ def lesson(phase: int, index: int, title: str, previous: str | None, next_title:
         "prerequisites": [previous] if previous else [],
         "learningObjectives": [f"Explain {title.lower()} in plain language", "Write down the objective and identify its assumptions", "Design one test that could falsify an over-strong interpretation"],
         "sections": {
-            "whyThisLesson": {"text": f"This lesson exists because {title.lower()} is a prerequisite for making defensible claims in SetConCA. It is placed here after the previous idea so the notation has a job to do."},
+            "whyThisLesson": {"text": f"{definition} This lesson gives you a concrete test for that claim before the course moves to the next abstraction."},
             "bridgeFrom": previous or "The course opening",
             "intuition": {"analogy": intuition, "analogyLimit": warning, "text": definition},
-            "toyExample": {"description": f"Use a small synthetic dataset to isolate {title.lower()} before adding model-scale complexity.", "steps": [{"action": "Choose the data-generating factors", "result": "Write down which variables should be shared, private, sparse, or irrelevant.", "insight": "If the intended structure is not specified first, an evaluation can reward a shortcut."}, {"action": "Apply the method", "result": "Record the representation, reconstruction, and the statistic used to judge it.", "insight": "The metric is part of the experiment, not a neutral afterthought."}, {"action": "Perturb one assumption", "result": "Change correlation, noise, view quality, or dictionary width and repeat.", "insight": "A method is understood by its boundary conditions."}]},
-            "visual": {"id": visual, "question": f"What changes when you manipulate the main assumption behind {title.lower()}?", "description": "Adjust the control, observe the geometry, then state what the visual does and does not prove."},
-            "technical": {"text": f"Technically, {title.lower()} is defined by the data interface, the learned or computed representation, and the evaluation statistic. Keep those three separate. The representation is an object; the interpretation is a claim about that object; the experiment is evidence for or against the claim."},
-            "mathematics": [{"equation": equation, "symbols": {"x": "observed activation or input", "z": "latent code", "d_i": "dictionary direction", "lambda": "trade-off weight"}, "explanation": "The equation names the quantities being combined; it is not a proof that the latent variables have the intended meaning.", "whyNeeded": "It makes the optimization target explicit.", "ifRemoved": "Without the objective, comparisons become vague and irreproducible.", "encourages": "State assumptions and evaluate them directly.", "doesNotGuarantee": "Identifiability, interpretability, or causality."}],
-            "methodComparison": [{"question": "What does it prioritise?", "pca": "Within-view variance", "ica": "Statistical independence", "cca": "Cross-view correlation", "implication": "Choose the method from the scientific question, not from the best-looking plot."}],
-            "evidence": [{"claim": definition, "claimType": "definition", "sourceId": "course-synthesis", "section": "lesson framing", "verified": False, "note": "Course synthesis; verify against the linked primary papers before making a paper-level claim."}],
-            "failureModes": [{"name": "Objective–claim mismatch", "mechanism": "The optimization statistic rewards a proxy rather than the property the researcher names.", "symptom": "The score improves while controls or interventions do not.", "diagnosticTest": "Add a negative control and a counterfactual intervention.", "mitigation": "Narrow the claim or add evidence that tests the missing property.", "setconcaRelevance": "Every SetConCA comparison should report the proxy and its ceiling."}],
-            "setconcaConnection": {"relevance": f"{title} supplies one design decision for SetConCA.", "whichPart": "The representation, view construction, or evaluation protocol.", "whichDesignChoice": "Keep the baseline matched on data, capacity, and compute.", "whichFailure": "Confusing agreement with recovery of a true concept.", "whichExperiment": "Compare pointwise SAE and set-coordinated SAE on reconstruction, stability, selectivity, and intervention.", "alternativeExplanation": "Any gain may come from extra context, regularization, or capacity rather than set coordination."},
-            "exercises": [{"type": "diagnose", "prompt": f"A paper reports a better score after adding {title.lower()}. What is the first alternative explanation you would test?", "reveal": "Hold model, data, training budget, and evaluation examples fixed; then add controls for capacity and shortcut information."}],
+            "toyExample": {"description": toy_description, "steps": [{"action": "State the ground truth first", "result": f"Specify exactly what {title.lower()} should recover, preserve, or ignore.", "insight": "The intended factor must be known before a toy result can be judged."}, {"action": "Run the matched comparison", "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.", "insight": "Otherwise a visible gain may be a resource difference in disguise."}, {"action": "Break one assumption", "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.", "insight": "The boundary of success is usually more useful than the headline score."}]},
+            "visual": {"id": visual, "question": f"Which assumption behind {title.lower()} changes the result most?", "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."},
+            "technical": {"text": f"{definition} In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."},
+            "mathematics": [{"equation": equation, "symbols": {"x": "observed activation or input", "z": "latent code", "d_i": "dictionary direction", "lambda": "trade-off weight"}, "explanation": f"For this lesson, the expression makes the central trade-off explicit. {definition}", "whyNeeded": "It says precisely what the method is being rewarded for.", "ifRemoved": "You could not tell whether two implementations were solving the same problem.", "encourages": "A testable prediction about the chosen objective.", "doesNotGuarantee": phase_warning}],
+            "methodComparison": [{"question": comparison_question, "methods": [{"name": name_a, "answer": pca}, {"name": name_b, "answer": ica}, {"name": name_c, "answer": cca}], "practicalImplication": implication}],
+            "evidence": [{"claim": definition, "claimType": "definition", "sourceId": "course-synthesis", "section": "lesson framing", "verified": False, "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."}],
+            "failureModes": [{"name": "A score that answers the wrong question", "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.", "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.", "diagnosticTest": "Add a matched negative control and one counterfactual intervention.", "mitigation": "Either narrow the claim or add the missing measurement.", "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."}],
+            "setconcaConnection": {"relevance": f"{title} determines how SetConCA should represent, group, or evaluate activation views.", "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.", "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.", "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.", "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.", "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."},
+            "exercises": [{"type": "diagnose", "prompt": f"A paper claims that {title.lower()} improved interpretability. What one result would you ask for before accepting that claim?", "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."}],
             "masteryQuestions": [{"type": "open", "prompt": f"Explain {title.lower()} to a colleague, then name one thing the method cannot establish by itself.", "rubric": ["Defines the object clearly", "Names the objective or assumption", "Separates evidence from interpretation", "Gives a valid limitation"]}],
             "nextLesson": {"id": f"p{phase:02d}-l{index+1:02d}" if next_title else None, "bridge": f"Next: {next_title}. The next idea reuses this lesson's representation and makes a new assumption explicit." if next_title else "This phase checkpoint now combines the ideas from the phase."},
             "researchWorksheet": {"fields": [{"key": "claim", "label": "Falsifiable claim", "prompt": "Write the smallest claim this lesson supports."}, {"key": "control", "label": "Control", "prompt": "What control would rule out a shortcut?"}]},

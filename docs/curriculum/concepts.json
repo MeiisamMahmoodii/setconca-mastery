@@ -9,7 +9,7 @@
     "lessonIds": [
       "p00-l01"
     ],
-    "setconcaRelevance": "What happens inside a language model? supplies one design decision for SetConCA."
+    "setconcaRelevance": "What happens inside a language model? determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p00-l02",
@@ -23,7 +23,7 @@
     "lessonIds": [
       "p00-l02"
     ],
-    "setconcaRelevance": "Tokens, layers, and activations supplies one design decision for SetConCA."
+    "setconcaRelevance": "Tokens, layers, and activations determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p00-l03",
@@ -37,7 +37,7 @@
     "lessonIds": [
       "p00-l03"
     ],
-    "setconcaRelevance": "Representations, features, and concepts supplies one design decision for SetConCA."
+    "setconcaRelevance": "Representations, features, and concepts determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p00-l04",
@@ -51,7 +51,7 @@
     "lessonIds": [
       "p00-l04"
     ],
-    "setconcaRelevance": "Why neurons are not concepts supplies one design decision for SetConCA."
+    "setconcaRelevance": "Why neurons are not concepts determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p00-l05",
@@ -65,706 +65,706 @@
     "lessonIds": [
       "p00-l05"
     ],
-    "setconcaRelevance": "What SetConCA is trying to improve supplies one design decision for SetConCA."
+    "setconcaRelevance": "What SetConCA is trying to improve determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p01-l01",
     "title": "Vectors as locations and directions",
     "category": "Geometry of representations",
-    "oneSentenceDefinition": "Vectors as locations and directions is a working tool for learn the geometry needed to measure, rotate, compress, and compare activation spaces.",
-    "fullDefinition": "Think of vectors as locations and directions as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A vector is an ordered list of numbers, but geometrically it is a point or an arrow. Which view is useful depends on whether you care about state or change.",
+    "fullDefinition": "Imagine a sheet of graph paper laid over a cloud of points. Rotating the paper changes the coordinates, not the points themselves. A vector is an ordered list of numbers, but geometrically it is a point or an arrow. Which view is useful depends on whether you care about state or change.",
     "prerequisites": [
       "p00-l05"
     ],
     "lessonIds": [
       "p01-l01"
     ],
-    "setconcaRelevance": "Vectors as locations and directions supplies one design decision for SetConCA."
+    "setconcaRelevance": "Vectors as locations and directions determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p01-l02",
     "title": "Distance, dot products, and cosine similarity",
     "category": "Geometry of representations",
-    "oneSentenceDefinition": "Distance, dot products, and cosine similarity is a working tool for learn the geometry needed to measure, rotate, compress, and compare activation spaces.",
-    "fullDefinition": "Think of distance, dot products, and cosine similarity as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Euclidean distance asks how far two states are apart; the dot product asks how much they point together; cosine similarity removes length so it compares direction alone.",
+    "fullDefinition": "Imagine a sheet of graph paper laid over a cloud of points. Rotating the paper changes the coordinates, not the points themselves. Euclidean distance asks how far two states are apart; the dot product asks how much they point together; cosine similarity removes length so it compares direction alone.",
     "prerequisites": [
       "p01-l01"
     ],
     "lessonIds": [
       "p01-l02"
     ],
-    "setconcaRelevance": "Distance, dot products, and cosine similarity supplies one design decision for SetConCA."
+    "setconcaRelevance": "Distance, dot products, and cosine similarity determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p01-l03",
     "title": "Mean, variance, and covariance",
     "category": "Geometry of representations",
-    "oneSentenceDefinition": "Mean, variance, and covariance is a working tool for learn the geometry needed to measure, rotate, compress, and compare activation spaces.",
-    "fullDefinition": "Think of mean, variance, and covariance as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "The mean locates a cloud, variance measures spread along one coordinate, and covariance records whether two coordinates move together.",
+    "fullDefinition": "Imagine a sheet of graph paper laid over a cloud of points. Rotating the paper changes the coordinates, not the points themselves. The mean locates a cloud, variance measures spread along one coordinate, and covariance records whether two coordinates move together.",
     "prerequisites": [
       "p01-l02"
     ],
     "lessonIds": [
       "p01-l03"
     ],
-    "setconcaRelevance": "Mean, variance, and covariance supplies one design decision for SetConCA."
+    "setconcaRelevance": "Mean, variance, and covariance determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p01-l04",
     "title": "Projections, eigenvectors, and SVD",
     "category": "Geometry of representations",
-    "oneSentenceDefinition": "Projections, eigenvectors, and SVD is a working tool for learn the geometry needed to measure, rotate, compress, and compare activation spaces.",
-    "fullDefinition": "Think of projections, eigenvectors, and svd as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Projection keeps the part of a vector along a chosen direction. Eigenvectors and SVD give useful directions for transforming or compressing a whole dataset.",
+    "fullDefinition": "Imagine a sheet of graph paper laid over a cloud of points. Rotating the paper changes the coordinates, not the points themselves. Projection keeps the part of a vector along a chosen direction. Eigenvectors and SVD give useful directions for transforming or compressing a whole dataset.",
     "prerequisites": [
       "p01-l03"
     ],
     "lessonIds": [
       "p01-l04"
     ],
-    "setconcaRelevance": "Projections, eigenvectors, and SVD supplies one design decision for SetConCA."
+    "setconcaRelevance": "Projections, eigenvectors, and SVD determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p01-l05",
     "title": "PCA: what it reveals and what it hides",
     "category": "Geometry of representations",
-    "oneSentenceDefinition": "PCA: what it reveals and what it hides is a working tool for learn the geometry needed to measure, rotate, compress, and compare activation spaces.",
-    "fullDefinition": "Think of pca: what it reveals and what it hides as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "PCA keeps directions of high variance. That is valuable for compression and visualization, but the directions can mix several semantic causes.",
+    "fullDefinition": "Imagine a sheet of graph paper laid over a cloud of points. Rotating the paper changes the coordinates, not the points themselves. PCA keeps directions of high variance. That is valuable for compression and visualization, but the directions can mix several semantic causes.",
     "prerequisites": [
       "p01-l04"
     ],
     "lessonIds": [
       "p01-l05"
     ],
-    "setconcaRelevance": "PCA: what it reveals and what it hides supplies one design decision for SetConCA."
+    "setconcaRelevance": "PCA: what it reveals and what it hides determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p02-l01",
     "title": "Observed variables versus latent causes",
     "category": "Latent sources and identifiability",
-    "oneSentenceDefinition": "Observed variables versus latent causes is a working tool for understand when hidden causes can be recovered from observations—and when they cannot.",
-    "fullDefinition": "Think of observed variables versus latent causes as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "We observe activations and labels; latent causes are the hidden variables proposed to explain why those observations covary.",
+    "fullDefinition": "Think of hearing several instruments through a wall. The sound at the wall is observable; the instruments are the proposed hidden causes. We observe activations and labels; latent causes are the hidden variables proposed to explain why those observations covary.",
     "prerequisites": [
       "p01-l05"
     ],
     "lessonIds": [
       "p02-l01"
     ],
-    "setconcaRelevance": "Observed variables versus latent causes supplies one design decision for SetConCA."
+    "setconcaRelevance": "Observed variables versus latent causes determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p02-l02",
     "title": "Correlation is not independence",
     "category": "Latent sources and identifiability",
-    "oneSentenceDefinition": "Correlation is not independence is a working tool for understand when hidden causes can be recovered from observations—and when they cannot.",
-    "fullDefinition": "Think of correlation is not independence as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Two variables can have zero correlation and still depend on one another. Independence rules out every statistical dependence, not just a linear one.",
+    "fullDefinition": "Think of hearing several instruments through a wall. The sound at the wall is observable; the instruments are the proposed hidden causes. Two variables can have zero correlation and still depend on one another. Independence rules out every statistical dependence, not just a linear one.",
     "prerequisites": [
       "p02-l01"
     ],
     "lessonIds": [
       "p02-l02"
     ],
-    "setconcaRelevance": "Correlation is not independence supplies one design decision for SetConCA."
+    "setconcaRelevance": "Correlation is not independence determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p02-l03",
     "title": "ICA and the cocktail-party problem",
     "category": "Latent sources and identifiability",
-    "oneSentenceDefinition": "ICA and the cocktail-party problem is a working tool for understand when hidden causes can be recovered from observations—and when they cannot.",
-    "fullDefinition": "Think of ica and the cocktail-party problem as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "ICA assumes observations are mixtures of independent, non-Gaussian sources and searches for an unmixing transformation.",
+    "fullDefinition": "Think of hearing several instruments through a wall. The sound at the wall is observable; the instruments are the proposed hidden causes. ICA assumes observations are mixtures of independent, non-Gaussian sources and searches for an unmixing transformation.",
     "prerequisites": [
       "p02-l02"
     ],
     "lessonIds": [
       "p02-l03"
     ],
-    "setconcaRelevance": "ICA and the cocktail-party problem supplies one design decision for SetConCA."
+    "setconcaRelevance": "ICA and the cocktail-party problem determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p02-l04",
     "title": "Identifiability: what can be uniquely recovered?",
     "category": "Latent sources and identifiability",
-    "oneSentenceDefinition": "Identifiability: what can be uniquely recovered? is a working tool for understand when hidden causes can be recovered from observations—and when they cannot.",
-    "fullDefinition": "Think of identifiability: what can be uniquely recovered? as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A latent variable is identifiable only when the stated assumptions rule out alternative explanations for the same observations, apart from known symmetries such as permutation or scaling.",
+    "fullDefinition": "Think of hearing several instruments through a wall. The sound at the wall is observable; the instruments are the proposed hidden causes. A latent variable is identifiable only when the stated assumptions rule out alternative explanations for the same observations, apart from known symmetries such as permutation or scaling.",
     "prerequisites": [
       "p02-l03"
     ],
     "lessonIds": [
       "p02-l04"
     ],
-    "setconcaRelevance": "Identifiability: what can be uniquely recovered? supplies one design decision for SetConCA."
+    "setconcaRelevance": "Identifiability: what can be uniquely recovered? determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p02-l05",
     "title": "Interventions and causal representation claims",
     "category": "Latent sources and identifiability",
-    "oneSentenceDefinition": "Interventions and causal representation claims is a working tool for understand when hidden causes can be recovered from observations—and when they cannot.",
-    "fullDefinition": "Think of interventions and causal representation claims as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "If changing a representation component changes a target behaviour while relevant alternatives are controlled, that is stronger evidence than a correlation or probe score.",
+    "fullDefinition": "Think of hearing several instruments through a wall. The sound at the wall is observable; the instruments are the proposed hidden causes. If changing a representation component changes a target behaviour while relevant alternatives are controlled, that is stronger evidence than a correlation or probe score.",
     "prerequisites": [
       "p02-l04"
     ],
     "lessonIds": [
       "p02-l05"
     ],
-    "setconcaRelevance": "Interventions and causal representation claims supplies one design decision for SetConCA."
+    "setconcaRelevance": "Interventions and causal representation claims determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p03-l01",
     "title": "Undercomplete and overcomplete codes",
     "category": "Sparse representation learning",
-    "oneSentenceDefinition": "Undercomplete and overcomplete codes is a working tool for see why overcomplete dictionaries need sparse codes and how saes trade fidelity for selectivity.",
-    "fullDefinition": "Think of undercomplete and overcomplete codes as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "An undercomplete code compresses into fewer dimensions. An overcomplete code offers more feature directions than input dimensions, so it must be constrained to avoid arbitrary dense solutions.",
+    "fullDefinition": "Think of an overcomplete dictionary as a large box of labelled tools. Sparsity says that only a few tools may be taken out for any one job. An undercomplete code compresses into fewer dimensions. An overcomplete code offers more feature directions than input dimensions, so it must be constrained to avoid arbitrary dense solutions.",
     "prerequisites": [
       "p02-l05"
     ],
     "lessonIds": [
       "p03-l01"
     ],
-    "setconcaRelevance": "Undercomplete and overcomplete codes supplies one design decision for SetConCA."
+    "setconcaRelevance": "Undercomplete and overcomplete codes determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p03-l02",
     "title": "L0, L1, and TopK sparsity",
     "category": "Sparse representation learning",
-    "oneSentenceDefinition": "L0, L1, and TopK sparsity is a working tool for see why overcomplete dictionaries need sparse codes and how saes trade fidelity for selectivity.",
-    "fullDefinition": "Think of l0, l1, and topk sparsity as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "L0 counts active features, L1 penalizes their magnitude, and TopK keeps exactly the largest k activations. They impose different trade-offs during training.",
+    "fullDefinition": "Think of an overcomplete dictionary as a large box of labelled tools. Sparsity says that only a few tools may be taken out for any one job. L0 counts active features, L1 penalizes their magnitude, and TopK keeps exactly the largest k activations. They impose different trade-offs during training.",
     "prerequisites": [
       "p03-l01"
     ],
     "lessonIds": [
       "p03-l02"
     ],
-    "setconcaRelevance": "L0, L1, and TopK sparsity supplies one design decision for SetConCA."
+    "setconcaRelevance": "L0, L1, and TopK sparsity determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p03-l03",
     "title": "The sparse autoencoder objective",
     "category": "Sparse representation learning",
-    "oneSentenceDefinition": "The sparse autoencoder objective is a working tool for see why overcomplete dictionaries need sparse codes and how saes trade fidelity for selectivity.",
-    "fullDefinition": "Think of the sparse autoencoder objective as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A sparse autoencoder must reconstruct activations while using a small, selective code. Its objective determines which reconstruction--sparsity compromise it learns.",
+    "fullDefinition": "Think of an overcomplete dictionary as a large box of labelled tools. Sparsity says that only a few tools may be taken out for any one job. A sparse autoencoder must reconstruct activations while using a small, selective code. Its objective determines which reconstruction--sparsity compromise it learns.",
     "prerequisites": [
       "p03-l02"
     ],
     "lessonIds": [
       "p03-l03"
     ],
-    "setconcaRelevance": "The sparse autoencoder objective supplies one design decision for SetConCA."
+    "setconcaRelevance": "The sparse autoencoder objective determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p03-l04",
     "title": "Dead features, shrinkage, and dictionary width",
     "category": "Sparse representation learning",
-    "oneSentenceDefinition": "Dead features, shrinkage, and dictionary width is a working tool for see why overcomplete dictionaries need sparse codes and how saes trade fidelity for selectivity.",
-    "fullDefinition": "Think of dead features, shrinkage, and dictionary width as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A feature can die when it rarely receives gradient; L1 can shrink useful magnitudes; a wider dictionary can reduce merging but can also split broad patterns into many fragments.",
+    "fullDefinition": "Think of an overcomplete dictionary as a large box of labelled tools. Sparsity says that only a few tools may be taken out for any one job. A feature can die when it rarely receives gradient; L1 can shrink useful magnitudes; a wider dictionary can reduce merging but can also split broad patterns into many fragments.",
     "prerequisites": [
       "p03-l03"
     ],
     "lessonIds": [
       "p03-l04"
     ],
-    "setconcaRelevance": "Dead features, shrinkage, and dictionary width supplies one design decision for SetConCA."
+    "setconcaRelevance": "Dead features, shrinkage, and dictionary width determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p03-l05",
     "title": "Reconstruction is not interpretability",
     "category": "Sparse representation learning",
-    "oneSentenceDefinition": "Reconstruction is not interpretability is a working tool for see why overcomplete dictionaries need sparse codes and how saes trade fidelity for selectivity.",
-    "fullDefinition": "Think of reconstruction is not interpretability as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Low reconstruction error says the decoder retained information. It does not say the individual latent features line up with human concepts or causal variables.",
+    "fullDefinition": "Think of an overcomplete dictionary as a large box of labelled tools. Sparsity says that only a few tools may be taken out for any one job. Low reconstruction error says the decoder retained information. It does not say the individual latent features line up with human concepts or causal variables.",
     "prerequisites": [
       "p03-l04"
     ],
     "lessonIds": [
       "p03-l05"
     ],
-    "setconcaRelevance": "Reconstruction is not interpretability supplies one design decision for SetConCA."
+    "setconcaRelevance": "Reconstruction is not interpretability determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p04-l01",
     "title": "What counts as a view?",
     "category": "Multi-view representation learning",
-    "oneSentenceDefinition": "What counts as a view? is a working tool for coordinate information shared across views without erasing view-specific information.",
-    "fullDefinition": "Think of what counts as a view? as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A view is a second observation of the same underlying item that changes some information while preserving something you want to identify.",
+    "fullDefinition": "Two cameras can film the same event from different angles. What both cameras see is shared; their lighting, occlusion, and viewpoint are private. A view is a second observation of the same underlying item that changes some information while preserving something you want to identify.",
     "prerequisites": [
       "p03-l05"
     ],
     "lessonIds": [
       "p04-l01"
     ],
-    "setconcaRelevance": "What counts as a view? supplies one design decision for SetConCA."
+    "setconcaRelevance": "What counts as a view? determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p04-l02",
     "title": "CCA: align shared variation",
     "category": "Multi-view representation learning",
-    "oneSentenceDefinition": "CCA: align shared variation is a working tool for coordinate information shared across views without erasing view-specific information.",
-    "fullDefinition": "Think of cca: align shared variation as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "CCA finds one direction in each view whose projected values are maximally correlated. It recovers shared variation, not necessarily the causal factor that generated it.",
+    "fullDefinition": "Two cameras can film the same event from different angles. What both cameras see is shared; their lighting, occlusion, and viewpoint are private. CCA finds one direction in each view whose projected values are maximally correlated. It recovers shared variation, not necessarily the causal factor that generated it.",
     "prerequisites": [
       "p04-l01"
     ],
     "lessonIds": [
       "p04-l02"
     ],
-    "setconcaRelevance": "CCA: align shared variation supplies one design decision for SetConCA."
+    "setconcaRelevance": "CCA: align shared variation determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p04-l03",
     "title": "Deep multi-view models",
     "category": "Multi-view representation learning",
-    "oneSentenceDefinition": "Deep multi-view models is a working tool for coordinate information shared across views without erasing view-specific information.",
-    "fullDefinition": "Think of deep multi-view models as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Deep CCA-style models learn nonlinear encoders before applying an alignment objective, which increases flexibility but also creates more ways to discard useful information.",
+    "fullDefinition": "Two cameras can film the same event from different angles. What both cameras see is shared; their lighting, occlusion, and viewpoint are private. Deep CCA-style models learn nonlinear encoders before applying an alignment objective, which increases flexibility but also creates more ways to discard useful information.",
     "prerequisites": [
       "p04-l02"
     ],
     "lessonIds": [
       "p04-l03"
     ],
-    "setconcaRelevance": "Deep multi-view models supplies one design decision for SetConCA."
+    "setconcaRelevance": "Deep multi-view models determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p04-l04",
     "title": "Shared and private latent variables",
     "category": "Multi-view representation learning",
-    "oneSentenceDefinition": "Shared and private latent variables is a working tool for coordinate information shared across views without erasing view-specific information.",
-    "fullDefinition": "Think of shared and private latent variables as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A good multi-view model separates what should agree across views from details that belong to one view only.",
+    "fullDefinition": "Two cameras can film the same event from different angles. What both cameras see is shared; their lighting, occlusion, and viewpoint are private. A good multi-view model separates what should agree across views from details that belong to one view only.",
     "prerequisites": [
       "p04-l03"
     ],
     "lessonIds": [
       "p04-l04"
     ],
-    "setconcaRelevance": "Shared and private latent variables supplies one design decision for SetConCA."
+    "setconcaRelevance": "Shared and private latent variables determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p04-l05",
     "title": "Alignment versus information preservation",
     "category": "Multi-view representation learning",
-    "oneSentenceDefinition": "Alignment versus information preservation is a working tool for coordinate information shared across views without erasing view-specific information.",
-    "fullDefinition": "Think of alignment versus information preservation as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Forcing two representations to agree can erase view-specific signal. Reconstruction and private-latent controls tell you whether alignment is buying agreement by throwing information away.",
+    "fullDefinition": "Two cameras can film the same event from different angles. What both cameras see is shared; their lighting, occlusion, and viewpoint are private. Forcing two representations to agree can erase view-specific signal. Reconstruction and private-latent controls tell you whether alignment is buying agreement by throwing information away.",
     "prerequisites": [
       "p04-l04"
     ],
     "lessonIds": [
       "p04-l05"
     ],
-    "setconcaRelevance": "Alignment versus information preservation supplies one design decision for SetConCA."
+    "setconcaRelevance": "Alignment versus information preservation determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p05-l01",
     "title": "Sets, sequences, and permutation invariance",
     "category": "Learning representations of sets",
-    "oneSentenceDefinition": "Sets, sequences, and permutation invariance is a working tool for represent unordered collections while retaining the relationships that matter.",
-    "fullDefinition": "Think of sets, sequences, and permutation invariance as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A set has members but no meaningful order. A set encoder should give the same answer after permuting those members, unlike a sequence model.",
+    "fullDefinition": "A bowl of fruit has members but no first apple. A good set representation should not change when you stir the bowl. A set has members but no meaningful order. A set encoder should give the same answer after permuting those members, unlike a sequence model.",
     "prerequisites": [
       "p04-l05"
     ],
     "lessonIds": [
       "p05-l01"
     ],
-    "setconcaRelevance": "Sets, sequences, and permutation invariance supplies one design decision for SetConCA."
+    "setconcaRelevance": "Sets, sequences, and permutation invariance determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p05-l02",
     "title": "Deep Sets and sum decomposition",
     "category": "Learning representations of sets",
-    "oneSentenceDefinition": "Deep Sets and sum decomposition is a working tool for represent unordered collections while retaining the relationships that matter.",
-    "fullDefinition": "Think of deep sets and sum decomposition as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Deep Sets uses a function of the form rho(sum(phi(x))) so each member is encoded before a permutation-invariant aggregation.",
+    "fullDefinition": "A bowl of fruit has members but no first apple. A good set representation should not change when you stir the bowl. Deep Sets uses a function of the form rho(sum(phi(x))) so each member is encoded before a permutation-invariant aggregation.",
     "prerequisites": [
       "p05-l01"
     ],
     "lessonIds": [
       "p05-l02"
     ],
-    "setconcaRelevance": "Deep Sets and sum decomposition supplies one design decision for SetConCA."
+    "setconcaRelevance": "Deep Sets and sum decomposition determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p05-l03",
     "title": "Attention over set members",
     "category": "Learning representations of sets",
-    "oneSentenceDefinition": "Attention over set members is a working tool for represent unordered collections while retaining the relationships that matter.",
-    "fullDefinition": "Think of attention over set members as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Attention lets a set encoder weigh relationships between members instead of treating every member as equally informative.",
+    "fullDefinition": "A bowl of fruit has members but no first apple. A good set representation should not change when you stir the bowl. Attention lets a set encoder weigh relationships between members instead of treating every member as equally informative.",
     "prerequisites": [
       "p05-l02"
     ],
     "lessonIds": [
       "p05-l03"
     ],
-    "setconcaRelevance": "Attention over set members supplies one design decision for SetConCA."
+    "setconcaRelevance": "Attention over set members determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p05-l04",
     "title": "Set statistics and intruder robustness",
     "category": "Learning representations of sets",
-    "oneSentenceDefinition": "Set statistics and intruder robustness is a working tool for represent unordered collections while retaining the relationships that matter.",
-    "fullDefinition": "Think of set statistics and intruder robustness as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A useful set representation should retain the shared structure of its members and degrade predictably when unrelated intruders are added.",
+    "fullDefinition": "A bowl of fruit has members but no first apple. A good set representation should not change when you stir the bowl. A useful set representation should retain the shared structure of its members and degrade predictably when unrelated intruders are added.",
     "prerequisites": [
       "p05-l03"
     ],
     "lessonIds": [
       "p05-l04"
     ],
-    "setconcaRelevance": "Set statistics and intruder robustness supplies one design decision for SetConCA."
+    "setconcaRelevance": "Set statistics and intruder robustness determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p05-l05",
     "title": "Why SetConCA needs a set encoder",
     "category": "Learning representations of sets",
-    "oneSentenceDefinition": "Why SetConCA needs a set encoder is a working tool for represent unordered collections while retaining the relationships that matter.",
-    "fullDefinition": "Think of why setconca needs a set encoder as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "If several activation views belong to one semantic item, the aggregation rule decides what evidence becomes shared supervision and what variation is discarded.",
+    "fullDefinition": "A bowl of fruit has members but no first apple. A good set representation should not change when you stir the bowl. If several activation views belong to one semantic item, the aggregation rule decides what evidence becomes shared supervision and what variation is discarded.",
     "prerequisites": [
       "p05-l04"
     ],
     "lessonIds": [
       "p05-l05"
     ],
-    "setconcaRelevance": "Why SetConCA needs a set encoder supplies one design decision for SetConCA."
+    "setconcaRelevance": "Why SetConCA needs a set encoder determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p06-l01",
     "title": "What makes a positive pair?",
     "category": "Contrastive coordination",
-    "oneSentenceDefinition": "What makes a positive pair? is a working tool for use positive and negative relationships carefully, with explicit control of geometry and false negatives.",
-    "fullDefinition": "Think of what makes a positive pair? as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A positive pair is not automatically meaningful. It encodes the invariance you want the model to learn, so its construction is part of the hypothesis.",
+    "fullDefinition": "Contrastive learning is a sorting game: place genuine variants of the same item close together without piling every item into one corner. A positive pair is not automatically meaningful. It encodes the invariance you want the model to learn, so its construction is part of the hypothesis.",
     "prerequisites": [
       "p05-l05"
     ],
     "lessonIds": [
       "p06-l01"
     ],
-    "setconcaRelevance": "What makes a positive pair? supplies one design decision for SetConCA."
+    "setconcaRelevance": "What makes a positive pair? determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p06-l02",
     "title": "InfoNCE and temperature",
     "category": "Contrastive coordination",
-    "oneSentenceDefinition": "InfoNCE and temperature is a working tool for use positive and negative relationships carefully, with explicit control of geometry and false negatives.",
-    "fullDefinition": "Think of infonce and temperature as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "InfoNCE raises the similarity of positives relative to negatives; temperature controls how sharply the loss concentrates on the hardest comparisons.",
+    "fullDefinition": "Contrastive learning is a sorting game: place genuine variants of the same item close together without piling every item into one corner. InfoNCE raises the similarity of positives relative to negatives; temperature controls how sharply the loss concentrates on the hardest comparisons.",
     "prerequisites": [
       "p06-l01"
     ],
     "lessonIds": [
       "p06-l02"
     ],
-    "setconcaRelevance": "InfoNCE and temperature supplies one design decision for SetConCA."
+    "setconcaRelevance": "InfoNCE and temperature determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p06-l03",
     "title": "Alignment and uniformity",
     "category": "Contrastive coordination",
-    "oneSentenceDefinition": "Alignment and uniformity is a working tool for use positive and negative relationships carefully, with explicit control of geometry and false negatives.",
-    "fullDefinition": "Think of alignment and uniformity as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Contrastive learning needs positives to come together and the overall representation distribution to remain spread out enough to avoid collapse.",
+    "fullDefinition": "Contrastive learning is a sorting game: place genuine variants of the same item close together without piling every item into one corner. Contrastive learning needs positives to come together and the overall representation distribution to remain spread out enough to avoid collapse.",
     "prerequisites": [
       "p06-l02"
     ],
     "lessonIds": [
       "p06-l03"
     ],
-    "setconcaRelevance": "Alignment and uniformity supplies one design decision for SetConCA."
+    "setconcaRelevance": "Alignment and uniformity determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p06-l04",
     "title": "False negatives and shortcut solutions",
     "category": "Contrastive coordination",
-    "oneSentenceDefinition": "False negatives and shortcut solutions is a working tool for use positive and negative relationships carefully, with explicit control of geometry and false negatives.",
-    "fullDefinition": "Think of false negatives and shortcut solutions as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics.",
+    "fullDefinition": "Contrastive learning is a sorting game: place genuine variants of the same item close together without piling every item into one corner. A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics.",
     "prerequisites": [
       "p06-l03"
     ],
     "lessonIds": [
       "p06-l04"
     ],
-    "setconcaRelevance": "False negatives and shortcut solutions supplies one design decision for SetConCA."
+    "setconcaRelevance": "False negatives and shortcut solutions determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p06-l05",
     "title": "Contrastive coordination for sparse features",
     "category": "Contrastive coordination",
-    "oneSentenceDefinition": "Contrastive coordination for sparse features is a working tool for use positive and negative relationships carefully, with explicit control of geometry and false negatives.",
-    "fullDefinition": "Think of contrastive coordination for sparse features as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "For SetConCA, a coordination loss should encourage related views to use compatible sparse codes without making all features identical.",
+    "fullDefinition": "Contrastive learning is a sorting game: place genuine variants of the same item close together without piling every item into one corner. For SetConCA, a coordination loss should encourage related views to use compatible sparse codes without making all features identical.",
     "prerequisites": [
       "p06-l04"
     ],
     "lessonIds": [
       "p06-l05"
     ],
-    "setconcaRelevance": "Contrastive coordination for sparse features supplies one design decision for SetConCA."
+    "setconcaRelevance": "Contrastive coordination for sparse features determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p07-l01",
     "title": "The residual stream as a communication bus",
     "category": "Transformer and mechanistic interpretability",
-    "oneSentenceDefinition": "The residual stream as a communication bus is a working tool for connect representation geometry to residual streams, features, circuits, and interventions.",
-    "fullDefinition": "Think of the residual stream as a communication bus as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "The residual stream is the running vector state that attention and MLP blocks read from and write updates into.",
+    "fullDefinition": "Treat a transformer as a busy workshop with a shared workbench. Each component adds or reads a mark, but a mark is not an explanation until changing it changes the job's outcome. The residual stream is the running vector state that attention and MLP blocks read from and write updates into.",
     "prerequisites": [
       "p06-l05"
     ],
     "lessonIds": [
       "p07-l01"
     ],
-    "setconcaRelevance": "The residual stream as a communication bus supplies one design decision for SetConCA."
+    "setconcaRelevance": "The residual stream as a communication bus determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p07-l02",
     "title": "Attention and MLP circuit hypotheses",
     "category": "Transformer and mechanistic interpretability",
-    "oneSentenceDefinition": "Attention and MLP circuit hypotheses is a working tool for connect representation geometry to residual streams, features, circuits, and interventions.",
-    "fullDefinition": "Think of attention and mlp circuit hypotheses as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Circuit analysis proposes a specific path through attention heads, MLPs, and residual additions that contributes to a behaviour; the proposal needs intervention tests.",
+    "fullDefinition": "Treat a transformer as a busy workshop with a shared workbench. Each component adds or reads a mark, but a mark is not an explanation until changing it changes the job's outcome. Circuit analysis proposes a specific path through attention heads, MLPs, and residual additions that contributes to a behaviour; the proposal needs intervention tests.",
     "prerequisites": [
       "p07-l01"
     ],
     "lessonIds": [
       "p07-l02"
     ],
-    "setconcaRelevance": "Attention and MLP circuit hypotheses supplies one design decision for SetConCA."
+    "setconcaRelevance": "Attention and MLP circuit hypotheses determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p07-l03",
     "title": "Superposition and polysemanticity",
     "category": "Transformer and mechanistic interpretability",
-    "oneSentenceDefinition": "Superposition and polysemanticity is a working tool for connect representation geometry to residual streams, features, circuits, and interventions.",
-    "fullDefinition": "Think of superposition and polysemanticity as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Superposition allows more features than dimensions by placing feature directions non-orthogonally. A neuron can then respond to several unrelated features.",
+    "fullDefinition": "Treat a transformer as a busy workshop with a shared workbench. Each component adds or reads a mark, but a mark is not an explanation until changing it changes the job's outcome. Superposition allows more features than dimensions by placing feature directions non-orthogonally. A neuron can then respond to several unrelated features.",
     "prerequisites": [
       "p07-l02"
     ],
     "lessonIds": [
       "p07-l03"
     ],
-    "setconcaRelevance": "Superposition and polysemanticity supplies one design decision for SetConCA."
+    "setconcaRelevance": "Superposition and polysemanticity determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p07-l04",
     "title": "SAEs as overcomplete dictionaries",
     "category": "Transformer and mechanistic interpretability",
-    "oneSentenceDefinition": "SAEs as overcomplete dictionaries is a working tool for connect representation geometry to residual streams, features, circuits, and interventions.",
-    "fullDefinition": "Think of saes as overcomplete dictionaries as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "An SAE offers a larger set of candidate directions and activates only a few at once, aiming to resolve features that were superposed in the original coordinates.",
+    "fullDefinition": "Treat a transformer as a busy workshop with a shared workbench. Each component adds or reads a mark, but a mark is not an explanation until changing it changes the job's outcome. An SAE offers a larger set of candidate directions and activates only a few at once, aiming to resolve features that were superposed in the original coordinates.",
     "prerequisites": [
       "p07-l03"
     ],
     "lessonIds": [
       "p07-l04"
     ],
-    "setconcaRelevance": "SAEs as overcomplete dictionaries supplies one design decision for SetConCA."
+    "setconcaRelevance": "SAEs as overcomplete dictionaries determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p07-l05",
     "title": "From feature correlation to mechanism",
     "category": "Transformer and mechanistic interpretability",
-    "oneSentenceDefinition": "From feature correlation to mechanism is a working tool for connect representation geometry to residual streams, features, circuits, and interventions.",
-    "fullDefinition": "Think of from feature correlation to mechanism as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A feature that correlates with a behaviour is a candidate explanation. Necessity and sufficiency require targeted interventions and controls.",
+    "fullDefinition": "Treat a transformer as a busy workshop with a shared workbench. Each component adds or reads a mark, but a mark is not an explanation until changing it changes the job's outcome. A feature that correlates with a behaviour is a candidate explanation. Necessity and sufficiency require targeted interventions and controls.",
     "prerequisites": [
       "p07-l04"
     ],
     "lessonIds": [
       "p07-l05"
     ],
-    "setconcaRelevance": "From feature correlation to mechanism supplies one design decision for SetConCA."
+    "setconcaRelevance": "From feature correlation to mechanism determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p08-l01",
     "title": "Reconstruction, FVU, and loss recovery",
     "category": "Evaluating representations honestly",
-    "oneSentenceDefinition": "Reconstruction, FVU, and loss recovery is a working tool for match each claim to an evaluation that can actually test it.",
-    "fullDefinition": "Think of reconstruction, fvu, and loss recovery as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "FVU measures how much activation variance reconstruction misses; loss recovery tests whether replacing activations preserves the model's next-token behaviour.",
+    "fullDefinition": "Evaluation is a medical panel, not a single thermometer. One number can be reassuring while another reveals the problem. FVU measures how much activation variance reconstruction misses; loss recovery tests whether replacing activations preserves the model's next-token behaviour.",
     "prerequisites": [
       "p07-l05"
     ],
     "lessonIds": [
       "p08-l01"
     ],
-    "setconcaRelevance": "Reconstruction, FVU, and loss recovery supplies one design decision for SetConCA."
+    "setconcaRelevance": "Reconstruction, FVU, and loss recovery determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p08-l02",
     "title": "Probes and control tasks",
     "category": "Evaluating representations honestly",
-    "oneSentenceDefinition": "Probes and control tasks is a working tool for match each claim to an evaluation that can actually test it.",
-    "fullDefinition": "Think of probes and control tasks as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A probe shows that information can be decoded. Control tasks test whether the probe learned an accidental lookup table rather than a useful organization of the representation.",
+    "fullDefinition": "Evaluation is a medical panel, not a single thermometer. One number can be reassuring while another reveals the problem. A probe shows that information can be decoded. Control tasks test whether the probe learned an accidental lookup table rather than a useful organization of the representation.",
     "prerequisites": [
       "p08-l01"
     ],
     "lessonIds": [
       "p08-l02"
     ],
-    "setconcaRelevance": "Probes and control tasks supplies one design decision for SetConCA."
+    "setconcaRelevance": "Probes and control tasks determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p08-l03",
     "title": "CKA, SVCCA, and representation similarity",
     "category": "Evaluating representations honestly",
-    "oneSentenceDefinition": "CKA, SVCCA, and representation similarity is a working tool for match each claim to an evaluation that can actually test it.",
-    "fullDefinition": "Think of cka, svcca, and representation similarity as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Similarity metrics compare geometry or subspaces across models and runs. They do not establish one-to-one correspondence between features.",
+    "fullDefinition": "Evaluation is a medical panel, not a single thermometer. One number can be reassuring while another reveals the problem. Similarity metrics compare geometry or subspaces across models and runs. They do not establish one-to-one correspondence between features.",
     "prerequisites": [
       "p08-l02"
     ],
     "lessonIds": [
       "p08-l03"
     ],
-    "setconcaRelevance": "CKA, SVCCA, and representation similarity supplies one design decision for SetConCA."
+    "setconcaRelevance": "CKA, SVCCA, and representation similarity determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p08-l04",
     "title": "Stability across seeds and models",
     "category": "Evaluating representations honestly",
-    "oneSentenceDefinition": "Stability across seeds and models is a working tool for match each claim to an evaluation that can actually test it.",
-    "fullDefinition": "Think of stability across seeds and models as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A result that survives random seeds, model families, layers, and sampling changes is more credible than a single attractive run.",
+    "fullDefinition": "Evaluation is a medical panel, not a single thermometer. One number can be reassuring while another reveals the problem. A result that survives random seeds, model families, layers, and sampling changes is more credible than a single attractive run.",
     "prerequisites": [
       "p08-l03"
     ],
     "lessonIds": [
       "p08-l04"
     ],
-    "setconcaRelevance": "Stability across seeds and models supplies one design decision for SetConCA."
+    "setconcaRelevance": "Stability across seeds and models determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p08-l05",
     "title": "Causal faithfulness and steering",
     "category": "Evaluating representations honestly",
-    "oneSentenceDefinition": "Causal faithfulness and steering is a working tool for match each claim to an evaluation that can actually test it.",
-    "fullDefinition": "Think of causal faithfulness and steering as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Faithfulness asks whether an explanation tracks the computation that causes behaviour. Steering tests effects of changing a component, but requires dosage and off-target controls.",
+    "fullDefinition": "Evaluation is a medical panel, not a single thermometer. One number can be reassuring while another reveals the problem. Faithfulness asks whether an explanation tracks the computation that causes behaviour. Steering tests effects of changing a component, but requires dosage and off-target controls.",
     "prerequisites": [
       "p08-l04"
     ],
     "lessonIds": [
       "p08-l05"
     ],
-    "setconcaRelevance": "Causal faithfulness and steering supplies one design decision for SetConCA."
+    "setconcaRelevance": "Causal faithfulness and steering determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p09-l01",
     "title": "Feature splitting and granularity",
     "category": "SAE limitations and open problems",
-    "oneSentenceDefinition": "Feature splitting and granularity is a working tool for treat splitting, absorption, non-canonicality, and scaling as testable failure modes.",
-    "fullDefinition": "Think of feature splitting and granularity as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A broad feature can split into finer features as dictionary capacity grows. This changes the level of abstraction, not necessarily the quality of the representation.",
+    "fullDefinition": "A dictionary is like a map drawn at a chosen zoom level. Zooming in can split one region into many roads; zooming out can merge distinct places. A broad feature can split into finer features as dictionary capacity grows. This changes the level of abstraction, not necessarily the quality of the representation.",
     "prerequisites": [
       "p08-l05"
     ],
     "lessonIds": [
       "p09-l01"
     ],
-    "setconcaRelevance": "Feature splitting and granularity supplies one design decision for SetConCA."
+    "setconcaRelevance": "Feature splitting and granularity determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p09-l02",
     "title": "Feature absorption and missed distinctions",
     "category": "SAE limitations and open problems",
-    "oneSentenceDefinition": "Feature absorption and missed distinctions is a working tool for treat splitting, absorption, non-canonicality, and scaling as testable failure modes.",
-    "fullDefinition": "Think of feature absorption and missed distinctions as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A narrow or heavily constrained dictionary can use one feature for several related causes, hiding distinctions that matter for analysis or intervention.",
+    "fullDefinition": "A dictionary is like a map drawn at a chosen zoom level. Zooming in can split one region into many roads; zooming out can merge distinct places. A narrow or heavily constrained dictionary can use one feature for several related causes, hiding distinctions that matter for analysis or intervention.",
     "prerequisites": [
       "p09-l01"
     ],
     "lessonIds": [
       "p09-l02"
     ],
-    "setconcaRelevance": "Feature absorption and missed distinctions supplies one design decision for SetConCA."
+    "setconcaRelevance": "Feature absorption and missed distinctions determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p09-l03",
     "title": "Non-canonical dictionaries",
     "category": "SAE limitations and open problems",
-    "oneSentenceDefinition": "Non-canonical dictionaries is a working tool for treat splitting, absorption, non-canonicality, and scaling as testable failure modes.",
-    "fullDefinition": "Think of non-canonical dictionaries as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Different training seeds can find different sparse dictionaries with similar reconstruction and sparsity, so an SAE basis should not be treated as the unique ground truth.",
+    "fullDefinition": "A dictionary is like a map drawn at a chosen zoom level. Zooming in can split one region into many roads; zooming out can merge distinct places. Different training seeds can find different sparse dictionaries with similar reconstruction and sparsity, so an SAE basis should not be treated as the unique ground truth.",
     "prerequisites": [
       "p09-l02"
     ],
     "lessonIds": [
       "p09-l03"
     ],
-    "setconcaRelevance": "Non-canonical dictionaries supplies one design decision for SetConCA."
+    "setconcaRelevance": "Non-canonical dictionaries determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p09-l04",
     "title": "Automated interpretability and metric validity",
     "category": "SAE limitations and open problems",
-    "oneSentenceDefinition": "Automated interpretability and metric validity is a working tool for treat splitting, absorption, non-canonicality, and scaling as testable failure modes.",
-    "fullDefinition": "Think of automated interpretability and metric validity as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Automated descriptions are useful measurements only if they are calibrated against controls, human checks, and causal tests rather than judged by plausibility alone.",
+    "fullDefinition": "A dictionary is like a map drawn at a chosen zoom level. Zooming in can split one region into many roads; zooming out can merge distinct places. Automated descriptions are useful measurements only if they are calibrated against controls, human checks, and causal tests rather than judged by plausibility alone.",
     "prerequisites": [
       "p09-l03"
     ],
     "lessonIds": [
       "p09-l04"
     ],
-    "setconcaRelevance": "Automated interpretability and metric validity supplies one design decision for SetConCA."
+    "setconcaRelevance": "Automated interpretability and metric validity determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p09-l05",
     "title": "A rigorous SAE evaluation protocol",
     "category": "SAE limitations and open problems",
-    "oneSentenceDefinition": "A rigorous SAE evaluation protocol is a working tool for treat splitting, absorption, non-canonicality, and scaling as testable failure modes.",
-    "fullDefinition": "Think of a rigorous sae evaluation protocol as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A credible SAE evaluation reports fidelity, sparsity, interpretability, stability, and intervention outcomes, with seeds and matched baselines.",
+    "fullDefinition": "A dictionary is like a map drawn at a chosen zoom level. Zooming in can split one region into many roads; zooming out can merge distinct places. A credible SAE evaluation reports fidelity, sparsity, interpretability, stability, and intervention outcomes, with seeds and matched baselines.",
     "prerequisites": [
       "p09-l04"
     ],
     "lessonIds": [
       "p09-l05"
     ],
-    "setconcaRelevance": "A rigorous SAE evaluation protocol supplies one design decision for SetConCA."
+    "setconcaRelevance": "A rigorous SAE evaluation protocol determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p10-l01",
     "title": "SetConCA: the full objective",
     "category": "SetConCA research synthesis",
-    "oneSentenceDefinition": "SetConCA: the full objective is a working tool for turn the curriculum into a falsifiable research program and a realistic experimental lab.",
-    "fullDefinition": "Think of setconca: the full objective as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "SetConCA combines reconstruction, sparsity, and cross-view coordination. Each term needs a separate ablation because a combined loss can hide where a gain comes from.",
+    "fullDefinition": "A toy experiment is a wind tunnel: simplified enough to know the ground truth, but rich enough that the method can fail for the same kinds of reasons it might fail in practice. SetConCA combines reconstruction, sparsity, and cross-view coordination. Each term needs a separate ablation because a combined loss can hide where a gain comes from.",
     "prerequisites": [
       "p09-l05"
     ],
     "lessonIds": [
       "p10-l01"
     ],
-    "setconcaRelevance": "SetConCA: the full objective supplies one design decision for SetConCA."
+    "setconcaRelevance": "SetConCA: the full objective determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p10-l02",
     "title": "Designing multi-view activation sets",
     "category": "SetConCA research synthesis",
-    "oneSentenceDefinition": "Designing multi-view activation sets is a working tool for turn the curriculum into a falsifiable research program and a realistic experimental lab.",
-    "fullDefinition": "Think of designing multi-view activation sets as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A multi-view set should contain observations of the same intended concept under controlled variation, with a documented rule for positives, negatives, and intruders.",
+    "fullDefinition": "A toy experiment is a wind tunnel: simplified enough to know the ground truth, but rich enough that the method can fail for the same kinds of reasons it might fail in practice. A multi-view set should contain observations of the same intended concept under controlled variation, with a documented rule for positives, negatives, and intruders.",
     "prerequisites": [
       "p10-l01"
     ],
     "lessonIds": [
       "p10-l02"
     ],
-    "setconcaRelevance": "Designing multi-view activation sets supplies one design decision for SetConCA."
+    "setconcaRelevance": "Designing multi-view activation sets determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p10-l03",
     "title": "A realistic toy experiment",
     "category": "SetConCA research synthesis",
-    "oneSentenceDefinition": "A realistic toy experiment is a working tool for turn the curriculum into a falsifiable research program and a realistic experimental lab.",
-    "fullDefinition": "Think of a realistic toy experiment as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A good toy problem has known latent causes, partial views, nuisance variation, and a metric that can distinguish recovery of the intended factor from a shortcut.",
+    "fullDefinition": "A toy experiment is a wind tunnel: simplified enough to know the ground truth, but rich enough that the method can fail for the same kinds of reasons it might fail in practice. A good toy problem has known latent causes, partial views, nuisance variation, and a metric that can distinguish recovery of the intended factor from a shortcut.",
     "prerequisites": [
       "p10-l02"
     ],
     "lessonIds": [
       "p10-l03"
     ],
-    "setconcaRelevance": "A realistic toy experiment supplies one design decision for SetConCA."
+    "setconcaRelevance": "A realistic toy experiment determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p10-l04",
     "title": "Hypotheses, baselines, and ablations",
     "category": "SetConCA research synthesis",
-    "oneSentenceDefinition": "Hypotheses, baselines, and ablations is a working tool for turn the curriculum into a falsifiable research program and a realistic experimental lab.",
-    "fullDefinition": "Think of hypotheses, baselines, and ablations as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "A research hypothesis should predict a directional change on a named metric, against a matched baseline, and specify what result would count as failure.",
+    "fullDefinition": "A toy experiment is a wind tunnel: simplified enough to know the ground truth, but rich enough that the method can fail for the same kinds of reasons it might fail in practice. A research hypothesis should predict a directional change on a named metric, against a matched baseline, and specify what result would count as failure.",
     "prerequisites": [
       "p10-l03"
     ],
     "lessonIds": [
       "p10-l04"
     ],
-    "setconcaRelevance": "Hypotheses, baselines, and ablations supplies one design decision for SetConCA."
+    "setconcaRelevance": "Hypotheses, baselines, and ablations determines how SetConCA should represent, group, or evaluate activation views."
   },
   {
     "id": "p10-l05",
     "title": "Writing the research claim without overclaiming",
     "category": "SetConCA research synthesis",
-    "oneSentenceDefinition": "Writing the research claim without overclaiming is a working tool for turn the curriculum into a falsifiable research program and a realistic experimental lab.",
-    "fullDefinition": "Think of writing the research claim without overclaiming as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
+    "oneSentenceDefinition": "Write only what the experiment measures: coordination can improve a chosen metric under stated conditions without proving that the learned features are the true concepts.",
+    "fullDefinition": "A toy experiment is a wind tunnel: simplified enough to know the ground truth, but rich enough that the method can fail for the same kinds of reasons it might fail in practice. Write only what the experiment measures: coordination can improve a chosen metric under stated conditions without proving that the learned features are the true concepts.",
     "prerequisites": [
       "p10-l04"
     ],
     "lessonIds": [
       "p10-l05"
     ],
-    "setconcaRelevance": "Writing the research claim without overclaiming supplies one design decision for SetConCA."
+    "setconcaRelevance": "Writing the research claim without overclaiming determines how SetConCA should represent, group, or evaluate activation views."
   }
 ]

@@ -23,100 +23,111 @@
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "This lesson exists because false negatives and shortcut solutions is a prerequisite for making defensible claims in SetConCA. It is placed here after the previous idea so the notation has a job to do."
+      "text": "A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
     },
     "bridgeFrom": "p06-l03",
     "intuition": {
-      "analogy": "Think of false negatives and shortcut solutions as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
-      "analogyLimit": "The method answers only the property its objective and evaluation measure; a good score cannot silently establish a stronger claim.",
-      "text": "False negatives and shortcut solutions is a working tool for use positive and negative relationships carefully, with explicit control of geometry and false negatives."
+      "analogy": "Contrastive learning is a sorting game: place genuine variants of the same item close together without piling every item into one corner. A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics.",
+      "analogyLimit": "A lower contrastive loss can come from a shortcut in the views, not from recovery of the intended invariant.",
+      "text": "A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics."
     },
     "toyExample": {
-      "description": "Use a small synthetic dataset to isolate false negatives and shortcut solutions before adding model-scale complexity.",
+      "description": "Give each item two legitimate views and several near-duplicate negatives. Sweep temperature and inspect when the loss starts punishing semantically valid neighbours.",
       "steps": [
         {
-          "action": "Choose the data-generating factors",
-          "result": "Write down which variables should be shared, private, sparse, or irrelevant.",
-          "insight": "If the intended structure is not specified first, an evaluation can reward a shortcut."
+          "action": "State the ground truth first",
+          "result": "Specify exactly what false negatives and shortcut solutions should recover, preserve, or ignore.",
+          "insight": "The intended factor must be known before a toy result can be judged."
         },
         {
-          "action": "Apply the method",
-          "result": "Record the representation, reconstruction, and the statistic used to judge it.",
-          "insight": "The metric is part of the experiment, not a neutral afterthought."
+          "action": "Run the matched comparison",
+          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
+          "insight": "Otherwise a visible gain may be a resource difference in disguise."
         },
         {
-          "action": "Perturb one assumption",
-          "result": "Change correlation, noise, view quality, or dictionary width and repeat.",
-          "insight": "A method is understood by its boundary conditions."
+          "action": "Break one assumption",
+          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
+          "insight": "The boundary of success is usually more useful than the headline score."
         }
       ]
     },
     "visual": {
       "id": "contrastive-temp",
-      "question": "What changes when you manipulate the main assumption behind false negatives and shortcut solutions?",
-      "description": "Adjust the control, observe the geometry, then state what the visual does and does not prove."
+      "question": "Which assumption behind false negatives and shortcut solutions changes the result most?",
+      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
     },
     "technical": {
-      "text": "Technically, false negatives and shortcut solutions is defined by the data interface, the learned or computed representation, and the evaluation statistic. Keep those three separate. The representation is an object; the interpretation is a claim about that object; the experiment is evidence for or against the claim."
+      "text": "A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L=\\mathcal L_{task}+\\lambda\\mathcal L_{regularizer}",
+        "equation": "\\mathcal L_{\\mathrm{NCE}}=-\\log\\frac{e^{s(z,z^+)/\\tau}}{\\sum_j e^{s(z,z_j)/\\tau}}",
         "symbols": {
           "x": "observed activation or input",
           "z": "latent code",
           "d_i": "dictionary direction",
           "lambda": "trade-off weight"
         },
-        "explanation": "The equation names the quantities being combined; it is not a proof that the latent variables have the intended meaning.",
-        "whyNeeded": "It makes the optimization target explicit.",
-        "ifRemoved": "Without the objective, comparisons become vague and irreproducible.",
-        "encourages": "State assumptions and evaluate them directly.",
-        "doesNotGuarantee": "Identifiability, interpretability, or causality."
+        "explanation": "For this lesson, the expression makes the central trade-off explicit. A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics.",
+        "whyNeeded": "It says precisely what the method is being rewarded for.",
+        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
+        "encourages": "A testable prediction about the chosen objective.",
+        "doesNotGuarantee": "A lower contrastive loss can come from a shortcut in the views, not from recovery of the intended invariant."
       }
     ],
     "methodComparison": [
       {
-        "question": "What does it prioritise?",
-        "pca": "Within-view variance",
-        "ica": "Statistical independence",
-        "cca": "Cross-view correlation",
-        "implication": "Choose the method from the scientific question, not from the best-looking plot."
+        "question": "What prevents collapse?",
+        "methods": [
+          {
+            "name": "InfoNCE",
+            "answer": "InfoNCE: negatives"
+          },
+          {
+            "name": "VICReg",
+            "answer": "VICReg: variance and covariance terms"
+          },
+          {
+            "name": "Supervised contrastive",
+            "answer": "Supervised contrastive: class positives"
+          }
+        ],
+        "practicalImplication": "The positive-pair definition is usually the highest-leverage choice."
       }
     ],
     "evidence": [
       {
-        "claim": "False negatives and shortcut solutions is a working tool for use positive and negative relationships carefully, with explicit control of geometry and false negatives.",
+        "claim": "A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics.",
         "claimType": "definition",
         "sourceId": "course-synthesis",
         "section": "lesson framing",
         "verified": false,
-        "note": "Course synthesis; verify against the linked primary papers before making a paper-level claim."
+        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
       }
     ],
     "failureModes": [
       {
-        "name": "Objective–claim mismatch",
-        "mechanism": "The optimization statistic rewards a proxy rather than the property the researcher names.",
-        "symptom": "The score improves while controls or interventions do not.",
-        "diagnosticTest": "Add a negative control and a counterfactual intervention.",
-        "mitigation": "Narrow the claim or add evidence that tests the missing property.",
-        "setconcaRelevance": "Every SetConCA comparison should report the proxy and its ceiling."
+        "name": "A score that answers the wrong question",
+        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
+        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
+        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
+        "mitigation": "Either narrow the claim or add the missing measurement.",
+        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
       }
     ],
     "setconcaConnection": {
-      "relevance": "False negatives and shortcut solutions supplies one design decision for SetConCA.",
-      "whichPart": "The representation, view construction, or evaluation protocol.",
-      "whichDesignChoice": "Keep the baseline matched on data, capacity, and compute.",
-      "whichFailure": "Confusing agreement with recovery of a true concept.",
-      "whichExperiment": "Compare pointwise SAE and set-coordinated SAE on reconstruction, stability, selectivity, and intervention.",
-      "alternativeExplanation": "Any gain may come from extra context, regularization, or capacity rather than set coordination."
+      "relevance": "False negatives and shortcut solutions determines how SetConCA should represent, group, or evaluate activation views.",
+      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
+      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
+      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
+      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
+      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
     },
     "exercises": [
       {
         "type": "diagnose",
-        "prompt": "A paper reports a better score after adding false negatives and shortcut solutions. What is the first alternative explanation you would test?",
-        "reveal": "Hold model, data, training budget, and evaluation examples fixed; then add controls for capacity and shortcut information."
+        "prompt": "A paper claims that false negatives and shortcut solutions improved interpretability. What one result would you ask for before accepting that claim?",
+        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
       }
     ],
     "masteryQuestions": [

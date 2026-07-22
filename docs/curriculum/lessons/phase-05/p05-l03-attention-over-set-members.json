@@ -23,100 +23,111 @@
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "This lesson exists because attention over set members is a prerequisite for making defensible claims in SetConCA. It is placed here after the previous idea so the notation has a job to do."
+      "text": "Attention lets a set encoder weigh relationships between members instead of treating every member as equally informative. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
     },
     "bridgeFrom": "p05-l02",
     "intuition": {
-      "analogy": "Think of attention over set members as a controlled way to ask one question of a representation. Keep the data, objective, and comparison visible so the result is interpretable.",
-      "analogyLimit": "The method answers only the property its objective and evaluation measure; a good score cannot silently establish a stronger claim.",
-      "text": "Attention over set members is a working tool for represent unordered collections while retaining the relationships that matter."
+      "analogy": "A bowl of fruit has members but no first apple. A good set representation should not change when you stir the bowl. Attention lets a set encoder weigh relationships between members instead of treating every member as equally informative.",
+      "analogyLimit": "Permutation invariance is necessary for sets but it does not guarantee robustness to bad members or preserve all relations.",
+      "text": "Attention lets a set encoder weigh relationships between members instead of treating every member as equally informative."
     },
     "toyExample": {
-      "description": "Use a small synthetic dataset to isolate attention over set members before adding model-scale complexity.",
+      "description": "Make sets from the same latent class, permute them, then inject unrelated members. Compare mean pooling with a learned aggregation rule.",
       "steps": [
         {
-          "action": "Choose the data-generating factors",
-          "result": "Write down which variables should be shared, private, sparse, or irrelevant.",
-          "insight": "If the intended structure is not specified first, an evaluation can reward a shortcut."
+          "action": "State the ground truth first",
+          "result": "Specify exactly what attention over set members should recover, preserve, or ignore.",
+          "insight": "The intended factor must be known before a toy result can be judged."
         },
         {
-          "action": "Apply the method",
-          "result": "Record the representation, reconstruction, and the statistic used to judge it.",
-          "insight": "The metric is part of the experiment, not a neutral afterthought."
+          "action": "Run the matched comparison",
+          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
+          "insight": "Otherwise a visible gain may be a resource difference in disguise."
         },
         {
-          "action": "Perturb one assumption",
-          "result": "Change correlation, noise, view quality, or dictionary width and repeat.",
-          "insight": "A method is understood by its boundary conditions."
+          "action": "Break one assumption",
+          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
+          "insight": "The boundary of success is usually more useful than the headline score."
         }
       ]
     },
     "visual": {
       "id": "set-pooling",
-      "question": "What changes when you manipulate the main assumption behind attention over set members?",
-      "description": "Adjust the control, observe the geometry, then state what the visual does and does not prove."
+      "question": "Which assumption behind attention over set members changes the result most?",
+      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
     },
     "technical": {
-      "text": "Technically, attention over set members is defined by the data interface, the learned or computed representation, and the evaluation statistic. Keep those three separate. The representation is an object; the interpretation is a claim about that object; the experiment is evidence for or against the claim."
+      "text": "Attention lets a set encoder weigh relationships between members instead of treating every member as equally informative. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L=\\mathcal L_{task}+\\lambda\\mathcal L_{regularizer}",
+        "equation": "f(X)=\\rho(\\sum_{x\\in X}\\phi(x))",
         "symbols": {
           "x": "observed activation or input",
           "z": "latent code",
           "d_i": "dictionary direction",
           "lambda": "trade-off weight"
         },
-        "explanation": "The equation names the quantities being combined; it is not a proof that the latent variables have the intended meaning.",
-        "whyNeeded": "It makes the optimization target explicit.",
-        "ifRemoved": "Without the objective, comparisons become vague and irreproducible.",
-        "encourages": "State assumptions and evaluate them directly.",
-        "doesNotGuarantee": "Identifiability, interpretability, or causality."
+        "explanation": "For this lesson, the expression makes the central trade-off explicit. Attention lets a set encoder weigh relationships between members instead of treating every member as equally informative.",
+        "whyNeeded": "It says precisely what the method is being rewarded for.",
+        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
+        "encourages": "A testable prediction about the chosen objective.",
+        "doesNotGuarantee": "Permutation invariance is necessary for sets but it does not guarantee robustness to bad members or preserve all relations."
       }
     ],
     "methodComparison": [
       {
-        "question": "What does it prioritise?",
-        "pca": "Within-view variance",
-        "ica": "Statistical independence",
-        "cca": "Cross-view correlation",
-        "implication": "Choose the method from the scientific question, not from the best-looking plot."
+        "question": "How are members combined?",
+        "methods": [
+          {
+            "name": "Mean pooling",
+            "answer": "Mean pooling: equal weight"
+          },
+          {
+            "name": "Deep Sets",
+            "answer": "Deep Sets: learned member map"
+          },
+          {
+            "name": "Attention pooling",
+            "answer": "Attention: relational weighting"
+          }
+        ],
+        "practicalImplication": "Choose the simplest aggregator that passes the required robustness checks."
       }
     ],
     "evidence": [
       {
-        "claim": "Attention over set members is a working tool for represent unordered collections while retaining the relationships that matter.",
+        "claim": "Attention lets a set encoder weigh relationships between members instead of treating every member as equally informative.",
         "claimType": "definition",
         "sourceId": "course-synthesis",
         "section": "lesson framing",
         "verified": false,
-        "note": "Course synthesis; verify against the linked primary papers before making a paper-level claim."
+        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
       }
     ],
     "failureModes": [
       {
-        "name": "Objective–claim mismatch",
-        "mechanism": "The optimization statistic rewards a proxy rather than the property the researcher names.",
-        "symptom": "The score improves while controls or interventions do not.",
-        "diagnosticTest": "Add a negative control and a counterfactual intervention.",
-        "mitigation": "Narrow the claim or add evidence that tests the missing property.",
-        "setconcaRelevance": "Every SetConCA comparison should report the proxy and its ceiling."
+        "name": "A score that answers the wrong question",
+        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
+        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
+        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
+        "mitigation": "Either narrow the claim or add the missing measurement.",
+        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Attention over set members supplies one design decision for SetConCA.",
-      "whichPart": "The representation, view construction, or evaluation protocol.",
-      "whichDesignChoice": "Keep the baseline matched on data, capacity, and compute.",
-      "whichFailure": "Confusing agreement with recovery of a true concept.",
-      "whichExperiment": "Compare pointwise SAE and set-coordinated SAE on reconstruction, stability, selectivity, and intervention.",
-      "alternativeExplanation": "Any gain may come from extra context, regularization, or capacity rather than set coordination."
+      "relevance": "Attention over set members determines how SetConCA should represent, group, or evaluate activation views.",
+      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
+      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
+      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
+      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
+      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
     },
     "exercises": [
       {
         "type": "diagnose",
-        "prompt": "A paper reports a better score after adding attention over set members. What is the first alternative explanation you would test?",
-        "reveal": "Hold model, data, training budget, and evaluation examples fixed; then add controls for capacity and shortcut information."
+        "prompt": "A paper claims that attention over set members improved interpretability. What one result would you ask for before accepting that claim?",
+        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
       }
     ],
     "masteryQuestions": [

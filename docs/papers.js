@@ -4,373 +4,474 @@ window.CURRICULUM_DATA = {
   "formula": "SetConCA = Sparse dictionary learning + Multi-view learning + Set representation + Contrastive coordination",
   "courseIntro": {
     "title": "SetConCA Mastery",
-    "promise": "By the end of this course you will understand every idea in the curriculum without opening a PDF. Each module teaches the paper in full.",
+    "promise": "Welcome to your step-by-step masterclass. You will learn every concept from absolute first principles. Every paper, equation, and term is explained as if sitting right beside a patient teacher.",
     "formula": "SetConCA = Sparse dictionary learning + Multi-view learning + Set representation + Contrastive coordination",
     "howToUse": [
-      "Start at Level 1. Read the Level Primer (the lecture) first.",
-      "Open each paper module in order. Read every section — Plain English, Key Ideas, Math, Vocabulary.",
-      "Complete the Mastery Checklist and Quiz before moving on.",
-      "Do the Practical Checkpoint when a level has one.",
-      "Do not skip levels — later papers assume earlier vocabulary."
+      "Start at Level 1. Read the Level Primer (the lecture) carefully from top to bottom.",
+      "When a new mathematical term or concept appears, pause — the primer explains what it means, where it came from, and how to read its formula.",
+      "Open each paper module in order. Read Plain English, Key Ideas, Math, and Vocabulary.",
+      "Complete the Mastery Checklist and Quiz before moving to the next level.",
+      "Do not skip levels — each level builds naturally on the concepts taught in the previous one."
     ],
-    "pathMap": "Levels 1–2 teach classical decompositions and sparse codes. Levels 3–5 teach multi-view, sets, and contrastive coordination. Level 6 teaches how to measure representations honestly. Levels 7–9 teach why SAEs exist, how they are built, and how they fail. Level 10 connects everything to SetConCA."
+    "pathMap": "Levels 1–2 build the foundation: how to break down vectors into variance (PCA), independent sources (ICA), correlated views (CCA), and sparse codes (TopK/SAEs). Levels 3–5 extend to nonlinear neural networks: multi-view alignment (DCCA/DCCAE), set aggregators (Deep Sets/Set Transformer), and contrastive losses (InfoNCE/SimCLR/SupCon). Level 6 teaches honest evaluation (CKA, probes, control tasks). Levels 7–9 dive deep into AI internals: superposition, transformer residual streams, modern SAE architectures, and failure modes (absorption/splitting). Level 10 synthesises everything into the SetConCA research frontier."
   },
   "levelPrimers": {
     "1": {
       "title": "What is a representation?",
-      "mission": "Explain PCA, ICA, and CCA, and know which objective each uses.",
-      "beforeYouStart": "None — this is the starting point.",
-      "primer": "A representation is a transformed version of data that makes some structure easier to use. Raw activations from a language model are high-dimensional vectors. We rarely care about every coordinate. We care about directions that carry meaning.\n\nThree classical tools answer three different questions.\n\nPCA asks: which directions capture the most variance inside one view? It finds orthogonal axes ordered by how much spread they explain. Analogy: rotate a cloud of points so the longest axis of the cloud comes first. PCA is the baseline for reconstruction quality (FVU). High reconstruction does not mean the axes are concepts.\n\nICA asks: which directions are statistically independent sources mixed together? Independence is stronger than zero correlation. Analogy: unmixing two overlapping voices from a recording. This is the mental model behind Concept Component Analysis (ConCA).\n\nCCA asks: which directions line up between two views of the same thing? Analogy: find the shared signal between audio and video of the same speech. This is the ancestor of multi-view SetConCA.\n\nAfter this level, memorize: PCA = within-view variance; ICA = independent sources; CCA = cross-view correlation.",
+      "mission": "Master PCA, ICA, and CCA from first principles. Understand what each objective measures, how to read their math, and why good reconstruction does not equal interpretability.",
+      "beforeYouStart": "None — we start from absolute zero.",
+      "primer": "Welcome to Level 1. Imagine a modern language model like Gemma or Llama processing a sentence. Inside the model, words are converted into long lists of numbers — vectors with thousands of dimensions (e.g. 4096 numbers per token). We call these numbers 'activations', and together they form the model's internal representation.\n\nHere is the fundamental problem: why can't we just look at index #42 of that vector to see if the model is thinking about 'dogs'? Because neural networks do not allocate one number per concept. Information is spread out across all dimensions simultaneously. To understand what the network is doing, we need mathematical tools to rotate, unmix, or align these high-dimensional vector spaces.\n\nIn this level, we master the three classical linear tools that started it all: PCA, ICA, and CCA.\n\n--- STEP 1: PCA (Principal Component Analysis) — Finding Variance Inside One View ---\nWhere did it come from? In 1901, Karl Pearson wanted a way to summarize a complex cloud of data points using fewer dimensions without losing important spread.\n\nHow does it work? Imagine a 3D cloud of data shaped like a football floating in a room. If you must project this 3D cloud onto a flat 2D screen, which angle preserves the most information? You want to rotate the screen so it faces the longest axis of the football!\n\nLet's build the math step-by-step:\n1. Mean (μ): The central point of your data cloud.\n2. Variance: How far data points spread out around that mean. For a variable x, variance is E[(x - μ)²]. We square the differences so positive and negative offsets don't cancel each other out.\n3. Covariance: How two different coordinates move together. If coordinate X goes up whenever coordinate Y goes up, their covariance E[(x - μ_x)(y - μ_y)] is positive.\n4. Covariance Matrix (C): A square grid recording the pairwise covariance between every single pair of dimensions.\n5. Eigenvectors & Singular Value Decomposition (SVD): An eigenvector of matrix C is a special direction in space that DOES NOT ROTATE when multiplied by C — it only gets stretched! The stretch factor is the Eigenvalue (λ). SVD (X = U Σ Vᵀ) is the standard numerical algorithm to compute these principal directions directly from raw data.\n\nThe PCA recipe: PCA finds orthogonal (90-degree right angle) axes ordered by how much variance they capture. The first component is the longest axis of the cloud; the second component is the next longest axis strictly perpendicular to the first.\n\nWhat is FVU (Fraction of Variance Unexplained)?\nIf you keep only the top k components and throw away the rest, your reconstructed points will have a small error. FVU = 1 - (Explained Variance / Total Variance). If FVU is 0.02, your rank-k subspace captures 98% of the data's spread.\n\nCRITICAL LESSON FOR MI & SAE RESEARCH:\nOrthogonality is a mathematical convenience, NOT a guarantee of semantic meaning. PCA directions are orthogonal pure-math axes. They are rarely clean human concepts! Good reconstruction (low FVU) only means you kept the spread — it does NOT mean you found interpretable features.\n\n--- STEP 2: ICA (Independent Component Analysis) — Unmixing Independent Sources ---\nWhere did it come from? Imagine the 'Cocktail Party Problem'. Two people are speaking at the exact same time in a room. You place two microphones at different locations. Mic 1 picks up 70% Person A + 30% Person B. Mic 2 picks up 40% Person A + 60% Person B. How do you recover the original pure individual voices without knowing who spoke or where the mics were?\n\nWhy PCA fails here: Person A and Person B's voices are NOT orthogonal in microphone space. PCA would just find the direction of highest combined volume, mixing both voices together!\n\nThe ICA core concept: ICA assumes the observations x come from a linear mixture x = A * s, where s is a vector of statistically INDEPENDENT source signals. Independence is much stronger than zero correlation. Zero correlation means E[xy] = E[x]E[y] (no linear relation). Independence means p(x,y) = p(x)p(y) — knowing variable x gives you ABSOLUTELY ZERO information about variable y.\n\nHow ICA unmixes: The Central Limit Theorem states that adding independent random variables together makes their combined distribution more Gaussian (bell-shaped). Therefore, mixed signals are always more Gaussian than single pure signals! ICA searches for an unmixing matrix W such that the recovered signals y = W * x are as NON-GAUSSIAN as possible (maximizing kurtosis or negentropy). By pushing distributions away from bell curves, ICA pops the independent sources back out.\n\nConnection to SetConCA: Concept Component Analysis (ConCA) uses this exact unmixing mental model, treating neural activations as linear mixtures of independent concept components.\n\n--- STEP 3: CCA (Canonical Correlation Analysis) — Finding Shared Signals Between Two Views ---\nWhere did it come from? Harold Hotelling (1936) asked: what if you have TWO different measurements of the same items? For example, View 1 is an audio recording of a speech, and View 2 is a video recording of the speaker's lips. Audio vectors and video vectors have different dimensions and different units.\n\nHow does CCA work? CCA searches for a linear direction u in View 1 space and a linear direction v in View 2 space such that the projected numbers (uᵀx and vᵀy) have the MAXIMUM possible correlation with each other!\n\nShared vs. Private Information:\nCCA focuses strictly on what is SHARED between the two views. If View 1 contains background noise that has nothing to do with View 2, CCA ignores it. The projected variables (uᵀx, vᵀy) are called Canonical Variables, and their correlation is the Canonical Correlation.\n\nTHE CLASSICAL TRIAD TO MEMORIZE:\n• PCA asks: Which directions capture max variance INSIDE one view?\n• ICA asks: Which directions unmix INDEPENDENT sources inside one view?\n• CCA asks: Which directions LINE UP (correlate) ACROSS two views?",
       "bigPictureDiagram": [
-        "One view  → PCA  → keep variance axes",
-        "One view  → ICA  → unmix independent sources",
-        "Two views → CCA  → shared correlated directions"
+        "One view  → PCA  → keep max variance axes (orthogonal, math-driven)",
+        "One view  → ICA  → unmix independent non-Gaussian sources (Cocktail party)",
+        "Two views → CCA  → find maximum cross-view linear correlation (shared signal)"
       ],
       "conceptsToMaster": [
         {
-          "name": "Variance / covariance",
-          "simple": "How much a variable spreads; how two variables co-move.",
-          "deeper": "Covariance matrix C = E[(x−μ)(x−μ)ᵀ]. PCA diagonalizes it."
+          "name": "Variance / Covariance",
+          "simple": "Variance = how much one variable spreads out around its average. Covariance = whether two variables rise and fall together.",
+          "deeper": "Covariance matrix C = E[(x−μ)(x−μ)ᵀ]. Diagonals are variances; off-diagonals are pairwise covariances. PCA diagonalizes C."
         },
         {
           "name": "Eigenvector / SVD",
-          "simple": "Special directions that only stretch under a matrix.",
-          "deeper": "SVD X=UΣVᵀ gives principal directions as columns of V (or U)."
+          "simple": "An eigenvector is a special arrow in space that only gets stretched (not tilted) when multiplied by a matrix. SVD is the master algorithm that finds these stretch directions.",
+          "deeper": "Singular Value Decomposition X = U Σ Vᵀ factors data matrix X into left singular vectors U, singular values Σ, and right singular vectors V. The columns of V are the principal component directions."
         },
         {
-          "name": "FVU",
-          "simple": "Fraction of variance left unexplained after reconstruction.",
-          "deeper": "FVU=1−explained_variance_fraction. Used later for SAE fidelity."
+          "name": "FVU (Fraction of Variance Unexplained)",
+          "simple": "The percentage of original data spread lost after compressing and reconstructing.",
+          "deeper": "FVU = 1 - (Explained Variance / Total Variance) = ||X - X_hat||_F^2 / ||X - X_mean||_F^2. Lower FVU means better reconstruction, but NOT higher interpretability."
         },
         {
-          "name": "Independence vs correlation",
-          "simple": "Uncorrelated ≠ independent.",
-          "deeper": "ICA needs independence (or non-Gaussianity) for source recovery."
+          "name": "Independence vs. Uncorrelatedness",
+          "simple": "Uncorrelated means no straight-line relationship. Independent means knowing one variable tells you absolutely nothing about the other.",
+          "deeper": "Uncorrelatedness only requires Cov(X,Y) = 0 (2nd-order statistic). Independence requires joint probability p(x,y) = p(x)p(y) across all higher-order moments. ICA requires independence or non-Gaussianity for source recovery."
         },
         {
-          "name": "Canonical correlation",
-          "simple": "Max correlation after projecting two views.",
-          "deeper": "CCA finds (u,v) maximizing corr(Xu, Yv) under unit variance."
+          "name": "Canonical Correlation",
+          "simple": "The highest correlation achievable between two different views after rotating each view appropriately.",
+          "deeper": "CCA finds projection vectors u, v maximizing corr(uᵀX, vᵀY) subject to Var(uᵀX) = 1 and Var(vᵀY) = 1. Solved via a generalized eigenvalue problem on cross-covariance matrices."
         }
       ],
       "checkpoint": {
-        "goal": "Compare PCA, ICA, CCA on the same activation bank.",
+        "goal": "Compare PCA, ICA, and CCA on the same activation dataset.",
         "steps": [
-          "Take Gemma activations for the same set of prompts.",
-          "Run PCA; record FVU vs number of components.",
-          "Run ICA; inspect recovered components.",
-          "Split views (e.g. two layers or two paraphrases); run CCA.",
-          "Compare reconstruction, dimensionality, cross-view correlation, retrieval."
+          "Extract activations from Gemma for a dataset of prompts.",
+          "Run PCA: plot FVU versus the number of components k.",
+          "Run ICA: inspect whether unmixed components isolate distinct activation patterns.",
+          "Create two views (e.g. Layer 10 vs Layer 14 activations for the same prompts) and run CCA.",
+          "Compare reconstruction error (FVU), cross-view correlation, and retrieval performance."
         ],
-        "successLooksLike": "You can say which method wins on which metric and why that metric is not interpretability."
+        "successLooksLike": "You can explain clearly which method wins on which metric and why high reconstruction or high correlation does NOT automatically mean you found human-interpretable concepts."
       },
-      "bridgeToNext": "Sparse autoencoders keep the reconstruction idea from PCA but add overcomplete sparse codes."
+      "bridgeToNext": "Now that you understand linear decompositions (PCA/ICA/CCA), Level 2 moves to Sparse Representations & Autoencoders — expanding feature count beyond input dimensions."
     },
     "2": {
       "title": "Sparse representations and dictionaries",
-      "mission": "Explain why overcomplete codes need sparsity, and how TopK differs from L1 and from VAEs.",
-      "beforeYouStart": "Level 1 — especially FVU and linear unmixing.",
-      "primer": "If you have more dictionary atoms than input dimensions (overcomplete), a dense code can always reconstruct by using many tiny weights. That is useless for interpretability — every atom becomes a mush of everything.\n\nSparsity forces each activation to use only a few atoms. Then atoms can specialize.\n\nk-Sparse Autoencoders keep exactly the top-k encoder activations. This is the ancestor of TopK SAEs.\n\nVAEs are different: they learn a probabilistic latent with a prior, using the ELBO. You need this vocabulary for Gaussian set aggregations and product-of-experts later — not to become a VAE researcher.\n\nCritical lesson: sparse + good reconstruction ≠ monosemantic concept recovery.",
+      "mission": "Understand overcomplete dictionaries, why overcompleteness REQUIRES sparsity, how TopK differs from L1, and how VAEs use probabilistic latents.",
+      "beforeYouStart": "Level 1 — especially linear reconstruction, FVU, and unmixing.",
+      "primer": "Welcome to Level 2. In Level 1, PCA compressed N-dimensional data into k dimensions where k < N (undercomplete). But in neural networks, a fascinating phenomenon occurs: models often pack THOUSANDS of concepts into just hundreds of activation dimensions! To unpack them, we need an OVERCOMPLETE dictionary — a hidden code with MORE features than activation dimensions (e.g. 16,000 dictionary features for a 4,000-dimensional model).\n\n--- STEP 1: Why Overcompleteness Demands Sparsity ---\nImagine you have a 100-dimensional activation vector, and you build a hidden dictionary with 10,000 feature directions. If your neural network is allowed to use ALL 10,000 features at the same time for every single token, what happens?\nThe network can easily reconstruct the input perfectly by assigning tiny, mushy numbers to all 10,000 features! Every feature becomes a generic soup of everything. It is completely uninterpretable.\n\nSparsity is the strict constraint that saves us: for any given token, ONLY A FEW features (e.g. 20 out of 10,000) are allowed to be active (nonzero)! The rest MUST be zero.\nWhen forced to represent data with only 20 active features out of 10,000, each feature direction HAS to specialize into a pure, clean concept (e.g. 'text about legal contracts' or 'Python syntax for loops').\n\n--- STEP 2: The Sparsity Mechanisms — L0, L1, and TopK ---\nHow do we mathematically enforce sparsity?\n\n1. L0 Norm (Ideal but hard):\nThe L0 'norm' ||z||₀ simply counts how many entries in vector z are non-zero. Ideally, we would optimize Loss = Reconstruction_Error + λ * ||z||₀. However, counting non-zeros is non-differentiable (gradient is zero everywhere except jumps). We cannot train neural nets with standard backpropagation using pure L0.\n\n2. L1 Regularization (Lasso penalty):\nIn 2012–2023, researchers relaxed L0 to L1: ||z||₁ = Σ |z_i| (the sum of absolute values). L1 is convex and differentiable everywhere except at 0. It pushes small feature activations to exactly zero.\nThe Hidden Flaw of L1 (Shrinkage): L1 penalizes the MAGNITUDE of active features along with their presence. To reduce the L1 penalty, the model artificially shrinks the active feature values below their true true size! This 'shrinkage' damages reconstruction accuracy.\n\n3. Hard TopK Activation (Makhzani & Frey, 2013 → Gao et al., 2024):\nInstead of adding an L1 penalty to the loss, TopK modifies the network architecture directly! The encoder computes pre-activations for all 10,000 features. Then, a TopK operator selects the top k largest pre-activations (e.g. k=32), keeps their exact values, and forcefully SETS ALL OTHER 9,968 ACTIVATIONS TO ZERO!\nBecause TopK keeps the exact magnitude of the top k features without shrinking them, it achieves much better reconstruction at matched sparsity levels than L1.\n\n--- STEP 3: Autoencoders vs VAEs (Variational Autoencoders) ---\nAn Autoencoder consists of an Encoder z = f(x) that compresses input x into latent code z, and a Decoder x_hat = g(z) that reconstructs x.\n\nWhat is a VAE (Kingma & Welling, 2013)?\nInstead of mapping input x to a single fixed point z, a VAE maps x to a PROBABILISTIC DISTRIBUTION — predicting a mean vector μ and a variance vector σ. The latent z is then sampled from N(μ, σ²).\n\nHow does backprop flow through random sampling? The Reparameterization Trick!\nYou cannot backpropagate gradients through random sampling. Kingma & Welling solved this by separating the randomness: sample noise ε ~ N(0, I) externally, then write z = μ + σ ⊙ ε. Now μ and σ are deterministic node outputs that receive normal gradients!\n\nThe VAE ELBO Loss (Evidence Lower Bound):\nLoss = Reconstruction Error + KL-Divergence(q(z|x) || p(z))\nThe KL-Divergence term forces the learned distribution q(z|x) to stay close to a standard normal prior p(z) = N(0, I), preventing the latent space from leaving empty gaps.\n\nWhy VAEs matter for SetConCA:\nYou don't need to become a VAE researcher, but when SetConCA aggregates multiple activation views using Gaussian distributions or Product-of-Experts (PoE), you are using this exact probabilistic latent vocabulary.",
       "bigPictureDiagram": [
-        "Dense x → Encoder → Overcomplete z → keep sparse → Decoder → x̂",
-        "L1: soft shrink magnitudes | TopK: hard keep k | L0: count of nonzeros"
+        "Dense Input x → Encoder → Overcomplete z (width > N) → Sparsity Gate → Decoder → Reconstruction x_hat",
+        "L1 Sparsity: Soft penalty Σ|z_i| (causes magnitude shrinkage)",
+        "TopK Sparsity: Hard keep top-k values, zero rest (no shrinkage, exact k)",
+        "VAE Latent: Predict μ, σ → Reparameterize z = μ + σ ⊙ ε → ELBO Loss"
       ],
       "conceptsToMaster": [
         {
-          "name": "Overcomplete dictionary",
-          "simple": "More features than dimensions.",
-          "deeper": "Needed if many sparse concepts live in a small activation space (superposition)."
+          "name": "Overcomplete Dictionary",
+          "simple": "Having more feature directions in your hidden layer than dimensions in the input space.",
+          "deeper": "Dictionary matrix W_dec has dimension d_model × d_hidden where d_hidden > d_model (e.g. 4x, 16x, 32x expansion). Essential for unfolding superposed features."
         },
         {
-          "name": "TopK vs L1",
-          "simple": "TopK = exact k actives; L1 = soft penalty that also shrinks magnitudes.",
-          "deeper": "L1 shrinkage motivates Gated SAEs later."
+          "name": "L0 vs L1 vs TopK",
+          "simple": "L0 counts non-zero features. L1 adds up absolute values (causing shrinkage). TopK keeps exactly the k largest features and zeroes the rest.",
+          "deeper": "L0 is non-differentiable. L1 is a convex proxy but penalizes magnitude. TopK enforces exact cardinality k while preserving true pre-activation magnitudes of active units."
         },
         {
-          "name": "ELBO",
-          "simple": "Lower bound on log likelihood: reconstruct − KL to prior.",
-          "deeper": "VAE trains with reparameterization so gradients flow through sampling."
+          "name": "Shrinkage Problem",
+          "simple": "When L1 penalties force active features to be smaller than they should be, harming reconstruction quality.",
+          "deeper": "L1 loss derivative is constant λ w.r.t active z_i. To minimize L1 penalty, optimizer reduces z_i, causing under-estimation of feature firing strength. Resolved by Gated SAEs and TopK SAEs."
+        },
+        {
+          "name": "ELBO (Evidence Lower Bound)",
+          "simple": "The training objective of a VAE balancing reconstruction accuracy with keeping latents near a simple prior distribution.",
+          "deeper": "ELBO = E_q[log p(x|z)] - KL(q(z|x) || p(z)). Maximizing ELBO maximizes log-likelihood lower bound. KL term prevents arbitrary latent cluster dispersion."
+        },
+        {
+          "name": "Reparameterization Trick",
+          "simple": "A trick to let backprop gradients flow through random sampling by writing z = μ + σ * noise.",
+          "deeper": "Expresses stochastic latent z ~ N(μ(x), Σ(x)) as deterministic transformation z = μ(x) + L(x)ε where ε ~ N(0,I). Enables standard gradient computation w.r.t encoder parameters."
         }
       ],
       "checkpoint": {
-        "goal": "Train L1 vs TopK under matched reconstruction.",
+        "goal": "Train a simple L1 Autoencoder versus a TopK Autoencoder on activation data under matched reconstruction budgets.",
         "steps": [
-          "Fix FVU budget",
-          "Vary sparsity",
-          "Compare active features and qualitative codes"
+          "Fix a target FVU budget (e.g. FVU = 0.05).",
+          "Train an L1 SAE by tuning penalty λ.",
+          "Train a TopK SAE by setting parameter k.",
+          "Compare average L0 (active features per token) and inspect active feature magnitudes to observe L1 shrinkage in action."
         ],
-        "successLooksLike": "You can answer all Level-2 questions without notes."
+        "successLooksLike": "You can explain from experimental data why TopK achieves better reconstruction at the same L0 count than L1."
       },
-      "bridgeToNext": "Multi-view methods ask how to align several representations without destroying private information."
+      "bridgeToNext": "Now that you understand single-view sparse dictionaries, Level 3 moves to Multi-View Representation Learning — aligning multiple observations of the same object."
     },
     "3": {
       "title": "Nonlinear multi-view representation learning",
-      "mission": "Separate shared vs view-specific information; know DCCA, DCCAE, VCCA, DGCCA.",
-      "beforeYouStart": "CCA from Level 1; reconstruction from Level 2.",
-      "primer": "A view is one observation of the same underlying object: two layers, two paraphrases, two modalities, or several activation sites.\n\nLinear CCA finds shared linear directions. Deep CCA replaces the linear maps with neural nets.\n\nDanger: maximizing correlation alone can throw away useful view-specific structure. DCCAE adds reconstruction to protect information. VCCA uses shared and private latents in a generative model. DGCCA extends the idea to many views.\n\nSetConCA must not force all views to become identical. Align what is shared; preserve what is private.",
+      "mission": "Master Deep CCA, DCCAE, VCCA, and DGCCA. Learn how to separate shared cross-view information from private view-specific information.",
+      "beforeYouStart": "Level 1 CCA and Level 2 Autoencoders.",
+      "primer": "Welcome to Level 3. What is a 'view'? A view is one observation of an underlying object. In AI research, multiple views arise naturally:\n• Two different layers of a transformer processing the same text.\n• Two different prompt paraphrases expressing the same concept ('A photo of a dog' vs 'An image showing a canine').\n• Two different modalities (e.g. image + caption in CLIP).\n\nIn Level 1, we learned linear CCA. But neural networks process data nonlinearly. How do we extend multi-view alignment to deep neural networks?\n\n--- STEP 1: Deep CCA (Andrew et al., 2013) ---\nDeep CCA places a neural network encoder f_θ on View 1 and a neural network encoder g_φ on View 2. The objective trains both networks simultaneously to maximize the canonical correlation between their output embeddings!\n\nThe Whitening Constraint in DCCA:\nIf you simply maximize cosine similarity between network outputs without constraints, the networks can cheat by collapsing all outputs into a single constant vector (representation collapse)! DCCA prevents this by enforcing a covariance constraint (whitening): the output dimensions of each view must have unit variance and zero correlation with each other.\n\n--- STEP 2: The Critical Danger of DCCA — Information Discard ---\nSuppose View 1 is a detailed text description of a scene and View 2 is a low-resolution thumbnail image. If your ONLY objective is to maximize correlation between the two views, what will the text encoder do?\nIt will THROW AWAY 90% of the text details (specific names, dates, fine details) because those details do not exist in the thumbnail image! Correlation-only objectives erase useful view-specific (private) information.\n\n--- STEP 3: DCCAE (Wang et al., 2015) — Balancing Alignment and Reconstruction ---\nTo solve the information discard problem, Deep Canonically Correlated Autoencoders (DCCAE) add an autoencoding reconstruction loss to each view!\n\nDCCAE Loss = - Canonical_Correlation(z_A, z_B) + λ * (||x_A - dec_A(z_A)||² + ||x_B - dec_B(z_B)||²)\n\nNow the model is forced to find a shared code z that aligns across views while preserving enough internal information to reconstruct each raw view!\n\n--- STEP 4: VCCA & DGCCA — Probabilistic Shared/Private Latents & Many Views ---\n• VCCA (Wang et al., 2016) explicitly splits the latent representation into TWO parts: a Shared Latent z_shared (explaining what is common) and Private Latents z_privA, z_privB (explaining view-specific details). View A is reconstructed from (z_shared, z_privA).\n• DGCCA (Benton et al., 2017) extends GCCA to deep networks for 3, 4, or 100 views, learning a single central shared representation matrix G that all view encoders target.\n\nSETCONCA MANDATE:\nNever force all view representations to become identical. A healthy multi-view representation aligns shared concept directions while preserving view-specific details!",
       "bigPictureDiagram": [
-        "View A ─┐",
-        "         ├─→ shared z  → align",
-        "View B ─┘      private z_a, z_b → reconstruct each view"
+        "View A (x_A) → Encoder f_θ → z_A ──┐",
+        "                                    ├─→ Maximize Cross-View Correlation",
+        "View B (x_B) → Encoder g_φ → z_B ──┘",
+        "DCCAE Addition: z_A → Decoder_A → x_hat_A  |  z_B → Decoder_B → x_hat_B (Preserves private info!)",
+        "VCCA Explicit Split: z = [z_shared | z_private]"
       ],
       "conceptsToMaster": [
         {
-          "name": "Shared vs private",
-          "simple": "Shared = common across views; private = view-only.",
-          "deeper": "Aligning everything can erase useful activation structure."
+          "name": "Shared vs. Private Information",
+          "simple": "Shared = what is common across all views. Private = view-specific details that exist in only one view.",
+          "deeper": "In multi-view setup (X_1, X_2), I(X_1; X_2) is shared information. I(X_1; X_1 | X_2) is private information of view 1. Maximizing multi-view correlation targets shared info but risks destroying private info unless reconstruction losses are included."
         },
         {
-          "name": "Whitening / covariance constraints",
-          "simple": "Normalize so correlation is meaningful.",
-          "deeper": "DCCA typically constrains latent covariance."
+          "name": "Covariance / Whitening Constraints",
+          "simple": "Forcing latent dimensions to be uncorrelated and normalized so the network cannot cheat by collapsing.",
+          "deeper": "DCCA requires 1/N Z_A^T Z_A = I and 1/N Z_B^T Z_B = I. Prevents trivial solution where all output coordinates become identical or scalar multiples."
+        },
+        {
+          "name": "DCCAE Tradeoff",
+          "simple": "The hyperparameter balancing cross-view alignment correlation against within-view reconstruction quality.",
+          "deeper": "Loss = -CCA_loss(f(X_1), g(X_2)) + λ_1 ||X_1 - dec_1(f(X_1))||^2 + λ_2 ||X_2 - dec_2(g(X_2))||^2. Tuning λ traces out an alignment-fidelity Pareto frontier."
+        },
+        {
+          "name": "Generalized CCA (DGCCA)",
+          "simple": "Extending CCA math from 2 views to an arbitrary number of views (e.g. 5 layers or 10 prompt views).",
+          "deeper": "DGCCA optimizes min_G sum_i ||G - U_i^T f_i(X_i)||_F^2 where G is a shared target representation matrix and U_i are view-specific projections."
         }
       ],
       "checkpoint": {
-        "goal": "Visualize shared vs private latents.",
+        "goal": "Implement a shared vs private latent decomposition on a 2-view synthetic dataset.",
         "steps": [
-          "Train a simple multi-view model",
-          "Ablate shared vs private",
-          "See what retrieval vs reconstruction need"
+          "Generate synthetic paired views with known shared factors and view-specific noise.",
+          "Train a DCCA model (correlation only) versus a DCCAE model (correlation + reconstruction).",
+          "Test downstream retrieval (shared task) and view reconstruction (private task)."
         ],
-        "successLooksLike": "You refuse to equate 'aligned' with 'identical'."
+        "successLooksLike": "You can demonstrate visually how pure DCCA discards private details while DCCAE retains both."
       },
-      "bridgeToNext": "When views form an unordered set, you need set architectures."
+      "bridgeToNext": "In Level 3, views had fixed pairings (View A & View B). In Level 4, views form an UNORDERED SET — requiring Set Representation architectures."
     },
     "4": {
       "title": "Learning representations of sets",
-      "mission": "Build permutation-invariant aggregators and know when mean pooling fails.",
-      "beforeYouStart": "Shared/private multi-view from Level 3.",
-      "primer": "A set has no order. The representation of {a,b,c} must equal that of {c,a,b}.\n\nDeep Sets proves a universal form: encode each member with φ, sum (or pool), then transform with ρ. Mean pooling is a special case — and it can lose pairwise structure.\n\nSet Transformer lets members talk via attention before pooling.\n\nNeural Statistician treats a whole dataset as one object with a latent — useful when the set code should capture a distribution, not one member.\n\nIn SetConCA, a concept may appear as several activation views. Aggregation choice is a first-class design decision.",
+      "mission": "Master permutation-invariant set architectures: Deep Sets, Neural Statistician, and Set Transformer.",
+      "beforeYouStart": "Level 3 multi-view representations.",
+      "primer": "Welcome to Level 4. What is a set? A set is an unordered collection of items: X = {x_1, x_2, ..., x_N}. The set {apple, banana, cherry} is EXACTLY THE SAME as {cherry, apple, banana}.\n\nWhy standard neural networks fail on sets:\nIf you feed a set into a standard MLP or RNN by concatenating elements [x_1, x_2, x_3], the network treats the order of elements as meaningful. Swapping the inputs changes the output! That is forbidden for set functions.\n\n--- STEP 1: Deep Sets (Zaheer et al., 2017) — The Universal Set Theorem ---\nZaheer et al. proved a mathematical theorem: ANY valid permutation-invariant function f(X) operating on an unordered set X can be decomposed into three steps:\n1. Process each element independently using a neural network φ(x_i).\n2. Aggregate (pool) the element representations using a commutative pooling operation (SUM or MEAN).\n3. Process the aggregated set vector using a post-processing network ρ.\n\nFormula: f(X) = ρ( Σ_{x ∈ X} φ(x) )\n\nWhy SUM / MEAN pooling works:\nAddition is commutative (a + b = b + a). Therefore, summing element vectors guarantees that input order cannot change the output!\n\n--- STEP 2: When Mean Pooling Fails — The Need for Set Transformer ---\nDeep Sets processes every set member in total isolation before summing. But what if the meaning of a set depends on RELATIONS between members?\nExample: Imagine a set of activations representing a context. If one member is an 'outlier/intruder' activation, simple mean pooling blends the intruder into the average, corrupting the set representation!\n\nSet Transformer (Lee et al., 2019):\nSet Transformer uses Self-Attention OVER set members before pooling! Members can attend to each other, allowing the network to compare items, suppress outliers, or highlight pairwise relationships. To maintain permutation invariance, Set Transformer uses Pooling by Multihead Attention (PMA) with learned seed vectors.\n\n--- STEP 3: Neural Statistician (Edwards & Storkey, 2016) ---\nInstead of outputting a single point vector for a set, Neural Statistician maps a set of observations to a LATENT STATISTICAL DISTRIBUTION capturing the dataset's generative structure.\n\nAPPLICATION TO SETCONCA:\nIn SetConCA, a single concept is observed across multiple activation views. How should we aggregate those views into one concept code? Deep Sets (mean pooling) is our baseline aggregator, and Set Transformer is our relational aggregator.",
       "bigPictureDiagram": [
-        "members → φ(x) → SUM/ATTN pool → ρ → set code"
+        "Unordered Set {x_1, x_2, x_3}",
+        "Deep Sets: φ(x_1) + φ(x_2) + φ(x_3) ──[SUM/MEAN]──→ Vector ──[ρ]──→ Set Code f(X)",
+        "Set Transformer: {x_i} ──[Self-Attention over members]──→ {x_i'} ──[PMA Attention Pool]──→ Relational Set Code"
       ],
       "conceptsToMaster": [
         {
-          "name": "Permutation invariance",
-          "simple": "Order does not change the output.",
-          "deeper": "f(π(X))=f(X) for any permutation π."
+          "name": "Permutation Invariance",
+          "simple": "The property that changing the order of input items does not change the network's output: f(π(X)) = f(X).",
+          "deeper": "A function f: 2^X → Y is permutation invariant if for any permutation matrix P, f(PX) = f(X). Proved by Zaheer et al. to equal ρ(sum φ(x_i)) for continuous set functions."
         },
         {
-          "name": "Equivariance",
-          "simple": "Permuting inputs permutes outputs the same way.",
-          "deeper": "Useful for per-member predictions."
+          "name": "Permutation Equivariance",
+          "simple": "Changing the order of input items changes the output items in the exact same order: f(π(X)) = π(f(X)).",
+          "deeper": "Used when outputting a prediction for each member of a set (e.g. per-element scoring). Maintained by layerwise transformations that treat each element symmetrically."
+        },
+        {
+          "name": "Inducing Points (in Set Transformer)",
+          "simple": "A small set of learned memory vectors used in attention to reduce the computational cost of set self-attention from O(N²) to O(N * M).",
+          "deeper": "Set Attention Blocks (SAB) cost O(N^2). Induced Set Attention Blocks (ISAB) project N elements onto M learned inducing vectors I via attention, then project back, reducing cost to O(N M)."
+        },
+        {
+          "name": "Intruder / Outlier Robustness",
+          "simple": "How well a set aggregator handles noise or an unrelated item inserted into the set.",
+          "deeper": "Mean pooling is vulnerable to outliers (O(1/N) shift). Attention pooling can assign near-zero attention weights to intruder items, preserving set code integrity."
         }
       ],
       "checkpoint": {
-        "goal": "Compare mean, Deep Sets, Set Transformer, Gaussian PoE.",
+        "goal": "Compare Mean Pooling, Deep Sets, and Set Transformer on a synthetic set task with intruder items.",
         "steps": [
-          "Reconstruction",
-          "View removal",
-          "Intruder robustness",
-          "Set-size generalisation",
-          "Collapse checks"
+          "Create set datasets where target label depends on pairwise member relationships.",
+          "Inject 10% intruder (noise) vectors into each set.",
+          "Train Deep Sets vs Set Transformer.",
+          "Evaluate set classification accuracy and code stability under intruder presence."
         ],
-        "successLooksLike": "You know which aggregator fails when meaning is relational."
+        "successLooksLike": "You can demonstrate empirically why Set Transformer's attention mechanism resists intruder corruption better than Deep Sets mean pooling."
       },
-      "bridgeToNext": "Contrastive learning teaches how to pull related views together."
+      "bridgeToNext": "Now that you can represent sets of views, Level 5 teaches Contrastive Learning — how to pull related view sets together while pushing unrelated ones apart."
     },
     "5": {
       "title": "Contrastive representation learning",
-      "mission": "Design positives/negatives correctly and diagnose alignment vs collapse.",
-      "beforeYouStart": "Set aggregation from Level 4.",
-      "primer": "Contrastive learning pulls positive pairs together and pushes negatives apart.\n\nCPC introduces InfoNCE. SimCLR shows augmentation + projection heads matter. Supervised Contrastive Learning allows many positives per class — exactly like multiple views of one concept. Alignment–Uniformity decomposes the geometry. VICReg can align without heavy negatives via variance and covariance regularizers.\n\nBefore inventing another loss for SetConCA, write down: what makes a positive? Can negatives be false negatives? Does low loss mean concept recovery?",
+      "mission": "Master InfoNCE, SimCLR, Supervised Contrastive Learning (SupCon), Alignment & Uniformity, and VICReg.",
+      "beforeYouStart": "Level 4 set representations.",
+      "primer": "Welcome to Level 5. Contrastive learning is the dominant self-supervised paradigm in modern AI. The core intuition is beautifully simple:\nPULL representations of related items (Positive Pairs) CLOSER TOGETHER in vector space, and PUSH representations of unrelated items (Negative Pairs) FARTHER APART!\n\n--- STEP 1: CPC & InfoNCE Loss (van den Oord et al., 2018) ---\nWhat is InfoNCE?\nInfoNCE is a multi-class softmax loss where the network must correctly identify the single true positive key k⁺ among a minibatch of negative keys {k⁻}.\n\nFormula:\nLoss = - log [ exp( sim(q, k⁺) / τ ) / ( exp( sim(q, k⁺) / τ ) + Σ exp( sim(q, k⁻_i) / τ ) ) ]\n\nLet's unpack every symbol:\n• q: The Query representation vector.\n• k⁺: The Positive Key representation vector (e.g. another view of the same concept).\n• k⁻_i: Negative Key vectors (other unrelated samples in the batch).\n• sim(a, b): Cosine similarity (aᵀb / (||a|| ||b||)).\n• τ (Temperature): A hyperparameter scaling cosine scores. Small τ (e.g. 0.07) makes the softmax extremely peaky, forcing the network to focus heavily on hard negatives!\n\n--- STEP 2: SimCLR (Chen et al., 2020) — Practical Engineering Rules ---\nSimCLR established four critical rules for contrastive learning:\n1. Positive Definition: Positives are created by data augmentations of the same image (or prompt/view variations of the same concept).\n2. Projection Head: Maps representations through a non-linear MLP g(h) BEFORE computing InfoNCE loss. CRITICAL FINDING: The output of the projection head is used for loss computation, but DISCARDED after training! The pre-projection representation h retains much richer detail.\n3. Large Batch Size: Larger minibatches provide more negative pairs, improving geometric quality.\n\n--- STEP 3: SupCon (Khosla et al., 2020) — Multiple Positives Per Anchor ---\nStandard SimCLR has only ONE positive per anchor. But in Supervised Contrastive Learning (SupCon), ALL items sharing the same class label are treated as positives!\nSupCon averages attraction across MULTIPLE positives while repelling all other classes.\n\nSetConCA Connection: This is EXACTLY what SetConCA needs! A single semantic concept has MULTIPLE activation views. SupCon is the loss template for coordinating set views.\n\n--- STEP 4: Alignment vs Uniformity (Wang & Isola, 2020) ---\nWang & Isola proved that contrastive learning optimizes two distinct geometric properties on the unit hypersphere:\n1. Alignment: Positive pairs map to nearby points on the sphere. (E[||z - z⁺||²]).\n2. Uniformity: All representations spread out evenly across the hypersphere, preventing representation collapse. (log E[exp(-2 ||z_i - z_j||²)]).\n\n--- STEP 5: VICReg (Bardes et al., 2021) — Alignment Without Negatives ---\nWhat if you don't have negative pairs? VICReg prevents collapse using three explicit regularizers:\n• Variance (V): Forces variance of each feature dimension to stay above a threshold.\n• Invariance (I): Minimizes distance between positive view embeddings.\n• Covariance (C): Minimizes off-diagonal covariance between feature pairs, driving decorrelation.",
       "bigPictureDiagram": [
-        "anchor ↔ positives (close) | negatives (far)",
-        "alignment ↑ + uniformity ↑ = healthy geometry"
+        "Anchor Vector q",
+        "  ├─→ Pull toward Positive Key k⁺ (High Cosine Sim)",
+        "  └─→ Push away from Negative Keys k⁻_1, k⁻_2, ... k⁻_N (Low Cosine Sim)",
+        "Geometry on Hypersphere: Alignment (Positives close) + Uniformity (Spread evenly, anti-collapse)",
+        "VICReg Non-Contrastive: Variance (Keep std > 1) + Invariance (Match views) + Covariance (Decorrelate features)"
       ],
       "conceptsToMaster": [
         {
-          "name": "InfoNCE",
-          "simple": "Classify the true positive among negatives via softmax of similarities.",
-          "deeper": "Related to a mutual-information lower bound under assumptions."
+          "name": "InfoNCE Loss",
+          "simple": "A softmax classification loss over cosine similarities that picks out the true positive view among many negative distractors.",
+          "deeper": "L_InfoNCE = -log ( exp(q·k⁺/τ) / [exp(q·k⁺/τ) + sum_i exp(q·k⁻_i/τ)] ). Lower bounds mutual information I(X;Y) <= log(K) - L_InfoNCE under density ratio assumptions."
         },
         {
-          "name": "Projection head",
-          "simple": "Extra MLP before the loss; often discarded for downstream use.",
-          "deeper": "Can hide info unavailable in the SAE code — check carefully."
+          "name": "Temperature (τ)",
+          "simple": "A scale factor that controls how harshly the loss punishes hard negatives.",
+          "deeper": "Scales cosine similarities before softmax. Low temperature (τ < 0.1) amplifies gradients for hard negatives (negatives close to anchor), creating tight local clusters. High temperature spreads gradients uniformly."
         },
         {
-          "name": "Temperature",
-          "simple": "Softmax sharpness hyperparameter.",
-          "deeper": "Changes geometry and optimisation, not just 'learning rate'."
+          "name": "Projection Head",
+          "simple": "An extra MLP layer placed after the encoder during contrastive training, then discarded when using embeddings downstream.",
+          "deeper": "Prevents contrastive loss from discarding high-frequency non-invariant information needed for downstream tasks. The encoder representation h preserves details, while projection z = g(h) is invariant."
+        },
+        {
+          "name": "Alignment and Uniformity",
+          "simple": "Alignment = positive pairs are close. Uniformity = embeddings cover the entire sphere evenly without collapsing into a clump.",
+          "deeper": "Alignment = E_{(x,x⁺)} [||f(x) - f(x⁺)||^2]. Uniformity = log E_{x,y ~ p} [exp(-2 ||f(x) - f(y)||^2)]. Healthy contrastive geometry requires both."
         }
       ],
       "checkpoint": {
-        "goal": "Ablate positive definition, temperature, projection head.",
+        "goal": "Ablate temperature τ and projection head presence on an activation view dataset.",
         "steps": [
-          "Measure alignment and uniformity",
-          "Check false negatives",
-          "Compare retrieval vs reconstruction"
+          "Implement InfoNCE loss.",
+          "Vary temperature τ from 0.01 to 1.0.",
+          "Train with and without a 2-layer MLP projection head.",
+          "Measure Alignment score, Uniformity score, and downstream retrieval accuracy."
         ],
-        "successLooksLike": "You never treat low contrastive loss as proof of concept recovery."
+        "successLooksLike": "You can plot Alignment vs Uniformity and explain why training without a projection head harms downstream generalisation."
       },
-      "bridgeToNext": "Level 6 teaches metrics that prevent fooling yourself."
+      "bridgeToNext": "Now that you know how to build multi-view and contrastive models, Level 6 teaches how to MEASURE and COMPARE representations honestly without fooling yourself."
     },
     "6": {
       "title": "Measuring and comparing representations",
-      "mission": "Know what each metric supports and what it does not establish.",
-      "beforeYouStart": "Levels 1–5 vocabulary.",
-      "primer": "No single number measures interpretability.\n\nSVCCA and CKA compare subspaces — similar geometry ≠ same concepts. Probes test decodability — high accuracy can be probe memorisation unless you use control tasks. MDL probing asks how efficiently information is organised.\n\nMemorize the table: reconstruction ≠ interpretability; sparsity ≠ monosemanticity; CKA ≠ same features; probe ≠ causal use; steering ≠ complete mechanism.",
+      "mission": "Master CKA, SVCCA, Probes with Control Tasks, and Minimum Description Length (MDL) probing.",
+      "beforeYouStart": "Levels 1–5 foundational concepts.",
+      "primer": "Welcome to Level 6. In AI research, self-deception is easy. A researcher trains a model, runs one evaluation, gets a 92% score, and claims 'We discovered the internal concept!'\n\nLevel 6 is your scientific reality check. You will learn what each metric ACTUALLY proves and what it CANNOT establish.\n\n--- STEP 1: CKA (Centered Kernel Alignment) — Comparing Geometries Across Models ---\nSuppose Model A has 4096 dimensions and Model B has 2048 dimensions. How do you compare if Model A and Model B represent data similarly?\n\nYou CANNOT compare neuron indices (Neuron #12 in Model A has nothing to do with Neuron #12 in Model B). You CANNOT use raw Euclidean distance because Model A might be rotated relative to Model B.\n\nHow CKA works (Kornblith et al., 2019):\n1. Take N example inputs. Pass them through Model A to get N activation vectors. Compute the N × N Gram Matrix K = X Xᵀ (pairwise similarity of examples in Model A).\n2. Pass the same N inputs through Model B to get N activation vectors. Compute Gram Matrix L = Y Yᵀ (pairwise similarity of examples in Model B).\n3. CKA measures the Hilbert-Schmidt Independence Criterion (HSIC) between centered matrices K and L!\n\nWhat CKA proves: High CKA means Model A and Model B organize example similarities similarly. CKA is invariant to orthogonal rotations.\nWhat CKA DOES NOT prove: High CKA does NOT mean the individual features or concepts inside Model A and Model B are identical!\n\n--- STEP 2: Linear Probing and Hewitt & Liang's Control Tasks ---\nWhat is a Probe?\nA probe is a simple classifier (e.g. linear logistic regression) trained on top of frozen model activations to predict a property (e.g. part-of-speech tag).\n\nThe Probe Fallacy:\nIf a linear probe achieves 98% accuracy predicting part-of-speech tags from Layer 8 activations, does that mean Layer 8 internally uses part-of-speech tags?\n\nNOT NECESSARILY! Hewitt & Liang (2019) showed that powerful probes can MEMORIZE random target labels even when the representation carries no real structure!\n\nThe Fix — Control Tasks & Selectivity:\nConstruct a Control Task by assigning random, arbitrary labels to input words (matched in output distribution to real tags). Train the probe on real tags (Real Accuracy) and on control tags (Control Accuracy).\nSelectivity = Real Accuracy - Control Accuracy.\nHigh Selectivity proves the representation itself carries structured, accessible information about the property — not just that the probe memorized!\n\n--- STEP 3: MDL Probing (Voita & Titov, 2020) — Description Length ---\nMinimum Description Length (MDL) probing measures HOW MUCH EFFORT (code length in bits) a probe requires to learn the task from the representation.\n• High Accuracy + Short Description Length = Information is neatly, efficiently organized.\n• High Accuracy + Long Description Length = Information is buried and messy; the probe worked hard to extract it.\n\nTHE METRIC TRUTH TABLE TO MEMORIZE:\n• Low Reconstruction FVU → High fidelity (preserved variance). Does NOT prove monosemantic concepts.\n• High Sparsity (L0) → Few active units. Does NOT prove individual units are pure concepts.\n• High CKA → Similar example geometry across models. Does NOT prove identical features.\n• High Probe Accuracy → Property is extractable. Does NOT prove model uses it without Control Tasks.\n• Steering Effect → Causal intervention alters output. Does NOT prove complete mechanism.",
       "bigPictureDiagram": [
-        "Preservation (FVU) | Similarity (CKA) | Decodability (probe) | Causality (intervention)",
-        "Need several families for a strong claim."
+        "Dataset of N Examples",
+        "Model A → Activations X → N×N Gram Matrix K (Similarity of examples in A)",
+        "Model B → Activations Y → N×N Gram Matrix L (Similarity of examples in B)",
+        "CKA(K, L) = HSIC(K, L) / √(HSIC(K,K) HSIC(L,L))  ──[Invariant to Orthogonal Rotation]──",
+        "Probing: Real Task Accuracy vs. Control Task Accuracy → Selectivity = Real - Control"
       ],
       "conceptsToMaster": [
         {
-          "name": "CKA",
-          "simple": "Similarity of representation Gram matrices.",
-          "deeper": "Invariant to orthogonal transforms; not feature matching."
+          "name": "CKA (Centered Kernel Alignment)",
+          "simple": "A metric that compares whether two different neural networks organize a set of examples in the same geometric pattern, regardless of rotation or matrix size.",
+          "deeper": "CKA(K,L) = HSIC(K,L) / sqrt(HSIC(K,K) HSIC(L,L)) where K = X Xᵀ and L = Y Yᵀ are centered Gram matrices. Invariant to orthogonal transformation and isotropic scaling. Measures representational similarity without needing feature alignment."
         },
         {
-          "name": "Selectivity",
-          "simple": "Probe accuracy on real labels vs control tasks.",
-          "deeper": "Hewitt & Liang: without controls, probes can look good for the wrong reason."
+          "name": "Probe Selectivity",
+          "simple": "The difference between probe accuracy on real labels versus probe accuracy on random control labels. High selectivity proves representation structure.",
+          "deeper": "Selectivity = Accuracy(Real Task) - Accuracy(Control Task). Control task assigns pseudo-labels with identical marginal distribution. High selectivity rules out probe memorization capacity."
+        },
+        {
+          "name": "MDL Probing (Minimum Description Length)",
+          "simple": "Measuring how many bits of information a probe needs to learn a task from a representation. Shorter code length = more accessible organization.",
+          "deeper": "Measures codelength L_{online}(Y|X) using online coding (prequential code). Evaluates representation quality by total description length required to transmit labels given representations."
+        },
+        {
+          "name": "Subspace Similarity (SVCCA)",
+          "simple": "Running SVD first to remove noise, then running CCA to compare shared subspaces between two models.",
+          "deeper": "Truncates low-variance singular values via SVD to reduce noise dimensions, then computes canonical correlations on truncated subspace. Measures affine-invariant subspace overlap."
         }
       ],
       "checkpoint": {
-        "goal": "Build an evaluation notebook.",
+        "goal": "Build a complete evaluation notebook computing CKA, Linear Probe Accuracy, Control Task Accuracy, and Selectivity on two model layers.",
         "steps": [
-          "CKA",
-          "SVCCA",
-          "linear probe",
-          "MDL probe",
-          "control tasks"
+          "Extract activations from Layer 8 and Layer 16 of a model.",
+          "Compute Linear CKA between Layer 8 and Layer 16.",
+          "Train a linear probe to predict a linguistic property (Real Task).",
+          "Construct a Control Task with randomized labels; train probe (Control Task).",
+          "Calculate Selectivity and plot the results."
         ],
-        "successLooksLike": "You refuse any paper claim backed by one metric alone."
+        "successLooksLike": "You can explain why a probe with 95% real accuracy and 90% control accuracy provides WEAKER evidence than a probe with 85% real accuracy and 20% control accuracy."
       },
-      "bridgeToNext": "Mechanistic interpretability explains why sparse features matter inside transformers."
+      "bridgeToNext": "Armed with honest metrics, Levels 7–9 enter Mechanistic Interpretability — exploring transformer internals, superposition, and Sparse Autoencoders."
     },
     "7": {
       "title": "Mechanistic interpretability foundations",
-      "mission": "Explain residual streams, superposition, and why SAEs exist.",
-      "beforeYouStart": "Levels 1–2 and metrics from Level 6.",
-      "primer": "Transformers move information through a residual stream. Attention and MLP blocks read and write directions in that stream.\n\nToy Models of Superposition show that networks can pack more features than dimensions when features are sparse — at the cost of interference. Neurons become polysemantic. That is why reading individual neurons fails.\n\nSparse autoencoders try to recover the underlying feature directions as an overcomplete sparse dictionary — Approach 2 from the superposition paper.\n\nTowards Monosemanticity and Cunningham et al. apply this to language models. Scaling Monosemanticity shows scale helps but does not guarantee a unique canonical decomposition.",
+      "mission": "Understand the Transformer Residual Stream, the Toy Models of Superposition hypothesis, Polysemanticity, and why Sparse Autoencoders (SAEs) exist.",
+      "beforeYouStart": "Level 1–2 sparse dictionaries and Level 6 evaluation hygiene.",
+      "primer": "Welcome to Level 7. We now enter Mechanistic Interpretability — opening the black box of Transformer language models to understand their exact internal mechanisms.\n\n--- STEP 1: The Residual Stream — The Central Communication Bus ---\nIn a Transformer architecture (Elhage et al., 2021), think of the Residual Stream as a central conveyor belt (communication bus) running through the entire model from Layer 1 to Layer L.\n\nEvery Attention block and MLP block reads from the residual stream, performs computation, and WRITES ITS RESULT BACK by adding it to the residual stream:\nx_{l+1} = x_l + Attention(x_l) + MLP(x_l)\n\nBecause updates are added linearly, features written by early layers can travel directly to deep layers unimpeded!\n\n--- STEP 2: The Superposition Hypothesis (Elhage et al., Anthropic 2022) ---\nHere is the central paradox of neural networks:\nA model with d_model = 4096 dimensions can represent TENS OF THOUSANDS of distinct concepts. How is this mathematically possible?\n\nThe Superposition Hypothesis:\nWhen concepts are SPARSE (only active occasionally), a network can pack MORE features than dimensions by embedding features as ALMOST-ORTHOGONAL directions in space!\n\nThe Interference Cost:\nBecause the feature directions are not strictly 90° orthogonal, activating Feature A creates a small non-zero projection onto Feature B. We call this INTERFERENCE (crosstalk). When features are sparse, interference happens rarely enough that non-linearities (like ReLU) can wipe out the small interference noise!\n\n--- STEP 3: Polysemantic Neurons — Why Reading Single Neurons Fails ---\nBecause features are packed into almost-orthogonal directions in superposition, individual basis neurons in the network get aligned with COMBINATIONS of multiple features!\nA single neuron might fire for 'academic citation markers' AND 'photos of anime characters' AND 'Arabic verbs'. This is called a POLYSEMANTIC NEURON.\n\nReading individual neurons is a dead end. Concepts live along FEATURE DIRECTIONS, not along individual neuron axes!\n\n--- STEP 4: Enter Sparse Autoencoders (SAEs) — Finding an Overcomplete Basis ---\nIn 'Toy Models of Superposition' (2022), Anthropic listed 'Approach 2: Find an Overcomplete Basis after training'. This is EXACTLY what a Sparse Autoencoder (SAE) is!\n\nAn SAE takes superposed activations x from the residual stream, projects them into a high-dimensional overcomplete sparse dictionary z = TopK(W_enc x + b_enc), and reconstructs x_hat = W_dec z + b_dec.\n\nBy enforcing high overcompleteness (e.g. 16x width) and strict sparsity, the SAE unfolds superposed directions into clean, MONOSEMANTIC dictionary features!",
       "bigPictureDiagram": [
-        "many sparse features → packed into few dims (superposition) → polysemantic neurons",
-        "SAE: learn overcomplete sparse dictionary ≈ unfold features"
+        "Residual Stream (d_model dimensions) ──[Carries superposed features]──",
+        "Superposition: N sparse features (N > d_model) packed as almost-orthogonal vectors",
+        "Result on Basis Neurons: Polysemanticity (1 neuron = mashup of 3 unrelated concepts)",
+        "SAE Solution: Overcomplete Encoder → Sparse Bottleneck (z) → Unfolds monosemantic feature directions"
       ],
       "conceptsToMaster": [
         {
-          "name": "Superposition",
-          "simple": "More features than neurons via almost-orthogonal directions.",
-          "deeper": "Phase changes with sparsity/importance; geometric packing."
+          "name": "Residual Stream",
+          "simple": "The main vector pathway running through a Transformer that layers read from and write updates into via linear addition.",
+          "deeper": "x_{l+1} = x_l + f_l(x_l). Acts as a linear communication bus. Allows linear paths through the network where components write feature vectors directly to downstream layers."
         },
         {
-          "name": "Monosemantic vs polysemantic",
-          "simple": "One concept vs many unrelated concepts on one unit.",
-          "deeper": "SAE features aim for monosemanticity; not guaranteed."
+          "name": "Superposition",
+          "simple": "Packing more sparse features than available dimensions into a vector space by placing feature directions at slight non-orthogonal angles.",
+          "deeper": "Representing M features in d dimensions (M > d). Enabled by feature sparsity and non-linearities. Features form geometric polytopes (e.g. Thomson problem configurations) to minimize cross-feature interference."
+        },
+        {
+          "name": "Polysemanticity",
+          "simple": "When a single neuron lights up for multiple totally unrelated concepts because superposition packed those concepts together.",
+          "deeper": "Occurs when feature directions are not aligned with standard basis vectors. A neuron coordinate x_i = e_i^T (sum c_j v_j) receives projections from multiple concept directions v_j."
+        },
+        {
+          "name": "Monosemantic Feature",
+          "simple": "A feature direction that fires for ONE clear, consistent semantic concept across all contexts.",
+          "deeper": "A direction v in activation space corresponding to a single conceptual variable. SAEs attempt to isolate monosemantic directions by finding an overcomplete sparse basis."
         }
       ],
       "checkpoint": {
-        "goal": "Write notes linking superposition to your activation geometry.",
+        "goal": "Write a mechanistic interpretation breakdown linking superposition theory to residual stream activations.",
         "steps": [
-          "Estimate sparsity regime",
-          "List interference risks",
-          "State why a pointwise SAE is a baseline"
+          "Estimate the activation sparsity regime of a chosen layer.",
+          "Identify polysemantic neurons by inspecting top-activating token contexts.",
+          "State why a standard pointwise SAE acts as Approach 2 for unfolding superposition."
         ],
-        "successLooksLike": "You can justify SAEs without saying 'everyone uses them'."
+        "successLooksLike": "You can explain clearly why neuron-level interpretability fails under superposition and why SAE overcomplete dictionaries are required."
       },
-      "bridgeToNext": "Modern SAE architectures improve the sparsity–fidelity frontier."
+      "bridgeToNext": "Now that you know why SAEs are needed, Level 8 compares Modern SAE Architectures (TopK, Gated, JumpReLU, BatchTopK, Matryoshka) on fair Pareto frontiers."
     },
     "8": {
       "title": "Modern SAE architectures",
-      "mission": "Compare L1, TopK, Gated, JumpReLU, BatchTopK, Matryoshka on matched frontiers.",
+      "mission": "Compare modern SAE architectures: L1, TopK, Gated, JumpReLU, BatchTopK, and Matryoshka SAEs. Master fair evaluation on Pareto frontiers.",
       "beforeYouStart": "Level 7 SAE motivation.",
-      "primer": "Architecture changes how sparsity is enforced and how magnitudes behave.\n\nTopK (Gao et al.): exact sparsity, strong scaling study. Gated: separate whether a feature fires from how strongly — fights L1 shrinkage. JumpReLU: learned threshold, more direct L0-style objective. BatchTopK: sparsity budget across a batch, not fixed k per token. Matryoshka: nested multi-level features in one dictionary.\n\nNever compare architectures only at their favourite hyperparameters. Plot reconstruction–sparsity Pareto curves.",
+      "primer": "Welcome to Level 8. Once researchers realized Sparse Autoencoders could unpack superposed features, an architectural arms race began.\n\nDifferent architectures enforce sparsity differently and handle feature magnitudes differently. In this level, we compare the six major SAE architecture families.\n\n--- 1. L1 SAE (Bricken et al., 2023; Cunningham et al., 2023) ---\n• Encoder: z = ReLU(W_enc x + b_enc)\n• Loss: ||x - x_hat||² + λ ||z||₁\n• Pros: Simple, classic baseline.\n• Cons: Severe L1 magnitude shrinkage (under-estimates feature strength) and dead feature problems.\n\n--- 2. TopK SAE (Gao et al., OpenAI 2024) ---\n• Encoder: z = TopK(W_enc x + b_enc, k)\n• Loss: Pure reconstruction loss ||x - x_hat||²\n• Pros: Enforces exact sparsity k per token with ZERO magnitude shrinkage! Superior Pareto frontier.\n• Cons: Hard threshold can create optimization step-function challenges.\n\n--- 3. Gated SAE (Rajamanoharan et al., DeepMind 2024) ---\n• Mechanism: Separates the gating decision (is feature active?) from magnitude calculation.\n• Gate: π = Heaviside(W_gate x + b_gate)\n• Magnitude: m = ReLU(W_mag x + b_mag)\n• Output: z = π ⊙ m\n• Pros: Eliminates L1 shrinkage while remaining fully differentiable.\n\n--- 4. JumpReLU SAE (Rajamanoharan et al., 2024) ---\n• Encoder: z = x * H(x - θ) where H is Heaviside step and θ is a learned threshold per feature.\n• Pros: Direct L0-style optimization with learned feature-specific thresholds.\n\n--- 5. BatchTopK SAE (Bussmann & Leask, 2024) ---\n• Mechanism: Instead of fixing exactly k active features for EVERY token, BatchTopK enforces a global sparsity budget across an ENTIRE MINIBATCH.\n• Advantage: Difficult tokens (complex text) get to activate 50 features, while simple tokens (punctuation) activate only 5 features!\n\n--- 6. Matryoshka SAE (Bussmann et al., 2025) ---\n• Mechanism: Nested multi-level dictionaries. Features are ordered such that the first 500 features form a coarse dictionary, the first 2000 form a medium dictionary, and all 8000 form a fine-grained dictionary!\n• Advantage: Provides multi-granularity concept representations inside a single trained model.\n\nRULE OF FAIR COMPARISON — THE PARETO FRONTIER:\nNEVER compare two SAE architectures at arbitrary single hyperparameter points! Always plot the Reconstruction vs. Sparsity Pareto Curve (FVU vs. L0). Method A is superior to Method B ONLY if Method A's curve lies strictly below Method B's curve across matched operating points.",
       "bigPictureDiagram": [
-        "same data → family of SAEs → Pareto(FVU, L0) → pick at matched operating point"
+        "L1 SAE: ReLU pre-activations + L1 penalty (Shrinkage flaw)",
+        "TopK SAE: Keep top-k values, zero rest (Exact sparsity, no shrinkage)",
+        "Gated SAE: Separate Gate Pathway π ⊙ Magnitude Pathway m (Differentiable, no shrinkage)",
+        "JumpReLU: Learned feature threshold θ_i (Direct L0 proxy)",
+        "BatchTopK: TopK applied across full minibatch (Flexible token budgets)",
+        "Matryoshka: Nested feature prefixes [Coarse | Medium | Fine] (Multi-scale concepts)"
       ],
       "conceptsToMaster": [
         {
-          "name": "Expansion factor",
-          "simple": "dictionary width / activation dim.",
-          "deeper": "Wider dictionaries can reduce feature merging but cost compute."
+          "name": "TopK SAE",
+          "simple": "An SAE that keeps exactly the k largest feature activations per token and zeroes the rest, avoiding L1 magnitude shrinkage.",
+          "deeper": "z = TopK(W_enc(x - b_dec) + b_enc, k). Loss is pure MSE. Eliminates shrinkage because non-zero activations carry unpenalized encoder magnitudes."
         },
         {
-          "name": "Pareto frontier",
-          "simple": "Best reconstruction for each sparsity level.",
-          "deeper": "Fair comparison lives on this curve."
+          "name": "Gated SAE",
+          "simple": "An SAE that uses one neural path to decide IF a feature turns on, and a separate path to measure HOW STRONGLY it fires.",
+          "deeper": "Uses dual encoder pathways: gating net produces binary mask π via thresholding, magnitude net produces positive magnitude m. z = π ⊙ m. Resolves shrinkage while maintaining smooth gradient flow."
+        },
+        {
+          "name": "Expansion Factor",
+          "simple": "The ratio of dictionary width to activation dimension (e.g. 16x expansion = 65,536 features for a 4,096-dim model).",
+          "deeper": "Expansion ratio r = d_sae / d_model. Higher expansion reduces feature merging and absorption, but increases compute and memory footprint."
+        },
+        {
+          "name": "Pareto Frontier (FVU vs L0)",
+          "simple": "A graph plotting reconstruction error against sparsity. Fair comparisons compare architectures at the exact same sparsity level.",
+          "deeper": "Plots Fraction of Variance Unexplained (FVU) on y-axis against L0 (average active features) on x-axis. Evaluates architectural efficiency across all operational regimes."
         }
       ],
       "checkpoint": {
-        "goal": "Train six SAE variants under matched budgets.",
+        "goal": "Train L1, TopK, and Gated SAE variants on activation data; plot their FVU vs L0 Pareto curves.",
         "steps": [
-          "L1",
-          "TopK",
-          "Gated",
-          "JumpReLU",
-          "BatchTopK",
-          "Matryoshka",
-          "plot Pareto"
+          "Sweep L1 penalty λ to generate L1 Pareto curve.",
+          "Sweep TopK parameter k to generate TopK Pareto curve.",
+          "Plot both curves on the same FVU vs L0 axes.",
+          "Verify at matched L0 = 20 which architecture achieves lower FVU."
         ],
-        "successLooksLike": "You refuse single-hyperparameter bake-offs."
+        "successLooksLike": "You can demonstrate on a clean Pareto graph why TopK and Gated SAEs outperform vanilla L1 SAEs."
       },
-      "bridgeToNext": "Evaluation must catch absorption, non-canonical decompositions, and flaky benchmarks."
+      "bridgeToNext": "Now that you know modern architectures, Level 9 explores SAE Evaluation & Failure Modes: Feature Absorption, Feature Splitting, and Non-Canonical Units."
     },
     "9": {
       "title": "SAE evaluation and failure modes",
-      "mission": "Design an honest evaluation protocol before proposing new methods.",
-      "beforeYouStart": "Levels 6–8.",
-      "primer": "Reconstruction and sparsity are necessary but not sufficient.\n\nFeature splitting: one concept spreads across many SAE features. Feature absorption: one feature swallows related concepts. Non-canonical: different SAEs can all look good while finding different decompositions.\n\nSAEBench provides multiple evaluation families. Are SAE Benchmarks Reliable? warns that some signals are noisy — read it after SAEBench, not before.\n\nA strong SetConCA paper needs complementary tests, not one leaderboard score.",
+      "mission": "Master SAE failure modes (Absorption, Splitting, Non-canonicality) and understand the SAEBench evaluation suite.",
+      "beforeYouStart": "Levels 6–8 evaluation metrics and architectures.",
+      "primer": "Welcome to Level 9. Having built modern SAEs, we now confront their deepest empirical failure modes.\n\nA common naive belief is: 'One SAE feature = One true atomic concept in the world.' Level 9 proves why this assumption is flawed.\n\n--- FAILURE MODE 1: Feature Splitting (Chanin et al., 2024) ---\nWhat is Feature Splitting?\nAs you increase dictionary width (e.g. from 4x to 32x expansion), a single broad concept (e.g. 'Medical text') SPLITS into dozens of hyper-specific sub-features ('Pediatric medicine', 'Medical insurance claims', 'Surgical procedures').\n\nThe Problem: Feature splitting means concepts exist at multiple granularities simultaneously, making it hard to define what an 'atomic' feature is.\n\n--- FAILURE MODE 2: Feature Absorption (Chanin et al., 2024) ---\nWhat is Feature Absorption?\nFeature Absorption is the inverse of splitting: a single dominant SAE feature 'swallows' or absorbs related specific sub-concepts!\nExample: Instead of having separate features for 'Golden Retriever' and 'Poodle', a single 'Dog' feature activates for both, absorbing the specific identity.\n\nWhy it happens: Narrow dictionaries or high sparsity penalties force the model to merge correlated concepts into single shared latents.\n\n--- FAILURE MODE 3: Non-Canonical Units (Leask et al., 2025) ---\nSuppose you train two SAEs (SAE A and SAE B) on the EXACT SAME model layer with identical hyperparameters, but using different random seeds.\n\nBoth SAE A and SAE B achieve identical low reconstruction error (FVU = 0.03) and identical sparsity (L0 = 25).\nDo SAE A and SAE B discover the same features?\n\nNO! Leask et al. proved that SAE A and SAE B discover DIFFERENT feature bases! There is no single 'canonical' sparse basis in activation space. Multiple distinct dictionary decompositions achieve equal quality.\n\n--- THE SAEBENCH SUITE (Karvonen et al., 2025) & METRIC RELIABILITY ---\nTo evaluate SAEs rigorously, Karvonen et al. introduced SAEBench, covering five evaluation families:\n1. Reconstruction & Fidelity: FVU, CE loss recovery.\n2. Sparsity & Efficiency: L0, L1, dead feature rate.\n3. Feature Interpretability: Automated explanations, monosemanticity scores.\n4. Downstream Probing: Sparse probing performance on target concepts.\n5. Steering & Interventions: Causal effect of feature clamping on output behavior.\n\nAuditing Reliability (Chanin, 2026):\nAlways report seed variance! Single-run leaderboard scores are unreliable due to random initialization noise.",
       "bigPictureDiagram": [
-        "proxy metrics ≠ downstream usefulness",
-        "splitting / absorption / seed instability / non-canonical"
+        "Ideal Assumption: 1 SAE Feature = 1 Atomic Ground-Truth Concept",
+        "Reality Failure 1 (Splitting): Concept 'Dog' splits into 50 hyper-specific sub-features as width expands",
+        "Reality Failure 2 (Absorption): Feature 'Animal' absorbs 'Dog', 'Cat', and 'Horse' into 1 latent",
+        "Reality Failure 3 (Non-Canonical): Seed A and Seed B find completely different valid feature dictionaries",
+        "SAEBench Solution: Evaluate across 5 families (Reconstruction, Sparsity, Interpretation, Probing, Steering)"
       ],
       "conceptsToMaster": [
         {
-          "name": "Absorption / splitting",
-          "simple": "Wrong granularity of features.",
-          "deeper": "Challenges 'one latent = one atomic concept'."
+          "name": "Feature Splitting",
+          "simple": "When a broad concept breaks into multiple narrower sub-features as dictionary size grows.",
+          "deeper": "As dictionary width d_sae increases, coarse feature directions decompose into finer sub-directions. Illustrates that feature granularity is a function of dictionary capacity."
         },
         {
-          "name": "Canonical units",
-          "simple": "Unique true decomposition.",
-          "deeper": "Evidence suggests SAEs do not find unique units of analysis."
+          "name": "Feature Absorption",
+          "simple": "When one high-level feature swallows up specific sub-concepts because the dictionary is too small or too sparse.",
+          "deeper": "Occurs when a parent feature vector v_parent absorbs child feature vectors v_child, firing whenever any child concept is present. Reduces feature specificity."
+        },
+        {
+          "name": "Non-Canonical Units",
+          "simple": "The discovery that different random seeds yield different interpretable dictionaries of equal quality, proving there is no single 'true' feature basis.",
+          "deeper": "Proves non-uniqueness of sparse dictionary solutions. Multiple overcomplete frame representations span activation space with equivalent L0 and MSE, challenging naive realism in interpretability."
+        },
+        {
+          "name": "SAEBench",
+          "simple": "A standardized benchmark suite evaluating SAEs across reconstruction, sparsity, probing, steering, and interpretability.",
+          "deeper": "Comprehensive evaluation framework combining loss recovery, L0 efficiency, SCR (sparse probing accuracy), feature absorption metrics, and intervention causal effects."
         }
       ],
       "checkpoint": {
-        "goal": "Write your evaluation protocol.",
+        "goal": "Design a complete SAE evaluation protocol incorporating SAEBench families and document metric non-claims.",
         "steps": [
-          "List metrics",
-          "For each: supports / does not establish",
-          "Add seed + stitching checks"
+          "List evaluation metrics across 5 families.",
+          "For each metric, write down explicitly what it proves and what it CANNOT establish.",
+          "Incorporate seed-variance checks for non-canonicality testing."
         ],
-        "successLooksLike": "Protocol rejects claims based on FVU alone."
+        "successLooksLike": "You can produce an evaluation protocol that rejects any research claim based on FVU or single-seed results alone."
       },
-      "bridgeToNext": "Level 10 papers sit next to SetConCA."
+      "bridgeToNext": "With all foundations built, Level 10 reaches the SetConCA Research Frontier — combining multi-view set coordination with sparse dictionaries."
     },
     "10": {
-      "title": "Papers closest to SetConCA",
-      "mission": "State research hypotheses that connect multi-view sets to sparse dictionaries.",
-      "beforeYouStart": "Entire curriculum.",
-      "primer": "Temporal Sparse Autoencoders coordinate adjacent-token activations with contrastive structure. SetConCA generalises that idea from temporal neighbours to multiple views of the same semantic object.\n\nConcept Component Analysis offers a different generative story: linear unmixing of concept components with identifiability assumptions — closer to ICA than to reconstruction dictionaries.\n\nMulti-View Causal Representation Learning asks when multiple partial views identify latent factors.\n\nYour central question is not merely 'does multi-view help retrieval?' It is:\n\nUnder what assumptions does multi-view supervision cause a sparse dictionary to recover more stable, complete, specific, or causally useful concepts than a pointwise SAE?\n\nThat question decides your experiments.",
+      "title": "Papers closest to SetConCA research",
+      "mission": "Master Temporal SAEs, Concept Component Analysis (ConCA), and Multi-View Causal Identifiability. Formulate actionable research hypotheses for SetConCA.",
+      "beforeYouStart": "All previous Levels (1–9).",
+      "primer": "Welcome to Level 10 — the capstone level of your mastery path. Here we study the three papers closest to SetConCA and state our core research hypotheses.\n\n--- STEP 1: Temporal Sparse Autoencoders (Bhalla et al., 2025) ---\nWhat did Temporal SAEs do?\nStandard SAEs treat every token activation in isolation. But language has natural sequential structure: adjacent tokens (token t and token t+1) often share semantic context!\n\nTemporal SAEs add a CONTRASTIVE REGULARIZATION loss between the sparse codes of adjacent tokens:\nLoss = Reconstruction + λ_sparse * Sparsity + λ_temp * Contrastive_Loss(z_t, z_{t+1})\n\nResult: Coordinates feature activations over time, improving feature consistency.\n\nTHE SETCONCA GENERALIZATION:\nTemporal SAEs coordinate adjacent tokens in time. SetConCA generalizes this idea from temporal pairs to MULTI-VIEW SETS of the exact same semantic object across different contexts, prompts, or layers!\n\n--- STEP 2: Concept Component Analysis / ConCA (Liu et al., 2026) ---\nConCA proposes a generative linear unmixing model for concepts (closer in spirit to Level 1 ICA than standard autoencoders):\nx = Σ c_i v_i + noise\n\nConCA derives identifiability conditions under log-posterior representation assumptions, offering a principled theoretical rival/complement to dictionary learning.\n\n--- STEP 3: Multi-View Causal Representation Learning (Yao et al., 2023) ---\nYao et al. provide mathematical identifiability proofs showing WHEN multi-view observations permit exact latent factor recovery under partial observability.\n\nTHE CENTRAL RESEARCH QUESTION OF SETCONCA:\nUnder what mathematical assumptions does multi-view set supervision cause a sparse dictionary to recover more stable, complete, specific, or causally useful concepts than a pointwise SAE?\n\nYOUR THREE SETCONCA HYPOTHESES TO TEST:\n1. Multi-View Set Coordination reduces Feature Absorption by disambiguating co-occurring concepts across views.\n2. Contrastive Set Losses increase cross-seed Feature Canonicality (dictionary stitching agreement).\n3. Set-aggregated concept codes achieve higher Probe Selectivity and Steering Causality than single-token SAE latents.",
       "bigPictureDiagram": [
-        "Temporal SAE: adjacent tokens as pairs",
-        "SetConCA: multi-view set of same concept + sparse dict + contrastive coord",
-        "ConCA: unmixing components | MV-causal: identifiability theory"
+        "Temporal SAE (Bhalla '25): Coordinates adjacent tokens in time z_t ↔ z_{t+1}",
+        "SetConCA (Your Project): Coordinates MULTI-VIEW SETS of same concept {x_v1, x_v2, x_v3} ──[Set Aggregator]──→ Sparse Code z",
+        "ConCA (Liu '26): Generative linear unmixing with identifiability proofs (ICA-lineage)",
+        "MV-Causal (Yao '23): Formal proofs of latent recovery from partial multi-view observations"
       ],
       "conceptsToMaster": [
         {
-          "name": "Related pair definition",
-          "simple": "What counts as the same object across views.",
-          "deeper": "Ablate this — local similarity ≠ semantic consistency."
+          "name": "Multi-View Set Coordination",
+          "simple": "Using multiple views of the same concept as a positive set to train sparse autoencoder feature dictionaries.",
+          "deeper": "Extending single-view SAE objectives by adding set-based contrastive loss L_set(Z_views) = InfoNCE(Set_Pool(Z_pos), Set_Pool(Z_neg)). Enforces representational consistency across semantic view transformations."
         },
         {
-          "name": "Identifiability",
-          "simple": "When latents can be recovered uniquely (up to allowed transforms).",
-          "deeper": "Needs assumptions; multi-view can help when single views are partial."
+          "name": "Identifiability under Partial Observability",
+          "simple": "Mathematical proof showing when latent concept variables can be uniquely recovered if you observe multiple partial views.",
+          "deeper": "Proves that under non-Gaussianity and multi-view conditional independence assumptions, the latent factor vector z is identifiable up to component-wise invertible transformations."
+        },
+        {
+          "name": "SetConCA Core Thesis",
+          "simple": "Combining sparse dictionaries + multi-view alignment + set aggregators + contrastive coordination yields cleaner concepts than pointwise SAEs.",
+          "deeper": "Hypothesizes that multi-view set supervision resolves non-canonicality and feature absorption by enforcing latent invariance across view transforms while maintaining overcomplete dictionary sparsity."
         }
       ],
       "checkpoint": {
-        "goal": "Write three SetConCA hypotheses.",
+        "goal": "Write three formal research hypotheses for SetConCA naming Level 6 metrics and Level 9 failure modes.",
         "steps": [
-          "One assumption to challenge",
-          "One reproduction",
-          "One extension beyond Temporal SAE / ConCA"
+          "Hypothesis 1: Target a specific failure mode (Absorption or Splitting).",
+          "Hypothesis 2: Target dictionary stability across seeds (Canonicality / CKA).",
+          "Hypothesis 3: Target causal intervention performance (Steering / Probing Selectivity)."
         ],
-        "successLooksLike": "Hypotheses name metrics from Level 6 and failure modes from Level 9."
+        "successLooksLike": "You can state three precise, falsifiable experimental hypotheses ready for implementation and testing."
       },
-      "bridgeToNext": "You are ready to design SetConCA experiments without treating papers as oracles."
+      "bridgeToNext": "Congratulations! You have completed the entire SetConCA Mastery Curriculum. You are ready to build, execute, and publish SetConCA research."
     }
   },
   "levels": [
@@ -400,9 +501,9 @@ window.CURRICULUM_DATA = {
           "pages": 12,
           "pdfPath": "RAW/1404.1100v1.pdf",
           "teach": {
-            "whyWeRead": "PCA is the default linear baseline for reconstruction. You need it to understand FVU and why good reconstruction is not interpretability.",
-            "oneSentence": "A tutorial deriving PCA from variance maximisation, eigenvectors, and SVD, with emphasis on intuition.",
-            "plainLanguage": "Imagine a cloud of points in many dimensions. PCA rotates the cloud so the first axis points along the longest stretch of the cloud, the second along the next longest stretch orthogonal to the first, and so on.\n\nThose axes are eigenvectors of the covariance matrix — or equivalently the right singular vectors from an SVD of the centred data matrix. If you keep only the first k axes and project back, you get a low-rank reconstruction. The leftover error is reconstruction error; the fraction of variance you failed to capture is FVU.\n\nImportant: orthogonality is a mathematical convenience, not a semantic guarantee. PCA directions need not be concepts. Later, when an SAE reconstructs well, compare against PCA at matched rank — but never treat either as proof of monosemantic features.",
+            "whyWeRead": "PCA is the default linear baseline for vector compression and reconstruction. You need it to understand Fraction of Variance Unexplained (FVU) and why good reconstruction is NOT interpretability.",
+            "oneSentence": "A classic tutorial deriving PCA from variance maximization, covariance matrices, eigenvectors, and Singular Value Decomposition (SVD).",
+            "plainLanguage": "Welcome to the PCA Masterclass. Let's start from absolute zero: why did Karl Pearson invent PCA in 1901, and why does every AI researcher still use it today?\n\nImagine you have data points in a 100-dimensional space. Humans cannot visualize 100 dimensions. If you want to compress this data down to 2 dimensions so you can plot it on a screen, how do you choose the 2 dimensions?\n\nIf you randomly pick 2 coordinates, you might project a long, stretched cloud into a tiny flat dot, losing almost all the information! PCA solves this by finding the exact directions in space along which your data SPREADS OUT THE MOST (maximum variance).\n\n--- STEP-BY-STEP MATHEMATICAL BUILD-UP ---\n1. Mean (μ): The average position of all data points. We center the data by subtracting μ so the cloud is centered at zero.\n2. Variance: For a single coordinate x, variance is E[(x - μ)²]. It measures how far data points spread out around zero.\n3. Covariance: For two coordinates x and y, covariance is E[(x - μ_x)(y - μ_y)]. If x and y increase together, covariance is positive. If x increases when y decreases, it is negative.\n4. Covariance Matrix (C): A grid storing all pairwise covariances. The diagonal entries are the variances of each coordinate.\n5. Eigenvectors & Eigenvalues: An eigenvector of C is a special arrow in space that DOES NOT TILT when multiplied by C — it only gets stretched! The stretch factor is the Eigenvalue λ.\n6. Singular Value Decomposition (SVD): Numerical computing prefers SVD (X = U Σ Vᵀ) over computing C directly. The columns of V are the exact Principal Component directions!\n\n--- THE CRITICAL RECONSTRUCTION METRIC: FVU ---\nFraction of Variance Unexplained (FVU) = ||X - X_reconstructed||² / ||X||².\nIf you keep top-k principal components, FVU measures what percentage of the data's spread you lost. FVU = 0 means perfect reconstruction.\n\n--- THE SCIENTIFIC WARNING FOR SAE RESEARCHERS ---\nPCA axes are strictly ORTHOGONAL (at 90° right angles to each other). Orthogonality is a mathematical constraint, NOT a human concept guarantee! PCA directions are linear combinations of features created by linear algebra. Never assume low FVU means you found human concepts.",
             "keyIdeas": [
               {
                 "title": "Variance and covariance",
@@ -443,188 +544,188 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "PCA objective",
-                "formula": "max_u uᵀ C u  s.t. ||u||=1",
-                "original": "PCA objective: max_u uᵀ C u  s.t. ||u||=1",
-                "simple": "C is covariance. First PC maximises projected variance.",
-                "meaning": "C is covariance. First PC maximises projected variance."
+                "name": "PCA Optimization Objective",
+                "formula": "max_u uᵀ C u   s.t. ||u|| = 1",
+                "original": "PCA Optimization Objective: max_u uᵀ C u   s.t. ||u|| = 1",
+                "simple": "Find unit direction u that maximizes projected variance, where C is the covariance matrix.",
+                "meaning": "Find unit direction u that maximizes projected variance, where C is the covariance matrix."
               },
               {
-                "name": "SVD",
+                "name": "Singular Value Decomposition (SVD)",
                 "formula": "X = U Σ Vᵀ",
-                "original": "SVD: X = U Σ Vᵀ",
-                "simple": "Columns of V (for row-centred X) are principal directions; singular values relate to explained variance.",
-                "meaning": "Columns of V (for row-centred X) are principal directions; singular values relate to explained variance."
+                "original": "Singular Value Decomposition (SVD): X = U Σ Vᵀ",
+                "simple": "Decomposes data X into left singular vectors U, singular values Σ, and right singular vectors V (principal directions).",
+                "meaning": "Decomposes data X into left singular vectors U, singular values Σ, and right singular vectors V (principal directions)."
               },
               {
-                "name": "FVU",
-                "formula": "FVU = 1 − (Σ_{i≤k} λ_i)/(Σ_all λ_i)",
-                "original": "FVU: FVU = 1 − (Σ_{i≤k} λ_i)/(Σ_all λ_i)",
-                "simple": "Fraction of variance unexplained after keeping k components.",
-                "meaning": "Fraction of variance unexplained after keeping k components."
+                "name": "Fraction of Variance Unexplained (FVU)",
+                "formula": "FVU = 1 - (Σ_{i≤k} λ_i) / (Σ_{all} λ_i)",
+                "original": "Fraction of Variance Unexplained (FVU): FVU = 1 - (Σ_{i≤k} λ_i) / (Σ_{all} λ_i)",
+                "simple": "Ratio of leftover variance to total variance after keeping k components.",
+                "meaning": "Ratio of leftover variance to total variance after keeping k components."
               }
             ],
             "vocabulary": [
               {
-                "term": "Principal component",
-                "original": "Technical term: «Principal component» as used in this literature.",
-                "simple": "An orthogonal direction of maximal remaining variance.",
-                "def": "An orthogonal direction of maximal remaining variance."
+                "term": "Principal Component",
+                "original": "Technical term: «Principal Component» as used in this literature.",
+                "simple": "An orthogonal direction in vector space along which data variance is maximized.",
+                "def": "An orthogonal direction in vector space along which data variance is maximized."
               },
               {
-                "term": "Covariance matrix",
-                "original": "Technical term: «Covariance matrix» as used in this literature.",
-                "simple": "Matrix of pairwise covariances of centred features.",
-                "def": "Matrix of pairwise covariances of centred features."
+                "term": "Covariance Matrix",
+                "original": "Technical term: «Covariance Matrix» as used in this literature.",
+                "simple": "A square matrix containing pairwise covariances between all feature dimensions.",
+                "def": "A square matrix containing pairwise covariances between all feature dimensions."
               },
               {
                 "term": "FVU",
                 "original": "Technical term: «FVU» as used in this literature.",
-                "simple": "Fraction of variance unexplained by a reconstruction.",
-                "def": "Fraction of variance unexplained by a reconstruction."
+                "simple": "Fraction of Variance Unexplained; normalized reconstruction error.",
+                "def": "Fraction of Variance Unexplained; normalized reconstruction error."
               },
               {
-                "term": "Low-rank approximation",
-                "original": "Technical term: «Low-rank approximation» as used in this literature.",
-                "simple": "Approximating a matrix/data using few components.",
-                "def": "Approximating a matrix/data using few components."
+                "term": "Low-Rank Approximation",
+                "original": "Technical term: «Low-Rank Approximation» as used in this literature.",
+                "simple": "Approximating a high-dimensional matrix using a small number of basis vectors.",
+                "def": "Approximating a high-dimensional matrix using a small number of basis vectors."
               }
             ],
             "whatItShows": [
-              "How to compress one view by variance",
-              "How to measure reconstruction fidelity via explained variance"
+              "How to compress high-dimensional vectors by preserving maximum variance",
+              "How to compute linear reconstruction fidelity using FVU"
             ],
             "whatItDoesNotShow": [
-              "That PCs are interpretable concepts",
-              "How to recover independent sources",
-              "How to align two views"
+              "That principal components correspond to human-interpretable concepts",
+              "How to unmix independent non-orthogonal sources",
+              "How to align two different observation views"
             ],
             "setconcaUse": [
-              "Always report SAE FVU against a PCA baseline at comparable capacity.",
-              "Do not claim interpretability from reconstruction alone.",
-              "Use PCA as a dense linear competitor in ablations."
+              "Use PCA as a mandatory baseline when evaluating SAE reconstruction (FVU).",
+              "Never claim interpretability from low FVU alone.",
+              "Compare SAE dictionary efficiency against PCA at matched rank."
             ],
             "masteryChecklist": [
-              "I can derive PCA as variance maximisation.",
-              "I can compute/interpret FVU.",
-              "I can explain why orthogonal PCs need not be concepts.",
-              "I know when to use PCA as an SAE baseline."
+              "I can derive PCA as variance maximization under orthogonality constraints.",
+              "I can calculate and interpret FVU.",
+              "I can explain why orthogonal principal components are rarely pure human concepts.",
+              "I know how to use PCA as an SAE reconstruction baseline."
             ],
             "commonConfusions": [
               {
-                "wrong": "Good PCA reconstruction means features are meaningful.",
-                "right": "It only means variance was preserved."
+                "wrong": "Good PCA reconstruction means we found interpretable features.",
+                "right": "It only means variance was preserved. Orthogonal axes are math artifacts, not concepts."
               },
               {
                 "wrong": "PCA finds independent sources.",
-                "right": "PCA finds uncorrelated directions; ICA targets independence."
+                "right": "PCA only decorrelates (zero covariance). ICA is required for statistical independence."
               }
             ],
             "quiz": [
               {
-                "q": "PCA maximises?",
+                "q": "PCA maximizes which metric along orthogonal axes?",
                 "options": [
                   "Variance",
-                  "Independence",
+                  "Statistical independence",
                   "Cross-view correlation",
-                  "Sparsity"
+                  "L0 sparsity"
                 ],
                 "a": 0,
-                "explain": "PCA is variance maximisation under orthogonality."
+                "explain": "PCA maximizes captured variance under orthogonality constraints."
               },
               {
-                "q": "FVU measures?",
+                "q": "What does FVU measure?",
                 "options": [
-                  "Unexplained variance fraction",
-                  "Monosemanticity",
-                  "Causal effect",
+                  "Fraction of variance left unexplained by reconstruction",
+                  "Monosemanticity score",
+                  "Causal intervention effect",
                   "Probe accuracy"
                 ],
                 "a": 0,
-                "explain": "FVU = 1 − explained variance fraction."
+                "explain": "FVU = 1 - explained variance fraction."
               },
               {
-                "q": "Orthogonal PCs are always concepts?",
+                "q": "Are orthogonal principal components guaranteed to be clean human concepts?",
                 "options": [
-                  "False",
-                  "True"
+                  "No",
+                  "Yes"
                 ],
                 "a": 0,
-                "explain": "Orthogonality is mathematical, not semantic."
+                "explain": "Orthogonality is a mathematical convenience, not a semantic guarantee."
               }
             ],
-            "originalIdea": "A tutorial deriving PCA from variance maximisation, eigenvectors, and SVD, with emphasis on intuition.",
-            "simpleLesson": "Imagine a cloud of points in many dimensions. PCA rotates the cloud so the first axis points along the longest stretch of the cloud, the second along the next longest stretch orthogonal to the first, and so on.\n\nThose axes are eigenvectors of the covariance matrix — or equivalently the right singular vectors from an SVD of the centred data matrix. If you keep only the first k axes and project back, you get a low-rank reconstruction. The leftover error is reconstruction error; the fraction of variance you failed to capture is FVU.\n\nImportant: orthogonality is a mathematical convenience, not a semantic guarantee. PCA directions need not be concepts. Later, when an SAE reconstructs well, compare against PCA at matched rank — but never treat either as proof of monosemantic features.",
+            "originalIdea": "A classic tutorial deriving PCA from variance maximization, covariance matrices, eigenvectors, and Singular Value Decomposition (SVD).",
+            "simpleLesson": "Welcome to the PCA Masterclass. Let's start from absolute zero: why did Karl Pearson invent PCA in 1901, and why does every AI researcher still use it today?\n\nImagine you have data points in a 100-dimensional space. Humans cannot visualize 100 dimensions. If you want to compress this data down to 2 dimensions so you can plot it on a screen, how do you choose the 2 dimensions?\n\nIf you randomly pick 2 coordinates, you might project a long, stretched cloud into a tiny flat dot, losing almost all the information! PCA solves this by finding the exact directions in space along which your data SPREADS OUT THE MOST (maximum variance).\n\n--- STEP-BY-STEP MATHEMATICAL BUILD-UP ---\n1. Mean (μ): The average position of all data points. We center the data by subtracting μ so the cloud is centered at zero.\n2. Variance: For a single coordinate x, variance is E[(x - μ)²]. It measures how far data points spread out around zero.\n3. Covariance: For two coordinates x and y, covariance is E[(x - μ_x)(y - μ_y)]. If x and y increase together, covariance is positive. If x increases when y decreases, it is negative.\n4. Covariance Matrix (C): A grid storing all pairwise covariances. The diagonal entries are the variances of each coordinate.\n5. Eigenvectors & Eigenvalues: An eigenvector of C is a special arrow in space that DOES NOT TILT when multiplied by C — it only gets stretched! The stretch factor is the Eigenvalue λ.\n6. Singular Value Decomposition (SVD): Numerical computing prefers SVD (X = U Σ Vᵀ) over computing C directly. The columns of V are the exact Principal Component directions!\n\n--- THE CRITICAL RECONSTRUCTION METRIC: FVU ---\nFraction of Variance Unexplained (FVU) = ||X - X_reconstructed||² / ||X||².\nIf you keep top-k principal components, FVU measures what percentage of the data's spread you lost. FVU = 0 means perfect reconstruction.\n\n--- THE SCIENTIFIC WARNING FOR SAE RESEARCHERS ---\nPCA axes are strictly ORTHOGONAL (at 90° right angles to each other). Orthogonality is a mathematical constraint, NOT a human concept guarantee! PCA directions are linear combinations of features created by linear algebra. Never assume low FVU means you found human concepts.",
             "limitPairs": [
               {
-                "original": "How to compress one view by variance",
-                "simple": "In practice this means evidence supports: How to compress one view by variance"
+                "original": "How to compress high-dimensional vectors by preserving maximum variance",
+                "simple": "In practice this means evidence supports: How to compress high-dimensional vectors by preserving maximum variance"
               },
               {
-                "original": "How to measure reconstruction fidelity via explained variance",
-                "simple": "In practice this means evidence supports: How to measure reconstruction fidelity via explained variance"
+                "original": "How to compute linear reconstruction fidelity using FVU",
+                "simple": "In practice this means evidence supports: How to compute linear reconstruction fidelity using FVU"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That PCs are interpretable concepts",
-                "simple": "Do not overclaim: That PCs are interpretable concepts"
+                "original": "That principal components correspond to human-interpretable concepts",
+                "simple": "Do not overclaim: That principal components correspond to human-interpretable concepts"
               },
               {
-                "original": "How to recover independent sources",
-                "simple": "Do not overclaim: How to recover independent sources"
+                "original": "How to unmix independent non-orthogonal sources",
+                "simple": "Do not overclaim: How to unmix independent non-orthogonal sources"
               },
               {
-                "original": "How to align two views",
-                "simple": "Do not overclaim: How to align two views"
+                "original": "How to align two different observation views",
+                "simple": "Do not overclaim: How to align two different observation views"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Always report SAE FVU against a PCA baseline at comparable capacity.",
-                "simple": "Action item: Always report SAE FVU against a PCA baseline at comparable capacity."
+                "original": "Use PCA as a mandatory baseline when evaluating SAE reconstruction (FVU).",
+                "simple": "Action item: Use PCA as a mandatory baseline when evaluating SAE reconstruction (FVU)."
               },
               {
-                "original": "Do not claim interpretability from reconstruction alone.",
-                "simple": "Action item: Do not claim interpretability from reconstruction alone."
+                "original": "Never claim interpretability from low FVU alone.",
+                "simple": "Action item: Never claim interpretability from low FVU alone."
               },
               {
-                "original": "Use PCA as a dense linear competitor in ablations.",
-                "simple": "Action item: Use PCA as a dense linear competitor in ablations."
+                "original": "Compare SAE dictionary efficiency against PCA at matched rank.",
+                "simple": "Action item: Compare SAE dictionary efficiency against PCA at matched rank."
               }
             ]
           },
           "quiz": [
             {
-              "q": "PCA maximises?",
+              "q": "PCA maximizes which metric along orthogonal axes?",
               "options": [
                 "Variance",
-                "Independence",
+                "Statistical independence",
                 "Cross-view correlation",
-                "Sparsity"
+                "L0 sparsity"
               ],
               "a": 0,
-              "explain": "PCA is variance maximisation under orthogonality."
+              "explain": "PCA maximizes captured variance under orthogonality constraints."
             },
             {
-              "q": "FVU measures?",
+              "q": "What does FVU measure?",
               "options": [
-                "Unexplained variance fraction",
-                "Monosemanticity",
-                "Causal effect",
+                "Fraction of variance left unexplained by reconstruction",
+                "Monosemanticity score",
+                "Causal intervention effect",
                 "Probe accuracy"
               ],
               "a": 0,
-              "explain": "FVU = 1 − explained variance fraction."
+              "explain": "FVU = 1 - explained variance fraction."
             },
             {
-              "q": "Orthogonal PCs are always concepts?",
+              "q": "Are orthogonal principal components guaranteed to be clean human concepts?",
               "options": [
-                "False",
-                "True"
+                "No",
+                "Yes"
               ],
               "a": 0,
-              "explain": "Orthogonality is mathematical, not semantic."
+              "explain": "Orthogonality is a mathematical convenience, not a semantic guarantee."
             }
           ]
         },
@@ -647,9 +748,9 @@ window.CURRICULUM_DATA = {
           "pages": 13,
           "pdfPath": "RAW/1404.2986v1.pdf",
           "teach": {
-            "whyWeRead": "ICA is the classical unmixing story. ConCA and concept recovery arguments depend on independence-style assumptions.",
-            "oneSentence": "A linear-algebra first tutorial on recovering statistically independent sources from mixtures.",
-            "plainLanguage": "Suppose several independent source signals are mixed by an unknown matrix into what you observe. ICA tries to find an unmixing matrix that recovers those sources.\n\nCorrelation zero is not enough: two variables can be uncorrelated but still dependent. ICA uses stronger statistical criteria (often non-Gaussianity / mutual information).\n\nIdentifiability needs assumptions: typically linear mixing, independent non-Gaussian sources, enough samples. If assumptions fail, you can still get a transform — but not the true sources.\n\nHold this contrast: PCA rotates for variance; ICA rotates for independence; CCA aligns two views.",
+            "whyWeRead": "ICA is the classical source-unmixing framework. It is the direct conceptual ancestor of Concept Component Analysis (ConCA) and independence-style representation unmixing.",
+            "oneSentence": "A linear-algebra tutorial on recovering statistically independent source signals from linear mixtures.",
+            "plainLanguage": "Welcome to the ICA Masterclass. Let's start with the fundamental problem ICA solves: the Cocktail Party Problem.\n\nImagine two independent speakers talking simultaneously in a room. Two microphones record different blended mixtures of their voices: x_1 = a s_1 + b s_2 and x_2 = c s_1 + d s_2. How can we recover the original pure voices s_1 and s_2 without knowing the mixing weights a,b,c,d?\n\nPCA fails here because the independent voices are NOT orthogonal in microphone space. PCA simply finds the direction of maximum combined volume, mixing both voices together!\n\n--- THE POWER OF STATISTICAL INDEPENDENCE ---\nICA relies on a much stronger principle than PCA: Statistical Independence. Zero correlation only means E[xy] = E[x]E[y] (no linear relationship). Independence means the joint probability distribution factors completely: p(x,y) = p(x)p(y) — knowing x gives ZERO information about y across ALL higher-order moments.\n\n--- HOW ICA UNMIXES SIGNALS (NON-GAUSSIANITY) ---\nThe Central Limit Theorem states that adding independent signals together makes the resulting mixture MORE Gaussian (bell-curve shaped). Therefore, mixed signals are always more bell-shaped than individual pure signals!\n\nICA operates by searching for an unmixing matrix W such that the recovered outputs y = W x are as NON-GAUSSIAN as possible! By maximizing kurtosis or negentropy, ICA pops the independent non-Gaussian sources back out.\n\n--- IDENTIFIABILITY AND ASSUMPTIONS ---\nICA can successfully recover the true sources (up to permutation and scaling) ONLY IF three assumptions hold:\n1. The sources are statistically independent.\n2. At most one source is Gaussian (Gaussian sources cannot be unmixed because bell curves are rotationally symmetric).\n3. The mixing process is linear (x = A s).\n\nRELATION TO CONCA:\nConcept Component Analysis (ConCA) treats model activations as linear mixtures of concept components, directly inheriting ICA's generative unmixing framework.",
             "keyIdeas": [
               {
                 "title": "Mixing model",
@@ -684,170 +785,174 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "Linear mixing",
+                "name": "Linear Mixing Equation",
                 "formula": "x = A s",
-                "original": "Linear mixing: x = A s",
-                "simple": "A mixes independent sources s into observations x.",
-                "meaning": "A mixes independent sources s into observations x."
+                "original": "Linear Mixing Equation: x = A s",
+                "simple": "Observed vector x is a linear combination of independent source vector s via matrix A.",
+                "meaning": "Observed vector x is a linear combination of independent source vector s via matrix A."
               },
               {
-                "name": "Unmixing",
-                "formula": "ŷ = W x ≈ P D s",
-                "original": "Unmixing: ŷ = W x ≈ P D s",
-                "simple": "Recovered sources up to permutation P and scaling D.",
-                "meaning": "Recovered sources up to permutation P and scaling D."
+                "name": "Unmixing Recovery",
+                "formula": "y = W x = W A s ≈ P D s",
+                "original": "Unmixing Recovery: y = W x = W A s ≈ P D s",
+                "simple": "Unmixing matrix W recovers sources up to permutation P and scaling matrix D.",
+                "meaning": "Unmixing matrix W recovers sources up to permutation P and scaling matrix D."
               }
             ],
             "vocabulary": [
               {
-                "term": "Source separation",
-                "original": "Technical term: «Source separation» as used in this literature.",
-                "simple": "Recovering latent sources from mixtures.",
-                "def": "Recovering latent sources from mixtures."
+                "term": "Blind Source Separation",
+                "original": "Technical term: «Blind Source Separation» as used in this literature.",
+                "simple": "Extracting unobserved source signals from mixed sensor observations without prior mixing info.",
+                "def": "Extracting unobserved source signals from mixed sensor observations without prior mixing info."
               },
               {
                 "term": "Identifiability",
                 "original": "Technical term: «Identifiability» as used in this literature.",
-                "simple": "When parameters/sources can be uniquely recovered given assumptions.",
-                "def": "When parameters/sources can be uniquely recovered given assumptions."
+                "simple": "Mathematical proof that parameters or latent sources can be uniquely recovered under specific assumptions.",
+                "def": "Mathematical proof that parameters or latent sources can be uniquely recovered under specific assumptions."
               },
               {
-                "term": "Statistical independence",
-                "original": "Technical term: «Statistical independence» as used in this literature.",
-                "simple": "Knowing one variable gives no information about another.",
-                "def": "Knowing one variable gives no information about another."
+                "term": "Statistical Independence",
+                "original": "Technical term: «Statistical Independence» as used in this literature.",
+                "simple": "The condition where joint probability density equals the product of marginal densities: p(x,y) = p(x)p(y).",
+                "def": "The condition where joint probability density equals the product of marginal densities: p(x,y) = p(x)p(y)."
               }
             ],
             "whatItShows": [
-              "When linear unmixing can recover independent sources",
-              "Why independence assumptions matter"
+              "When and how linear unmixing recovers independent latent sources",
+              "Why non-Gaussianity enables source identification beyond PCA"
             ],
             "whatItDoesNotShow": [
-              "That LM activations are exactly independent concept mixtures",
-              "A training recipe for SAEs"
+              "That neural network activations are purely linear independent mixtures",
+              "How to handle overcomplete dictionaries (where sources > dimensions)"
             ],
             "setconcaUse": [
-              "Use ICA as a conceptual relative of ConCA.",
-              "State assumptions whenever claiming component recovery.",
-              "Do not confuse sparse coding with ICA identifiability."
+              "Use ICA as the conceptual foundation for Concept Component Analysis (ConCA).",
+              "State explicit identifiability assumptions whenever claiming concept recovery.",
+              "Distinguish ICA linear unmixing from SAE dictionary learning."
             ],
             "masteryChecklist": [
-              "I can contrast correlation vs independence.",
-              "I can write the linear mixing model.",
-              "I can list assumptions needed for identifiability.",
-              "I can relate ICA to ConCA's story."
+              "I can explain the Cocktail Party Problem and why PCA fails it.",
+              "I can contrast correlation vs. statistical independence.",
+              "I can list the three mathematical assumptions required for ICA identifiability.",
+              "I understand why non-Gaussianity maximization recovers independent sources."
             ],
             "commonConfusions": [
               {
-                "wrong": "PCA and ICA solve the same problem.",
-                "right": "PCA maximises variance; ICA seeks independent sources."
+                "wrong": "PCA and ICA do the same thing.",
+                "right": "PCA maximizes variance along orthogonal axes. ICA maximizes statistical independence to unmix sources."
               },
               {
-                "wrong": "If ICA runs, sources are recovered.",
-                "right": "Only if modelling assumptions hold."
+                "wrong": "Uncorrelated variables are automatically independent.",
+                "right": "Uncorrelatedness is weaker. Variables can have zero covariance but strong non-linear dependence."
               }
             ],
             "quiz": [
               {
-                "q": "ICA targets?",
+                "q": "ICA target objective is?",
                 "options": [
-                  "Independence",
-                  "Max variance",
-                  "Max correlation across views",
-                  "TopK sparsity"
+                  "Statistical independence / Non-Gaussianity",
+                  "Maximum variance",
+                  "Cross-view correlation",
+                  "L1 penalty"
                 ],
                 "a": 0,
-                "explain": "ICA seeks statistically independent components."
+                "explain": "ICA searches for independent sources by maximizing non-Gaussianity."
               },
               {
-                "q": "Uncorrelated implies independent?",
+                "q": "Why does ICA require non-Gaussian sources?",
                 "options": [
-                  "No",
-                  "Yes"
+                  "Gaussian distributions are rotationally symmetric, making direction unidentifiable",
+                  "Gaussian sources are non-linear",
+                  "PCA requires Gaussianity",
+                  "TopK fails on Gaussians"
                 ],
                 "a": 0,
-                "explain": "Independence is stronger."
+                "explain": "Rotational symmetry of Gaussian distributions prevents unique axis identification."
               },
               {
-                "q": "ICA is closest in spirit to?",
+                "q": "ICA is the direct conceptual ancestor of which concept paper?",
                 "options": [
-                  "ConCA / unmixing",
+                  "ConCA (Concept Component Analysis)",
                   "SimCLR",
                   "Deep Sets",
                   "CKA"
                 ],
                 "a": 0,
-                "explain": "Both treat observations as mixtures of latent components."
+                "explain": "ConCA treats activations as mixtures of concept components using unmixing logic."
               }
             ],
-            "originalIdea": "A linear-algebra first tutorial on recovering statistically independent sources from mixtures.",
-            "simpleLesson": "Suppose several independent source signals are mixed by an unknown matrix into what you observe. ICA tries to find an unmixing matrix that recovers those sources.\n\nCorrelation zero is not enough: two variables can be uncorrelated but still dependent. ICA uses stronger statistical criteria (often non-Gaussianity / mutual information).\n\nIdentifiability needs assumptions: typically linear mixing, independent non-Gaussian sources, enough samples. If assumptions fail, you can still get a transform — but not the true sources.\n\nHold this contrast: PCA rotates for variance; ICA rotates for independence; CCA aligns two views.",
+            "originalIdea": "A linear-algebra tutorial on recovering statistically independent source signals from linear mixtures.",
+            "simpleLesson": "Welcome to the ICA Masterclass. Let's start with the fundamental problem ICA solves: the Cocktail Party Problem.\n\nImagine two independent speakers talking simultaneously in a room. Two microphones record different blended mixtures of their voices: x_1 = a s_1 + b s_2 and x_2 = c s_1 + d s_2. How can we recover the original pure voices s_1 and s_2 without knowing the mixing weights a,b,c,d?\n\nPCA fails here because the independent voices are NOT orthogonal in microphone space. PCA simply finds the direction of maximum combined volume, mixing both voices together!\n\n--- THE POWER OF STATISTICAL INDEPENDENCE ---\nICA relies on a much stronger principle than PCA: Statistical Independence. Zero correlation only means E[xy] = E[x]E[y] (no linear relationship). Independence means the joint probability distribution factors completely: p(x,y) = p(x)p(y) — knowing x gives ZERO information about y across ALL higher-order moments.\n\n--- HOW ICA UNMIXES SIGNALS (NON-GAUSSIANITY) ---\nThe Central Limit Theorem states that adding independent signals together makes the resulting mixture MORE Gaussian (bell-curve shaped). Therefore, mixed signals are always more bell-shaped than individual pure signals!\n\nICA operates by searching for an unmixing matrix W such that the recovered outputs y = W x are as NON-GAUSSIAN as possible! By maximizing kurtosis or negentropy, ICA pops the independent non-Gaussian sources back out.\n\n--- IDENTIFIABILITY AND ASSUMPTIONS ---\nICA can successfully recover the true sources (up to permutation and scaling) ONLY IF three assumptions hold:\n1. The sources are statistically independent.\n2. At most one source is Gaussian (Gaussian sources cannot be unmixed because bell curves are rotationally symmetric).\n3. The mixing process is linear (x = A s).\n\nRELATION TO CONCA:\nConcept Component Analysis (ConCA) treats model activations as linear mixtures of concept components, directly inheriting ICA's generative unmixing framework.",
             "limitPairs": [
               {
-                "original": "When linear unmixing can recover independent sources",
-                "simple": "In practice this means evidence supports: When linear unmixing can recover independent sources"
+                "original": "When and how linear unmixing recovers independent latent sources",
+                "simple": "In practice this means evidence supports: When and how linear unmixing recovers independent latent sources"
               },
               {
-                "original": "Why independence assumptions matter",
-                "simple": "In practice this means evidence supports: Why independence assumptions matter"
+                "original": "Why non-Gaussianity enables source identification beyond PCA",
+                "simple": "In practice this means evidence supports: Why non-Gaussianity enables source identification beyond PCA"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That LM activations are exactly independent concept mixtures",
-                "simple": "Do not overclaim: That LM activations are exactly independent concept mixtures"
+                "original": "That neural network activations are purely linear independent mixtures",
+                "simple": "Do not overclaim: That neural network activations are purely linear independent mixtures"
               },
               {
-                "original": "A training recipe for SAEs",
-                "simple": "Do not overclaim: A training recipe for SAEs"
+                "original": "How to handle overcomplete dictionaries (where sources > dimensions)",
+                "simple": "Do not overclaim: How to handle overcomplete dictionaries (where sources > dimensions)"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Use ICA as a conceptual relative of ConCA.",
-                "simple": "Action item: Use ICA as a conceptual relative of ConCA."
+                "original": "Use ICA as the conceptual foundation for Concept Component Analysis (ConCA).",
+                "simple": "Action item: Use ICA as the conceptual foundation for Concept Component Analysis (ConCA)."
               },
               {
-                "original": "State assumptions whenever claiming component recovery.",
-                "simple": "Action item: State assumptions whenever claiming component recovery."
+                "original": "State explicit identifiability assumptions whenever claiming concept recovery.",
+                "simple": "Action item: State explicit identifiability assumptions whenever claiming concept recovery."
               },
               {
-                "original": "Do not confuse sparse coding with ICA identifiability.",
-                "simple": "Action item: Do not confuse sparse coding with ICA identifiability."
+                "original": "Distinguish ICA linear unmixing from SAE dictionary learning.",
+                "simple": "Action item: Distinguish ICA linear unmixing from SAE dictionary learning."
               }
             ]
           },
           "quiz": [
             {
-              "q": "ICA targets?",
+              "q": "ICA target objective is?",
               "options": [
-                "Independence",
-                "Max variance",
-                "Max correlation across views",
-                "TopK sparsity"
+                "Statistical independence / Non-Gaussianity",
+                "Maximum variance",
+                "Cross-view correlation",
+                "L1 penalty"
               ],
               "a": 0,
-              "explain": "ICA seeks statistically independent components."
+              "explain": "ICA searches for independent sources by maximizing non-Gaussianity."
             },
             {
-              "q": "Uncorrelated implies independent?",
+              "q": "Why does ICA require non-Gaussian sources?",
               "options": [
-                "No",
-                "Yes"
+                "Gaussian distributions are rotationally symmetric, making direction unidentifiable",
+                "Gaussian sources are non-linear",
+                "PCA requires Gaussianity",
+                "TopK fails on Gaussians"
               ],
               "a": 0,
-              "explain": "Independence is stronger."
+              "explain": "Rotational symmetry of Gaussian distributions prevents unique axis identification."
             },
             {
-              "q": "ICA is closest in spirit to?",
+              "q": "ICA is the direct conceptual ancestor of which concept paper?",
               "options": [
-                "ConCA / unmixing",
+                "ConCA (Concept Component Analysis)",
                 "SimCLR",
                 "Deep Sets",
                 "CKA"
               ],
               "a": 0,
-              "explain": "Both treat observations as mixtures of latent components."
+              "explain": "ConCA treats activations as mixtures of concept components using unmixing logic."
             }
           ]
         },
@@ -870,9 +975,9 @@ window.CURRICULUM_DATA = {
           "pages": 33,
           "pdfPath": "RAW/1711.02391v1.pdf",
           "teach": {
-            "whyWeRead": "CCA is the foundation of multi-view learning and of comparing representations across views — core to SetConCA.",
-            "oneSentence": "A comprehensive tutorial on canonical correlation analysis and its regularised, kernel, sparse, and deep variants.",
-            "plainLanguage": "You have two views of the same objects — say two sensors, or two layers, or two paraphrases. CCA finds a projection of each view so that the projected scalars are as correlated as possible.\n\nThose projected coordinates are canonical variables; their correlations are canonical correlations. High canonical correlation means shared information was found. Low does not mean the views are useless — they may carry private information.\n\nVariants matter: regularisation for high dimensions, kernels for nonlinear maps, sparsity for interpretable loadings, deep CCA for neural encoders. Always ask about generalisation: CCA can overfit shared noise.\n\nAfter this paper: PCA = within-view variance; ICA = independent sources; CCA = cross-view shared signal.",
+            "whyWeRead": "CCA is the foundation of multi-view learning. It defines how to extract shared signals across two paired representations — a core baseline for SetConCA.",
+            "oneSentence": "A comprehensive tutorial on Canonical Correlation Analysis (CCA), regularized CCA, kernel CCA, and deep variants.",
+            "plainLanguage": "Welcome to the CCA Masterclass. Let's understand why Harold Hotelling invented CCA in 1936.\n\nSuppose you have TWO different feature spaces observing the exact same items. Example: View 1 is a 512-dimensional audio embedding of a speech, and View 2 is a 2048-dimensional image embedding of the speaker. Audio and image vectors live in completely different dimensions with different metrics. How do you find the SHARED information between them?\n\n--- HOW CCA WORKS ---\nCCA searches for a projection direction u in View 1 space and a projection direction v in View 2 space such that the projected 1D numbers (uᵀx and vᵀy) have the MAXIMUM POSSIBLE CORRELATION!\n\nThese projected scalar channels are called Canonical Variables, and their correlation value is the Canonical Correlation.\n\n--- MULTIPLE CANONICAL PAIRS ---\nOnce CCA finds the 1st most correlated pair of directions (u_1, v_1), it searches for a 2nd pair (u_2, v_2) that is maximally correlated while remaining uncorrelated with the 1st pair. You can extract multiple canonical pairs ordered by correlation strength.\n\n--- SHARED VS. PRIVATE INFORMATION ---\nCCA focuses strictly on SHARED covariance. If View 1 contains high-variance background noise that does not exist in View 2, CCA completely ignores it. This is both a strength (filters private noise) and a risk (may discard useful view-specific detail).\n\n--- CCA VARIANTS ---\n1. Regularized CCA: Adds ridge penalty to sample covariance matrices when feature dimension > sample size.\n2. Kernel CCA: Maps views through non-linear kernel functions to find non-linear shared correlations.\n3. Deep CCA: Replaces linear projections with deep neural networks (Andrew et al., 2013).\n\nTHE CLASSICAL DECOMPOSITION TRIAD:\n• PCA: Within-view max variance.\n• ICA: Within-view independent sources.\n• CCA: Cross-view shared correlation.",
             "keyIdeas": [
               {
                 "title": "Two-view setup",
@@ -907,220 +1012,220 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "CCA objective",
-                "formula": "max_{u,v} corr(Xu, Yv) = uᵀΣ_xy v / √(uᵀΣ_xx u vᵀΣ_yy v)",
-                "original": "CCA objective: max_{u,v} corr(Xu, Yv) = uᵀΣ_xy v / √(uᵀΣ_xx u vᵀΣ_yy v)",
-                "simple": "Maximise cross-covariance relative to within-view variances.",
-                "meaning": "Maximise cross-covariance relative to within-view variances."
+                "name": "CCA Optimization Objective",
+                "formula": "max_{u,v}  uᵀ Σ_{xy} v / √(uᵀ Σ_{xx} u · vᵀ Σ_{yy} v)",
+                "original": "CCA Optimization Objective: max_{u,v}  uᵀ Σ_{xy} v / √(uᵀ Σ_{xx} u · vᵀ Σ_{yy} v)",
+                "simple": "Maximize cross-covariance between projected views relative to within-view variance.",
+                "meaning": "Maximize cross-covariance between projected views relative to within-view variance."
               }
             ],
             "vocabulary": [
               {
-                "term": "Canonical correlation",
-                "original": "Technical term: «Canonical correlation» as used in this literature.",
-                "simple": "Max correlation between linear projections of two views.",
-                "def": "Max correlation between linear projections of two views."
+                "term": "Canonical Correlation",
+                "original": "Technical term: «Canonical Correlation» as used in this literature.",
+                "simple": "The maximum linear correlation between projected dimensions of two multi-variable views.",
+                "def": "The maximum linear correlation between projected dimensions of two multi-variable views."
               },
               {
-                "term": "View",
-                "original": "Technical term: «View» as used in this literature.",
-                "simple": "One representation or modality of the same objects.",
-                "def": "One representation or modality of the same objects."
+                "term": "Canonical Variables",
+                "original": "Technical term: «Canonical Variables» as used in this literature.",
+                "simple": "The 1D scalar projections uᵀX and vᵀY produced by CCA directions.",
+                "def": "The 1D scalar projections uᵀX and vᵀY produced by CCA directions."
               },
               {
-                "term": "Multi-view learning",
-                "original": "Technical term: «Multi-view learning» as used in this literature.",
-                "simple": "Learning from multiple paired observations of each example.",
-                "def": "Learning from multiple paired observations of each example."
+                "term": "Multi-View Learning",
+                "original": "Technical term: «Multi-View Learning» as used in this literature.",
+                "simple": "Learning representations from multiple distinct paired observations of the same underlying entities.",
+                "def": "Learning representations from multiple distinct paired observations of the same underlying entities."
               }
             ],
             "whatItShows": [
-              "How to extract shared linear directions across views",
-              "How variants address practical failures of plain CCA"
+              "How to extract shared linear correlation channels between two different feature views",
+              "How variants handle non-linearity and high dimensions"
             ],
             "whatItDoesNotShow": [
-              "That shared directions are causal concepts",
-              "How to keep private information automatically"
+              "That shared directions are causally interpretable concepts",
+              "How to preserve view-specific private details automatically"
             ],
             "setconcaUse": [
-              "CCA between view groups is a mandatory baseline.",
-              "Report shared vs private explicitly in multi-view designs.",
-              "Beware discarding activation detail when maximising correlation."
+              "Use linear CCA as a mandatory multi-view baseline.",
+              "Report shared vs. private information explicitly when designing multi-view SAE losses.",
+              "Validate canonical correlations on held-out test sets to prevent noise overfitting."
             ],
             "masteryChecklist": [
-              "I can state the CCA objective in words and symbols.",
-              "I can distinguish shared vs private information.",
-              "I know why deep/regularised CCA exist.",
-              "I can place PCA/ICA/CCA in one sentence each."
+              "I can state the CCA objective in plain English and symbols.",
+              "I can explain the difference between shared information and private information.",
+              "I know why Deep CCA and Regularized CCA were developed.",
+              "I can recite the PCA / ICA / CCA comparison triad from memory."
             ],
             "commonConfusions": [
               {
-                "wrong": "CCA maximises variance like PCA.",
-                "right": "CCA maximises cross-view correlation."
+                "wrong": "CCA maximizes variance inside View 1.",
+                "right": "PCA maximizes within-view variance. CCA maximizes cross-view correlation."
               },
               {
-                "wrong": "Perfect CCA means views are identical.",
-                "right": "It means projections correlate; private structure may remain."
+                "wrong": "High CCA correlation means the two views are identical.",
+                "right": "It means their projected directions correlate; their unprojected spaces can differ greatly."
               }
             ],
             "quiz": [
               {
-                "q": "CCA maximises?",
+                "q": "CCA maximizes which metric between two views?",
                 "options": [
-                  "Cross-view correlation of projections",
+                  "Correlation of projected dimensions",
                   "Within-view variance",
-                  "Independence",
-                  "Sparsity"
+                  "L0 sparsity",
+                  "Reconstruction error"
                 ],
                 "a": 0,
-                "explain": "Canonical correlations are about shared directions."
+                "explain": "CCA maximizes cross-view linear correlation of projected canonical variables."
               },
               {
-                "q": "Private information is?",
+                "q": "What happens to view-specific private details in standard CCA?",
                 "options": [
-                  "View-specific structure CCA may ignore",
-                  "Always noise",
-                  "Always shared",
-                  "Impossible"
+                  "They may be discarded because CCA targets shared correlation",
+                  "They are amplified",
+                  "They are turned into PCA components",
+                  "They are saved automatically"
                 ],
                 "a": 0,
-                "explain": "Useful private structure can exist."
+                "explain": "CCA targets shared cross-view signal, so private details are ignored."
               },
               {
-                "q": "After CCA tutorials, PCA/ICA/CCA mean?",
+                "q": "What is the primary baseline function of CCA in SetConCA?",
                 "options": [
-                  "variance / independence / cross-view corr",
-                  "all the same",
-                  "sparsity / attention / probes",
-                  "only deep learning"
+                  "Primary classical baseline for cross-view feature alignment",
+                  "Sparsity enforcer",
+                  "Probe classifier",
+                  "Decoder enforcer"
                 ],
                 "a": 0,
-                "explain": "Memorise this triad."
+                "explain": "CCA is the classical baseline for multi-view feature alignment."
               }
             ],
-            "originalIdea": "A comprehensive tutorial on canonical correlation analysis and its regularised, kernel, sparse, and deep variants.",
-            "simpleLesson": "You have two views of the same objects — say two sensors, or two layers, or two paraphrases. CCA finds a projection of each view so that the projected scalars are as correlated as possible.\n\nThose projected coordinates are canonical variables; their correlations are canonical correlations. High canonical correlation means shared information was found. Low does not mean the views are useless — they may carry private information.\n\nVariants matter: regularisation for high dimensions, kernels for nonlinear maps, sparsity for interpretable loadings, deep CCA for neural encoders. Always ask about generalisation: CCA can overfit shared noise.\n\nAfter this paper: PCA = within-view variance; ICA = independent sources; CCA = cross-view shared signal.",
+            "originalIdea": "A comprehensive tutorial on Canonical Correlation Analysis (CCA), regularized CCA, kernel CCA, and deep variants.",
+            "simpleLesson": "Welcome to the CCA Masterclass. Let's understand why Harold Hotelling invented CCA in 1936.\n\nSuppose you have TWO different feature spaces observing the exact same items. Example: View 1 is a 512-dimensional audio embedding of a speech, and View 2 is a 2048-dimensional image embedding of the speaker. Audio and image vectors live in completely different dimensions with different metrics. How do you find the SHARED information between them?\n\n--- HOW CCA WORKS ---\nCCA searches for a projection direction u in View 1 space and a projection direction v in View 2 space such that the projected 1D numbers (uᵀx and vᵀy) have the MAXIMUM POSSIBLE CORRELATION!\n\nThese projected scalar channels are called Canonical Variables, and their correlation value is the Canonical Correlation.\n\n--- MULTIPLE CANONICAL PAIRS ---\nOnce CCA finds the 1st most correlated pair of directions (u_1, v_1), it searches for a 2nd pair (u_2, v_2) that is maximally correlated while remaining uncorrelated with the 1st pair. You can extract multiple canonical pairs ordered by correlation strength.\n\n--- SHARED VS. PRIVATE INFORMATION ---\nCCA focuses strictly on SHARED covariance. If View 1 contains high-variance background noise that does not exist in View 2, CCA completely ignores it. This is both a strength (filters private noise) and a risk (may discard useful view-specific detail).\n\n--- CCA VARIANTS ---\n1. Regularized CCA: Adds ridge penalty to sample covariance matrices when feature dimension > sample size.\n2. Kernel CCA: Maps views through non-linear kernel functions to find non-linear shared correlations.\n3. Deep CCA: Replaces linear projections with deep neural networks (Andrew et al., 2013).\n\nTHE CLASSICAL DECOMPOSITION TRIAD:\n• PCA: Within-view max variance.\n• ICA: Within-view independent sources.\n• CCA: Cross-view shared correlation.",
             "limitPairs": [
               {
-                "original": "How to extract shared linear directions across views",
-                "simple": "In practice this means evidence supports: How to extract shared linear directions across views"
+                "original": "How to extract shared linear correlation channels between two different feature views",
+                "simple": "In practice this means evidence supports: How to extract shared linear correlation channels between two different feature views"
               },
               {
-                "original": "How variants address practical failures of plain CCA",
-                "simple": "In practice this means evidence supports: How variants address practical failures of plain CCA"
+                "original": "How variants handle non-linearity and high dimensions",
+                "simple": "In practice this means evidence supports: How variants handle non-linearity and high dimensions"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That shared directions are causal concepts",
-                "simple": "Do not overclaim: That shared directions are causal concepts"
+                "original": "That shared directions are causally interpretable concepts",
+                "simple": "Do not overclaim: That shared directions are causally interpretable concepts"
               },
               {
-                "original": "How to keep private information automatically",
-                "simple": "Do not overclaim: How to keep private information automatically"
+                "original": "How to preserve view-specific private details automatically",
+                "simple": "Do not overclaim: How to preserve view-specific private details automatically"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "CCA between view groups is a mandatory baseline.",
-                "simple": "Action item: CCA between view groups is a mandatory baseline."
+                "original": "Use linear CCA as a mandatory multi-view baseline.",
+                "simple": "Action item: Use linear CCA as a mandatory multi-view baseline."
               },
               {
-                "original": "Report shared vs private explicitly in multi-view designs.",
-                "simple": "Action item: Report shared vs private explicitly in multi-view designs."
+                "original": "Report shared vs. private information explicitly when designing multi-view SAE losses.",
+                "simple": "Action item: Report shared vs. private information explicitly when designing multi-view SAE losses."
               },
               {
-                "original": "Beware discarding activation detail when maximising correlation.",
-                "simple": "Action item: Beware discarding activation detail when maximising correlation."
+                "original": "Validate canonical correlations on held-out test sets to prevent noise overfitting.",
+                "simple": "Action item: Validate canonical correlations on held-out test sets to prevent noise overfitting."
               }
             ]
           },
           "quiz": [
             {
-              "q": "CCA maximises?",
+              "q": "CCA maximizes which metric between two views?",
               "options": [
-                "Cross-view correlation of projections",
+                "Correlation of projected dimensions",
                 "Within-view variance",
-                "Independence",
-                "Sparsity"
+                "L0 sparsity",
+                "Reconstruction error"
               ],
               "a": 0,
-              "explain": "Canonical correlations are about shared directions."
+              "explain": "CCA maximizes cross-view linear correlation of projected canonical variables."
             },
             {
-              "q": "Private information is?",
+              "q": "What happens to view-specific private details in standard CCA?",
               "options": [
-                "View-specific structure CCA may ignore",
-                "Always noise",
-                "Always shared",
-                "Impossible"
+                "They may be discarded because CCA targets shared correlation",
+                "They are amplified",
+                "They are turned into PCA components",
+                "They are saved automatically"
               ],
               "a": 0,
-              "explain": "Useful private structure can exist."
+              "explain": "CCA targets shared cross-view signal, so private details are ignored."
             },
             {
-              "q": "After CCA tutorials, PCA/ICA/CCA mean?",
+              "q": "What is the primary baseline function of CCA in SetConCA?",
               "options": [
-                "variance / independence / cross-view corr",
-                "all the same",
-                "sparsity / attention / probes",
-                "only deep learning"
+                "Primary classical baseline for cross-view feature alignment",
+                "Sparsity enforcer",
+                "Probe classifier",
+                "Decoder enforcer"
               ],
               "a": 0,
-              "explain": "Memorise this triad."
+              "explain": "CCA is the classical baseline for multi-view feature alignment."
             }
           ]
         }
       ],
       "primer": {
         "title": "What is a representation?",
-        "mission": "Explain PCA, ICA, and CCA, and know which objective each uses.",
-        "beforeYouStart": "None — this is the starting point.",
-        "primer": "A representation is a transformed version of data that makes some structure easier to use. Raw activations from a language model are high-dimensional vectors. We rarely care about every coordinate. We care about directions that carry meaning.\n\nThree classical tools answer three different questions.\n\nPCA asks: which directions capture the most variance inside one view? It finds orthogonal axes ordered by how much spread they explain. Analogy: rotate a cloud of points so the longest axis of the cloud comes first. PCA is the baseline for reconstruction quality (FVU). High reconstruction does not mean the axes are concepts.\n\nICA asks: which directions are statistically independent sources mixed together? Independence is stronger than zero correlation. Analogy: unmixing two overlapping voices from a recording. This is the mental model behind Concept Component Analysis (ConCA).\n\nCCA asks: which directions line up between two views of the same thing? Analogy: find the shared signal between audio and video of the same speech. This is the ancestor of multi-view SetConCA.\n\nAfter this level, memorize: PCA = within-view variance; ICA = independent sources; CCA = cross-view correlation.",
+        "mission": "Master PCA, ICA, and CCA from first principles. Understand what each objective measures, how to read their math, and why good reconstruction does not equal interpretability.",
+        "beforeYouStart": "None — we start from absolute zero.",
+        "primer": "Welcome to Level 1. Imagine a modern language model like Gemma or Llama processing a sentence. Inside the model, words are converted into long lists of numbers — vectors with thousands of dimensions (e.g. 4096 numbers per token). We call these numbers 'activations', and together they form the model's internal representation.\n\nHere is the fundamental problem: why can't we just look at index #42 of that vector to see if the model is thinking about 'dogs'? Because neural networks do not allocate one number per concept. Information is spread out across all dimensions simultaneously. To understand what the network is doing, we need mathematical tools to rotate, unmix, or align these high-dimensional vector spaces.\n\nIn this level, we master the three classical linear tools that started it all: PCA, ICA, and CCA.\n\n--- STEP 1: PCA (Principal Component Analysis) — Finding Variance Inside One View ---\nWhere did it come from? In 1901, Karl Pearson wanted a way to summarize a complex cloud of data points using fewer dimensions without losing important spread.\n\nHow does it work? Imagine a 3D cloud of data shaped like a football floating in a room. If you must project this 3D cloud onto a flat 2D screen, which angle preserves the most information? You want to rotate the screen so it faces the longest axis of the football!\n\nLet's build the math step-by-step:\n1. Mean (μ): The central point of your data cloud.\n2. Variance: How far data points spread out around that mean. For a variable x, variance is E[(x - μ)²]. We square the differences so positive and negative offsets don't cancel each other out.\n3. Covariance: How two different coordinates move together. If coordinate X goes up whenever coordinate Y goes up, their covariance E[(x - μ_x)(y - μ_y)] is positive.\n4. Covariance Matrix (C): A square grid recording the pairwise covariance between every single pair of dimensions.\n5. Eigenvectors & Singular Value Decomposition (SVD): An eigenvector of matrix C is a special direction in space that DOES NOT ROTATE when multiplied by C — it only gets stretched! The stretch factor is the Eigenvalue (λ). SVD (X = U Σ Vᵀ) is the standard numerical algorithm to compute these principal directions directly from raw data.\n\nThe PCA recipe: PCA finds orthogonal (90-degree right angle) axes ordered by how much variance they capture. The first component is the longest axis of the cloud; the second component is the next longest axis strictly perpendicular to the first.\n\nWhat is FVU (Fraction of Variance Unexplained)?\nIf you keep only the top k components and throw away the rest, your reconstructed points will have a small error. FVU = 1 - (Explained Variance / Total Variance). If FVU is 0.02, your rank-k subspace captures 98% of the data's spread.\n\nCRITICAL LESSON FOR MI & SAE RESEARCH:\nOrthogonality is a mathematical convenience, NOT a guarantee of semantic meaning. PCA directions are orthogonal pure-math axes. They are rarely clean human concepts! Good reconstruction (low FVU) only means you kept the spread — it does NOT mean you found interpretable features.\n\n--- STEP 2: ICA (Independent Component Analysis) — Unmixing Independent Sources ---\nWhere did it come from? Imagine the 'Cocktail Party Problem'. Two people are speaking at the exact same time in a room. You place two microphones at different locations. Mic 1 picks up 70% Person A + 30% Person B. Mic 2 picks up 40% Person A + 60% Person B. How do you recover the original pure individual voices without knowing who spoke or where the mics were?\n\nWhy PCA fails here: Person A and Person B's voices are NOT orthogonal in microphone space. PCA would just find the direction of highest combined volume, mixing both voices together!\n\nThe ICA core concept: ICA assumes the observations x come from a linear mixture x = A * s, where s is a vector of statistically INDEPENDENT source signals. Independence is much stronger than zero correlation. Zero correlation means E[xy] = E[x]E[y] (no linear relation). Independence means p(x,y) = p(x)p(y) — knowing variable x gives you ABSOLUTELY ZERO information about variable y.\n\nHow ICA unmixes: The Central Limit Theorem states that adding independent random variables together makes their combined distribution more Gaussian (bell-shaped). Therefore, mixed signals are always more Gaussian than single pure signals! ICA searches for an unmixing matrix W such that the recovered signals y = W * x are as NON-GAUSSIAN as possible (maximizing kurtosis or negentropy). By pushing distributions away from bell curves, ICA pops the independent sources back out.\n\nConnection to SetConCA: Concept Component Analysis (ConCA) uses this exact unmixing mental model, treating neural activations as linear mixtures of independent concept components.\n\n--- STEP 3: CCA (Canonical Correlation Analysis) — Finding Shared Signals Between Two Views ---\nWhere did it come from? Harold Hotelling (1936) asked: what if you have TWO different measurements of the same items? For example, View 1 is an audio recording of a speech, and View 2 is a video recording of the speaker's lips. Audio vectors and video vectors have different dimensions and different units.\n\nHow does CCA work? CCA searches for a linear direction u in View 1 space and a linear direction v in View 2 space such that the projected numbers (uᵀx and vᵀy) have the MAXIMUM possible correlation with each other!\n\nShared vs. Private Information:\nCCA focuses strictly on what is SHARED between the two views. If View 1 contains background noise that has nothing to do with View 2, CCA ignores it. The projected variables (uᵀx, vᵀy) are called Canonical Variables, and their correlation is the Canonical Correlation.\n\nTHE CLASSICAL TRIAD TO MEMORIZE:\n• PCA asks: Which directions capture max variance INSIDE one view?\n• ICA asks: Which directions unmix INDEPENDENT sources inside one view?\n• CCA asks: Which directions LINE UP (correlate) ACROSS two views?",
         "bigPictureDiagram": [
-          "One view  → PCA  → keep variance axes",
-          "One view  → ICA  → unmix independent sources",
-          "Two views → CCA  → shared correlated directions"
+          "One view  → PCA  → keep max variance axes (orthogonal, math-driven)",
+          "One view  → ICA  → unmix independent non-Gaussian sources (Cocktail party)",
+          "Two views → CCA  → find maximum cross-view linear correlation (shared signal)"
         ],
         "conceptsToMaster": [
           {
-            "name": "Variance / covariance",
-            "simple": "How much a variable spreads; how two variables co-move.",
-            "deeper": "Covariance matrix C = E[(x−μ)(x−μ)ᵀ]. PCA diagonalizes it."
+            "name": "Variance / Covariance",
+            "simple": "Variance = how much one variable spreads out around its average. Covariance = whether two variables rise and fall together.",
+            "deeper": "Covariance matrix C = E[(x−μ)(x−μ)ᵀ]. Diagonals are variances; off-diagonals are pairwise covariances. PCA diagonalizes C."
           },
           {
             "name": "Eigenvector / SVD",
-            "simple": "Special directions that only stretch under a matrix.",
-            "deeper": "SVD X=UΣVᵀ gives principal directions as columns of V (or U)."
+            "simple": "An eigenvector is a special arrow in space that only gets stretched (not tilted) when multiplied by a matrix. SVD is the master algorithm that finds these stretch directions.",
+            "deeper": "Singular Value Decomposition X = U Σ Vᵀ factors data matrix X into left singular vectors U, singular values Σ, and right singular vectors V. The columns of V are the principal component directions."
           },
           {
-            "name": "FVU",
-            "simple": "Fraction of variance left unexplained after reconstruction.",
-            "deeper": "FVU=1−explained_variance_fraction. Used later for SAE fidelity."
+            "name": "FVU (Fraction of Variance Unexplained)",
+            "simple": "The percentage of original data spread lost after compressing and reconstructing.",
+            "deeper": "FVU = 1 - (Explained Variance / Total Variance) = ||X - X_hat||_F^2 / ||X - X_mean||_F^2. Lower FVU means better reconstruction, but NOT higher interpretability."
           },
           {
-            "name": "Independence vs correlation",
-            "simple": "Uncorrelated ≠ independent.",
-            "deeper": "ICA needs independence (or non-Gaussianity) for source recovery."
+            "name": "Independence vs. Uncorrelatedness",
+            "simple": "Uncorrelated means no straight-line relationship. Independent means knowing one variable tells you absolutely nothing about the other.",
+            "deeper": "Uncorrelatedness only requires Cov(X,Y) = 0 (2nd-order statistic). Independence requires joint probability p(x,y) = p(x)p(y) across all higher-order moments. ICA requires independence or non-Gaussianity for source recovery."
           },
           {
-            "name": "Canonical correlation",
-            "simple": "Max correlation after projecting two views.",
-            "deeper": "CCA finds (u,v) maximizing corr(Xu, Yv) under unit variance."
+            "name": "Canonical Correlation",
+            "simple": "The highest correlation achievable between two different views after rotating each view appropriately.",
+            "deeper": "CCA finds projection vectors u, v maximizing corr(uᵀX, vᵀY) subject to Var(uᵀX) = 1 and Var(vᵀY) = 1. Solved via a generalized eigenvalue problem on cross-covariance matrices."
           }
         ],
         "checkpoint": {
-          "goal": "Compare PCA, ICA, CCA on the same activation bank.",
+          "goal": "Compare PCA, ICA, and CCA on the same activation dataset.",
           "steps": [
-            "Take Gemma activations for the same set of prompts.",
-            "Run PCA; record FVU vs number of components.",
-            "Run ICA; inspect recovered components.",
-            "Split views (e.g. two layers or two paraphrases); run CCA.",
-            "Compare reconstruction, dimensionality, cross-view correlation, retrieval."
+            "Extract activations from Gemma for a dataset of prompts.",
+            "Run PCA: plot FVU versus the number of components k.",
+            "Run ICA: inspect whether unmixed components isolate distinct activation patterns.",
+            "Create two views (e.g. Layer 10 vs Layer 14 activations for the same prompts) and run CCA.",
+            "Compare reconstruction error (FVU), cross-view correlation, and retrieval performance."
           ],
-          "successLooksLike": "You can say which method wins on which metric and why that metric is not interpretability."
+          "successLooksLike": "You can explain clearly which method wins on which metric and why high reconstruction or high correlation does NOT automatically mean you found human-interpretable concepts."
         },
-        "bridgeToNext": "Sparse autoencoders keep the reconstruction idea from PCA but add overcomplete sparse codes."
+        "bridgeToNext": "Now that you understand linear decompositions (PCA/ICA/CCA), Level 2 moves to Sparse Representations & Autoencoders — expanding feature count beyond input dimensions."
       }
     },
     {
@@ -1155,9 +1260,9 @@ window.CURRICULUM_DATA = {
           "pages": 9,
           "pdfPath": "RAW/1312.5663v2.pdf",
           "teach": {
-            "whyWeRead": "Clearest bridge from classical sparse coding to modern TopK SAEs.",
-            "oneSentence": "Autoencoders with a hard TopK activation that keep exactly k units active.",
-            "plainLanguage": "An autoencoder compresses input through a bottleneck then reconstructs. If the bottleneck is wider than the input (overcomplete), you must constrain the code or it can cheat.\n\nk-Sparse AEs keep only the k largest hidden activations and zero the rest. Magnitudes of survivors are not softly shrunk by an L1 term. That hard selection is exactly the spirit of TopK SAEs used in modern interpretability.\n\nSparse codes can still reconstruct dense inputs because many dictionary atoms combine. Sparsity is about which atoms fire, not about the input being sparse.",
+            "whyWeRead": "k-Sparse Autoencoders are the clearest bridge from classical sparse coding to modern TopK SAEs used in mechanistic interpretability.",
+            "oneSentence": "Autoencoders with a hard TopK activation operator that keeps exactly k active units while zeroing all others.",
+            "plainLanguage": "Welcome to the k-Sparse Autoencoder Masterclass. Let's understand why Alireza Makhzani and Brendan Frey invented this model in 2013.\n\n--- THE OVERCOMPLETE BOTTLENECK PROBLEM ---\nAn Autoencoder consists of an Encoder z = f(x) and a Decoder x_hat = g(z). If the hidden layer z is OVERCOMPLETE (has more units than input dimension N), an unconstrained autoencoder can easily achieve 0 reconstruction error by learning trivial identity mappings! Every unit becomes a dense, useless mixture of everything.\n\n--- THE HARD TOPK SOLUTION ---\nMakhzani & Frey solved this by inserting a hard TopK activation operator after the encoder:\n1. Encoder computes pre-activations for all hidden units.\n2. TopK operator finds the k largest pre-activation values.\n3. Keeps those k activations EXACTLY as they are, and FORCEFULLY SETS ALL OTHER UNITS TO ZERO!\n4. Decoder reconstructs x_hat from this exact k-sparse code z.\n\n--- WHY TOPK BEATS L1 REGULARIZATION ---\nIn standard L1 autoencoders, sparsity is encouraged by adding λ Σ|z_i| to the loss function. But L1 penalizes activation MAGNITUDES as well as presence, shrinking active feature values (shrinkage flaw).\n\nk-Sparse Autoencoders enforce exact cardinality k WITHOUT penalizing magnitudes! The active k units retain their true strength, leading to much better reconstruction at matched sparsity levels.\n\n--- WHY DENSE INPUTS CAN HAVE SPARSE CODES ---\nA common beginner confusion: 'If my input vector x is dense (all non-zeros), how can code z be 99% sparse?'\nBecause the dictionary is overcomplete! Dense input vector x is reconstructed as a linear combination of just k dictionary columns (atoms): x_hat = Σ_{i ∈ TopK} z_i W_col_i. A few selected dictionary atoms combine to span the dense input vector.",
             "keyIdeas": [
               {
                 "title": "Encoder–decoder factorisation",
@@ -1192,146 +1297,168 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "TopK code",
-                "formula": "z = TopK(f(x), k)",
-                "original": "TopK code: z = TopK(f(x), k)",
-                "simple": "Only k entries of the encoder output remain nonzero.",
-                "meaning": "Only k entries of the encoder output remain nonzero."
+                "name": "k-Sparse Activation",
+                "formula": "z = TopK( W_{enc} x + b_{enc}, k )",
+                "original": "k-Sparse Activation: z = TopK( W_{enc} x + b_{enc}, k )",
+                "simple": "Keep k largest encoder pre-activations; set remaining entries to 0.",
+                "meaning": "Keep k largest encoder pre-activations; set remaining entries to 0."
               },
               {
-                "name": "Reconstruction loss",
-                "formula": "L = ||x − g(z)||²",
-                "original": "Reconstruction loss: L = ||x − g(z)||²",
-                "simple": "Train encoder/decoder to reconstruct under the TopK constraint.",
-                "meaning": "Train encoder/decoder to reconstruct under the TopK constraint."
+                "name": "Reconstruction Loss",
+                "formula": "Loss = ||x - (W_{dec} z + b_{dec})||²",
+                "original": "Reconstruction Loss: Loss = ||x - (W_{dec} z + b_{dec})||²",
+                "simple": "Train encoder/decoder weights to minimize mean squared reconstruction error under the TopK constraint.",
+                "meaning": "Train encoder/decoder weights to minimize mean squared reconstruction error under the TopK constraint."
               }
             ],
             "vocabulary": [
               {
-                "term": "Dictionary atom",
-                "original": "Technical term: «Dictionary atom» as used in this literature.",
-                "simple": "A column of the decoder; a reusable feature direction.",
-                "def": "A column of the decoder; a reusable feature direction."
+                "term": "Dictionary Atom",
+                "original": "Technical term: «Dictionary Atom» as used in this literature.",
+                "simple": "A single column vector of the decoder matrix representing a reusable feature direction.",
+                "def": "A single column vector of the decoder matrix representing a reusable feature direction."
               },
               {
-                "term": "k-sparsity",
-                "original": "Technical term: «k-sparsity» as used in this literature.",
-                "simple": "Exactly k nonzero code entries.",
-                "def": "Exactly k nonzero code entries."
+                "term": "k-Sparsity",
+                "original": "Technical term: «k-Sparsity» as used in this literature.",
+                "simple": "The condition where a vector has exactly k non-zero entries (||z||₀ = k).",
+                "def": "The condition where a vector has exactly k non-zero entries (||z||₀ = k)."
               },
               {
                 "term": "Overcomplete",
                 "original": "Technical term: «Overcomplete» as used in this literature.",
-                "simple": "Code dimension larger than input dimension.",
-                "def": "Code dimension larger than input dimension."
+                "simple": "A representation where hidden dimension exceeds input dimension.",
+                "def": "A representation where hidden dimension exceeds input dimension."
               }
             ],
             "whatItShows": [
-              "Exact cardinality constraints work for autoencoders",
-              "Sparse overcomplete codes can reconstruct"
+              "That hard TopK activation enforces exact k-sparsity in autoencoders",
+              "That overcomplete sparse codes can reconstruct dense input vectors accurately"
             ],
             "whatItDoesNotShow": [
-              "Monosemanticity of atoms",
-              "Causal role of features in an LM"
+              "That TopK features are guaranteed to be monosemantic concepts",
+              "How features behave in transformer language model residual streams"
             ],
             "setconcaUse": [
-              "Treat TopK SAE as descendant of this paper.",
-              "Prefer matched-k comparisons when ablating sparsity mechanisms."
+              "Treat TopK SAEs as the direct descendant of this architecture.",
+              "Use matched-k operating points when comparing sparsity mechanisms."
             ],
             "masteryChecklist": [
-              "I can explain why overcomplete codes need sparsity.",
-              "I can contrast L1 and TopK.",
-              "I can sketch encoder→TopK→decoder."
+              "I can explain why overcomplete autoencoders require sparsity.",
+              "I can contrast L1 soft penalties with hard TopK selection.",
+              "I understand how a sparse combination of dictionary atoms reconstructs a dense input."
             ],
             "commonConfusions": [
               {
-                "wrong": "Sparse code means input is sparse.",
-                "right": "The latent is sparse; input can be dense."
+                "wrong": "Sparse latent code means the input vector must be sparse.",
+                "right": "Input vector x can be dense. Overcomplete dictionary atoms combine to reconstruct dense x from sparse z."
               },
               {
-                "wrong": "TopK is the same as L1.",
-                "right": "TopK enforces exact k; L1 soft-penalises and shrinks."
+                "wrong": "TopK is just L1 regularization.",
+                "right": "L1 adds soft magnitude penalty to loss. TopK is a hard architectural selection operator with no magnitude shrinkage."
               }
             ],
             "quiz": [
               {
-                "q": "k-Sparse AEs enforce sparsity by?",
+                "q": "How do k-Sparse Autoencoders enforce sparsity?",
                 "options": [
-                  "Keeping exactly k actives",
-                  "Only dropout",
-                  "Only L2",
-                  "PCA"
+                  "Hard TopK selection keeping exactly k largest activations",
+                  "L1 magnitude penalty in loss",
+                  "Dropout layers",
+                  "PCA truncation"
                 ],
                 "a": 0,
-                "explain": "Hard TopK."
+                "explain": "Hard TopK selection keeps the top k values and zeroes all others."
               },
               {
-                "q": "Why overcomplete needs sparsity?",
+                "q": "Why do overcomplete autoencoders fail without sparsity?",
                 "options": [
-                  "Otherwise dense mush reconstructs without specialisation",
-                  "It doesn't",
-                  "For speed only",
-                  "For CCA"
+                  "Without sparsity, dense overcomplete codes learn trivial non-specialized solutions",
+                  "They overflow memory",
+                  "They cannot compute gradients",
+                  "They fail CCA"
                 ],
                 "a": 0,
-                "explain": "Without sparsity, overcomplete codes need not specialise."
+                "explain": "Without sparsity, overcomplete codes reconstruct using tiny weights across all units without specializing."
+              },
+              {
+                "q": "What advantage does TopK have over L1 regularization?",
+                "options": [
+                  "TopK avoids magnitude shrinkage on active features",
+                  "TopK is linear",
+                  "TopK requires no hyperparameter",
+                  "TopK guarantees 0 loss"
+                ],
+                "a": 0,
+                "explain": "TopK does not penalize active feature magnitudes, avoiding L1 shrinkage."
               }
             ],
-            "originalIdea": "Autoencoders with a hard TopK activation that keep exactly k units active.",
-            "simpleLesson": "An autoencoder compresses input through a bottleneck then reconstructs. If the bottleneck is wider than the input (overcomplete), you must constrain the code or it can cheat.\n\nk-Sparse AEs keep only the k largest hidden activations and zero the rest. Magnitudes of survivors are not softly shrunk by an L1 term. That hard selection is exactly the spirit of TopK SAEs used in modern interpretability.\n\nSparse codes can still reconstruct dense inputs because many dictionary atoms combine. Sparsity is about which atoms fire, not about the input being sparse.",
+            "originalIdea": "Autoencoders with a hard TopK activation operator that keeps exactly k active units while zeroing all others.",
+            "simpleLesson": "Welcome to the k-Sparse Autoencoder Masterclass. Let's understand why Alireza Makhzani and Brendan Frey invented this model in 2013.\n\n--- THE OVERCOMPLETE BOTTLENECK PROBLEM ---\nAn Autoencoder consists of an Encoder z = f(x) and a Decoder x_hat = g(z). If the hidden layer z is OVERCOMPLETE (has more units than input dimension N), an unconstrained autoencoder can easily achieve 0 reconstruction error by learning trivial identity mappings! Every unit becomes a dense, useless mixture of everything.\n\n--- THE HARD TOPK SOLUTION ---\nMakhzani & Frey solved this by inserting a hard TopK activation operator after the encoder:\n1. Encoder computes pre-activations for all hidden units.\n2. TopK operator finds the k largest pre-activation values.\n3. Keeps those k activations EXACTLY as they are, and FORCEFULLY SETS ALL OTHER UNITS TO ZERO!\n4. Decoder reconstructs x_hat from this exact k-sparse code z.\n\n--- WHY TOPK BEATS L1 REGULARIZATION ---\nIn standard L1 autoencoders, sparsity is encouraged by adding λ Σ|z_i| to the loss function. But L1 penalizes activation MAGNITUDES as well as presence, shrinking active feature values (shrinkage flaw).\n\nk-Sparse Autoencoders enforce exact cardinality k WITHOUT penalizing magnitudes! The active k units retain their true strength, leading to much better reconstruction at matched sparsity levels.\n\n--- WHY DENSE INPUTS CAN HAVE SPARSE CODES ---\nA common beginner confusion: 'If my input vector x is dense (all non-zeros), how can code z be 99% sparse?'\nBecause the dictionary is overcomplete! Dense input vector x is reconstructed as a linear combination of just k dictionary columns (atoms): x_hat = Σ_{i ∈ TopK} z_i W_col_i. A few selected dictionary atoms combine to span the dense input vector.",
             "limitPairs": [
               {
-                "original": "Exact cardinality constraints work for autoencoders",
-                "simple": "In practice this means evidence supports: Exact cardinality constraints work for autoencoders"
+                "original": "That hard TopK activation enforces exact k-sparsity in autoencoders",
+                "simple": "In practice this means evidence supports: That hard TopK activation enforces exact k-sparsity in autoencoders"
               },
               {
-                "original": "Sparse overcomplete codes can reconstruct",
-                "simple": "In practice this means evidence supports: Sparse overcomplete codes can reconstruct"
+                "original": "That overcomplete sparse codes can reconstruct dense input vectors accurately",
+                "simple": "In practice this means evidence supports: That overcomplete sparse codes can reconstruct dense input vectors accurately"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Monosemanticity of atoms",
-                "simple": "Do not overclaim: Monosemanticity of atoms"
+                "original": "That TopK features are guaranteed to be monosemantic concepts",
+                "simple": "Do not overclaim: That TopK features are guaranteed to be monosemantic concepts"
               },
               {
-                "original": "Causal role of features in an LM",
-                "simple": "Do not overclaim: Causal role of features in an LM"
+                "original": "How features behave in transformer language model residual streams",
+                "simple": "Do not overclaim: How features behave in transformer language model residual streams"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Treat TopK SAE as descendant of this paper.",
-                "simple": "Action item: Treat TopK SAE as descendant of this paper."
+                "original": "Treat TopK SAEs as the direct descendant of this architecture.",
+                "simple": "Action item: Treat TopK SAEs as the direct descendant of this architecture."
               },
               {
-                "original": "Prefer matched-k comparisons when ablating sparsity mechanisms.",
-                "simple": "Action item: Prefer matched-k comparisons when ablating sparsity mechanisms."
+                "original": "Use matched-k operating points when comparing sparsity mechanisms.",
+                "simple": "Action item: Use matched-k operating points when comparing sparsity mechanisms."
               }
             ]
           },
           "quiz": [
             {
-              "q": "k-Sparse AEs enforce sparsity by?",
+              "q": "How do k-Sparse Autoencoders enforce sparsity?",
               "options": [
-                "Keeping exactly k actives",
-                "Only dropout",
-                "Only L2",
-                "PCA"
+                "Hard TopK selection keeping exactly k largest activations",
+                "L1 magnitude penalty in loss",
+                "Dropout layers",
+                "PCA truncation"
               ],
               "a": 0,
-              "explain": "Hard TopK."
+              "explain": "Hard TopK selection keeps the top k values and zeroes all others."
             },
             {
-              "q": "Why overcomplete needs sparsity?",
+              "q": "Why do overcomplete autoencoders fail without sparsity?",
               "options": [
-                "Otherwise dense mush reconstructs without specialisation",
-                "It doesn't",
-                "For speed only",
-                "For CCA"
+                "Without sparsity, dense overcomplete codes learn trivial non-specialized solutions",
+                "They overflow memory",
+                "They cannot compute gradients",
+                "They fail CCA"
               ],
               "a": 0,
-              "explain": "Without sparsity, overcomplete codes need not specialise."
+              "explain": "Without sparsity, overcomplete codes reconstruct using tiny weights across all units without specializing."
+            },
+            {
+              "q": "What advantage does TopK have over L1 regularization?",
+              "options": [
+                "TopK avoids magnitude shrinkage on active features",
+                "TopK is linear",
+                "TopK requires no hyperparameter",
+                "TopK guarantees 0 loss"
+              ],
+              "a": 0,
+              "explain": "TopK does not penalize active feature magnitudes, avoiding L1 shrinkage."
             }
           ]
         },
@@ -1354,9 +1481,9 @@ window.CURRICULUM_DATA = {
           "pages": 14,
           "pdfPath": "RAW/1312.6114v11.pdf",
           "teach": {
-            "whyWeRead": "Background for probabilistic latents, Gaussian aggregation, and ELBO thinking — not to become a VAE specialist.",
-            "oneSentence": "Derives variational autoencoders: approximate posteriors, reparameterisation, and the ELBO.",
-            "plainLanguage": "A VAE treats each input as generated from a latent random variable z. We cannot compute the true posterior p(z|x) easily, so we learn an approximate posterior q(z|x), usually a Gaussian with predicted mean and variance.\n\nThe reparameterisation trick writes z = μ + σ⊙ε with ε~N(0,I) so gradients flow through sampling.\n\nTraining maximises a lower bound on log p(x) called the ELBO: reconstruction quality minus KL divergence from q to a prior (often N(0,I)). Too much KL pressure can over-regularise; too little can ignore the prior.\n\nFor SetConCA: when you aggregate views as Gaussians or use product-of-experts, you are using this probabilistic vocabulary.",
+            "whyWeRead": "VAEs introduce probabilistic latent-variable modeling, variational inference, the reparameterization trick, and the ELBO loss — foundational vocabulary for Gaussian set aggregations and Product-of-Experts (PoE).",
+            "oneSentence": "Derives Variational Autoencoders (VAEs), approximate posterior estimation, the reparameterization trick, and the Evidence Lower Bound (ELBO).",
+            "plainLanguage": "Welcome to the VAE Masterclass. Let's understand why Diederik Kingma and Max Welling invented VAEs in 2013.\n\n--- DETERMINISTIC VS PROBABILISTIC AUTOENCODERS ---\nA standard autoencoder maps input x to a single deterministic point z in latent space. But what if you want to GENERATE new data, or model UNCERTAINTY? Deterministic latent spaces have empty gaps where decoding produces nonsense.\n\nA VAE treats each input x as being generated by a probabilistic latent variable z. Instead of predicting a single point z, the encoder predicts the PARAMETERS of a distribution: a mean vector μ(x) and a variance vector σ²(x)!\n\n--- THE REPARAMETERIZATION TRICK ---\nHere is the technical wall Kingma & Welling hit: how do you backpropagate neural network gradients through a random sampling step z ~ N(μ, σ²)?\nRandom sampling is non-differentiable! Standard backpropagation fails.\n\nThe Brilliant Solution (Reparameterization Trick):\nIsolate the randomness outside the network! Sample pure noise ε from a standard normal distribution N(0, I). Then compute latent z deterministically:\nz = μ(x) + σ(x) ⊙ ε\nNow μ and σ are standard deterministic outputs, and gradients flow cleanly back into the encoder parameters!\n\n--- THE ELBO LOSS (Evidence Lower Bound) ---\nVAEs optimize the ELBO, which balances two competing forces:\nLoss = Reconstruction Error + KL-Divergence( q(z|x) || p(z) )\n1. Reconstruction Error: Encoder and decoder work together to reconstruct input x accurately.\n2. KL-Divergence Penalty: Forces the predicted distribution q(z|x) to stay close to a simple standard normal prior p(z) = N(0, I). This prevents the encoder from scattering latent distributions far apart, keeping the latent space continuous and smooth.\n\nFOR SETCONCA:\nWhen SetConCA represents sets of activation views as probabilistic Gaussian distributions or merges them using Product-of-Experts (PoE), you are using this exact VAE ELBO vocabulary.",
             "keyIdeas": [
               {
                 "title": "Latent variable model",
@@ -1391,182 +1518,217 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "ELBO",
-                "formula": "E_q[log p(x|z)] − KL(q(z|x)||p(z))",
-                "original": "ELBO: E_q[log p(x|z)] − KL(q(z|x)||p(z))",
-                "simple": "Reconstruction term minus regulariser toward prior.",
-                "meaning": "Reconstruction term minus regulariser toward prior."
+                "name": "Reparameterization Formula",
+                "formula": "z = μ(x) + σ(x) ⊙ ε,   ε ~ N(0, I)",
+                "original": "Reparameterization Formula: z = μ(x) + σ(x) ⊙ ε,   ε ~ N(0, I)",
+                "simple": "Differentiable latent sampling separating deterministic parameters from random noise ε.",
+                "meaning": "Differentiable latent sampling separating deterministic parameters from random noise ε."
               },
               {
-                "name": "Reparameterisation",
-                "formula": "z = μ(x) + σ(x) ⊙ ε, ε~N(0,I)",
-                "original": "Reparameterisation: z = μ(x) + σ(x) ⊙ ε, ε~N(0,I)",
-                "simple": "Differentiable sampling.",
-                "meaning": "Differentiable sampling."
+                "name": "ELBO Objective",
+                "formula": "ELBO = E_{q(z|x)}[log p(x|z)] - KL(q(z|x) || p(z))",
+                "original": "ELBO Objective: ELBO = E_{q(z|x)}[log p(x|z)] - KL(q(z|x) || p(z))",
+                "simple": "Maximize expected log reconstruction likelihood minus KL divergence to standard normal prior.",
+                "meaning": "Maximize expected log reconstruction likelihood minus KL divergence to standard normal prior."
               }
             ],
             "vocabulary": [
               {
                 "term": "ELBO",
                 "original": "Technical term: «ELBO» as used in this literature.",
-                "simple": "Evidence lower bound on log likelihood.",
-                "def": "Evidence lower bound on log likelihood."
+                "simple": "Evidence Lower Bound; the variational objective maximized during VAE training.",
+                "def": "Evidence Lower Bound; the variational objective maximized during VAE training."
               },
               {
-                "term": "KL divergence",
-                "original": "Technical term: «KL divergence» as used in this literature.",
-                "simple": "Measure of how one distribution differs from another.",
-                "def": "Measure of how one distribution differs from another."
+                "term": "KL Divergence",
+                "original": "Technical term: «KL Divergence» as used in this literature.",
+                "simple": "Kullback–Leibler divergence; measures relative entropy/difference between two probability distributions.",
+                "def": "Kullback–Leibler divergence; measures relative entropy/difference between two probability distributions."
               },
               {
-                "term": "Reparameterisation trick",
-                "original": "Technical term: «Reparameterisation trick» as used in this literature.",
-                "simple": "Rewrite sampling so parameters receive gradients.",
-                "def": "Rewrite sampling so parameters receive gradients."
+                "term": "Reparameterization Trick",
+                "original": "Technical term: «Reparameterization Trick» as used in this literature.",
+                "simple": "Method rewriting stochastic sampling so encoder parameters receive backprop gradients.",
+                "def": "Method rewriting stochastic sampling so encoder parameters receive backprop gradients."
               }
             ],
             "whatItShows": [
-              "How to train continuous latents with variational inference",
-              "Reconstruction–regularisation tradeoff"
+              "How to train continuous probabilistic latents using variational inference",
+              "How the reparameterization trick enables gradient flow through sampling"
             ],
             "whatItDoesNotShow": [
-              "That Gaussian latents are monosemantic",
-              "SAE dictionary learning"
+              "That VAE Gaussian latents are monosemantic features",
+              "How overcomplete dictionaries unpack superposed representations"
             ],
             "setconcaUse": [
-              "Use ELBO intuition for Gaussian set codes and PoE fusion.",
-              "Separate reconstruction goals from alignment goals explicitly."
+              "Use ELBO intuition for Gaussian set view representations.",
+              "Apply Product-of-Experts (PoE) fusion when combining multi-view posteriors."
             ],
             "masteryChecklist": [
-              "I can explain ELBO in words.",
-              "I can write the reparameterisation formula.",
-              "I know why this matters for probabilistic multi-view aggregation."
+              "I can explain why standard random sampling breaks backpropagation.",
+              "I can write the reparameterization formula and explain why it works.",
+              "I can explain the two terms in the ELBO loss and their trade-off."
             ],
             "commonConfusions": [
               {
-                "wrong": "VAE = SAE.",
-                "right": "VAE is probabilistic bottleneck; SAE is sparse overcomplete dictionary for interpretability."
+                "wrong": "VAE is the same as SAE.",
+                "right": "VAE is a probabilistic bottleneck model with a Gaussian prior. SAE is an overcomplete sparse dictionary enforcer for interpretability."
               }
             ],
             "quiz": [
               {
-                "q": "ELBO balances?",
+                "q": "What problem does the Reparameterization Trick solve?",
                 "options": [
-                  "Reconstruction vs KL to prior",
-                  "Only sparsity",
-                  "Only CCA",
-                  "Only TopK"
+                  "Enables gradient backpropagation through stochastic sampling",
+                  "Increases L0 sparsity",
+                  "Computes CKA",
+                  "Solves PCA"
                 ],
                 "a": 0,
-                "explain": "Classic VAE tradeoff."
+                "explain": "It isolates random sampling outside the parameter graph so backprop gradients can flow."
               },
               {
-                "q": "Reparameterisation exists to?",
+                "q": "The ELBO loss balances which two terms?",
                 "options": [
-                  "Backprop through sampling",
-                  "Increase sparsity",
-                  "Compute CKA",
-                  "Remove decoder"
+                  "Reconstruction quality vs. KL divergence to prior",
+                  "L0 sparsity vs. L1 penalty",
+                  "CCA correlation vs. PCA variance",
+                  "Precision vs. Recall"
                 ],
                 "a": 0,
-                "explain": "Make sampling differentiable."
+                "explain": "ELBO balances expected reconstruction likelihood against KL divergence from the prior."
+              },
+              {
+                "q": "Why is VAE vocabulary relevant to SetConCA?",
+                "options": [
+                  "Provides framework for probabilistic Gaussian set representations and Product-of-Experts fusion",
+                  "Replaces SAEs",
+                  "Eliminates need for data",
+                  "Computes TopK"
+                ],
+                "a": 0,
+                "explain": "VAEs provide the probabilistic framework for multi-view Gaussian fusion."
               }
             ],
-            "originalIdea": "Derives variational autoencoders: approximate posteriors, reparameterisation, and the ELBO.",
-            "simpleLesson": "A VAE treats each input as generated from a latent random variable z. We cannot compute the true posterior p(z|x) easily, so we learn an approximate posterior q(z|x), usually a Gaussian with predicted mean and variance.\n\nThe reparameterisation trick writes z = μ + σ⊙ε with ε~N(0,I) so gradients flow through sampling.\n\nTraining maximises a lower bound on log p(x) called the ELBO: reconstruction quality minus KL divergence from q to a prior (often N(0,I)). Too much KL pressure can over-regularise; too little can ignore the prior.\n\nFor SetConCA: when you aggregate views as Gaussians or use product-of-experts, you are using this probabilistic vocabulary.",
+            "originalIdea": "Derives Variational Autoencoders (VAEs), approximate posterior estimation, the reparameterization trick, and the Evidence Lower Bound (ELBO).",
+            "simpleLesson": "Welcome to the VAE Masterclass. Let's understand why Diederik Kingma and Max Welling invented VAEs in 2013.\n\n--- DETERMINISTIC VS PROBABILISTIC AUTOENCODERS ---\nA standard autoencoder maps input x to a single deterministic point z in latent space. But what if you want to GENERATE new data, or model UNCERTAINTY? Deterministic latent spaces have empty gaps where decoding produces nonsense.\n\nA VAE treats each input x as being generated by a probabilistic latent variable z. Instead of predicting a single point z, the encoder predicts the PARAMETERS of a distribution: a mean vector μ(x) and a variance vector σ²(x)!\n\n--- THE REPARAMETERIZATION TRICK ---\nHere is the technical wall Kingma & Welling hit: how do you backpropagate neural network gradients through a random sampling step z ~ N(μ, σ²)?\nRandom sampling is non-differentiable! Standard backpropagation fails.\n\nThe Brilliant Solution (Reparameterization Trick):\nIsolate the randomness outside the network! Sample pure noise ε from a standard normal distribution N(0, I). Then compute latent z deterministically:\nz = μ(x) + σ(x) ⊙ ε\nNow μ and σ are standard deterministic outputs, and gradients flow cleanly back into the encoder parameters!\n\n--- THE ELBO LOSS (Evidence Lower Bound) ---\nVAEs optimize the ELBO, which balances two competing forces:\nLoss = Reconstruction Error + KL-Divergence( q(z|x) || p(z) )\n1. Reconstruction Error: Encoder and decoder work together to reconstruct input x accurately.\n2. KL-Divergence Penalty: Forces the predicted distribution q(z|x) to stay close to a simple standard normal prior p(z) = N(0, I). This prevents the encoder from scattering latent distributions far apart, keeping the latent space continuous and smooth.\n\nFOR SETCONCA:\nWhen SetConCA represents sets of activation views as probabilistic Gaussian distributions or merges them using Product-of-Experts (PoE), you are using this exact VAE ELBO vocabulary.",
             "limitPairs": [
               {
-                "original": "How to train continuous latents with variational inference",
-                "simple": "In practice this means evidence supports: How to train continuous latents with variational inference"
+                "original": "How to train continuous probabilistic latents using variational inference",
+                "simple": "In practice this means evidence supports: How to train continuous probabilistic latents using variational inference"
               },
               {
-                "original": "Reconstruction–regularisation tradeoff",
-                "simple": "In practice this means evidence supports: Reconstruction–regularisation tradeoff"
+                "original": "How the reparameterization trick enables gradient flow through sampling",
+                "simple": "In practice this means evidence supports: How the reparameterization trick enables gradient flow through sampling"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That Gaussian latents are monosemantic",
-                "simple": "Do not overclaim: That Gaussian latents are monosemantic"
+                "original": "That VAE Gaussian latents are monosemantic features",
+                "simple": "Do not overclaim: That VAE Gaussian latents are monosemantic features"
               },
               {
-                "original": "SAE dictionary learning",
-                "simple": "Do not overclaim: SAE dictionary learning"
+                "original": "How overcomplete dictionaries unpack superposed representations",
+                "simple": "Do not overclaim: How overcomplete dictionaries unpack superposed representations"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Use ELBO intuition for Gaussian set codes and PoE fusion.",
-                "simple": "Action item: Use ELBO intuition for Gaussian set codes and PoE fusion."
+                "original": "Use ELBO intuition for Gaussian set view representations.",
+                "simple": "Action item: Use ELBO intuition for Gaussian set view representations."
               },
               {
-                "original": "Separate reconstruction goals from alignment goals explicitly.",
-                "simple": "Action item: Separate reconstruction goals from alignment goals explicitly."
+                "original": "Apply Product-of-Experts (PoE) fusion when combining multi-view posteriors.",
+                "simple": "Action item: Apply Product-of-Experts (PoE) fusion when combining multi-view posteriors."
               }
             ]
           },
           "quiz": [
             {
-              "q": "ELBO balances?",
+              "q": "What problem does the Reparameterization Trick solve?",
               "options": [
-                "Reconstruction vs KL to prior",
-                "Only sparsity",
-                "Only CCA",
-                "Only TopK"
+                "Enables gradient backpropagation through stochastic sampling",
+                "Increases L0 sparsity",
+                "Computes CKA",
+                "Solves PCA"
               ],
               "a": 0,
-              "explain": "Classic VAE tradeoff."
+              "explain": "It isolates random sampling outside the parameter graph so backprop gradients can flow."
             },
             {
-              "q": "Reparameterisation exists to?",
+              "q": "The ELBO loss balances which two terms?",
               "options": [
-                "Backprop through sampling",
-                "Increase sparsity",
-                "Compute CKA",
-                "Remove decoder"
+                "Reconstruction quality vs. KL divergence to prior",
+                "L0 sparsity vs. L1 penalty",
+                "CCA correlation vs. PCA variance",
+                "Precision vs. Recall"
               ],
               "a": 0,
-              "explain": "Make sampling differentiable."
+              "explain": "ELBO balances expected reconstruction likelihood against KL divergence from the prior."
+            },
+            {
+              "q": "Why is VAE vocabulary relevant to SetConCA?",
+              "options": [
+                "Provides framework for probabilistic Gaussian set representations and Product-of-Experts fusion",
+                "Replaces SAEs",
+                "Eliminates need for data",
+                "Computes TopK"
+              ],
+              "a": 0,
+              "explain": "VAEs provide the probabilistic framework for multi-view Gaussian fusion."
             }
           ]
         }
       ],
       "primer": {
         "title": "Sparse representations and dictionaries",
-        "mission": "Explain why overcomplete codes need sparsity, and how TopK differs from L1 and from VAEs.",
-        "beforeYouStart": "Level 1 — especially FVU and linear unmixing.",
-        "primer": "If you have more dictionary atoms than input dimensions (overcomplete), a dense code can always reconstruct by using many tiny weights. That is useless for interpretability — every atom becomes a mush of everything.\n\nSparsity forces each activation to use only a few atoms. Then atoms can specialize.\n\nk-Sparse Autoencoders keep exactly the top-k encoder activations. This is the ancestor of TopK SAEs.\n\nVAEs are different: they learn a probabilistic latent with a prior, using the ELBO. You need this vocabulary for Gaussian set aggregations and product-of-experts later — not to become a VAE researcher.\n\nCritical lesson: sparse + good reconstruction ≠ monosemantic concept recovery.",
+        "mission": "Understand overcomplete dictionaries, why overcompleteness REQUIRES sparsity, how TopK differs from L1, and how VAEs use probabilistic latents.",
+        "beforeYouStart": "Level 1 — especially linear reconstruction, FVU, and unmixing.",
+        "primer": "Welcome to Level 2. In Level 1, PCA compressed N-dimensional data into k dimensions where k < N (undercomplete). But in neural networks, a fascinating phenomenon occurs: models often pack THOUSANDS of concepts into just hundreds of activation dimensions! To unpack them, we need an OVERCOMPLETE dictionary — a hidden code with MORE features than activation dimensions (e.g. 16,000 dictionary features for a 4,000-dimensional model).\n\n--- STEP 1: Why Overcompleteness Demands Sparsity ---\nImagine you have a 100-dimensional activation vector, and you build a hidden dictionary with 10,000 feature directions. If your neural network is allowed to use ALL 10,000 features at the same time for every single token, what happens?\nThe network can easily reconstruct the input perfectly by assigning tiny, mushy numbers to all 10,000 features! Every feature becomes a generic soup of everything. It is completely uninterpretable.\n\nSparsity is the strict constraint that saves us: for any given token, ONLY A FEW features (e.g. 20 out of 10,000) are allowed to be active (nonzero)! The rest MUST be zero.\nWhen forced to represent data with only 20 active features out of 10,000, each feature direction HAS to specialize into a pure, clean concept (e.g. 'text about legal contracts' or 'Python syntax for loops').\n\n--- STEP 2: The Sparsity Mechanisms — L0, L1, and TopK ---\nHow do we mathematically enforce sparsity?\n\n1. L0 Norm (Ideal but hard):\nThe L0 'norm' ||z||₀ simply counts how many entries in vector z are non-zero. Ideally, we would optimize Loss = Reconstruction_Error + λ * ||z||₀. However, counting non-zeros is non-differentiable (gradient is zero everywhere except jumps). We cannot train neural nets with standard backpropagation using pure L0.\n\n2. L1 Regularization (Lasso penalty):\nIn 2012–2023, researchers relaxed L0 to L1: ||z||₁ = Σ |z_i| (the sum of absolute values). L1 is convex and differentiable everywhere except at 0. It pushes small feature activations to exactly zero.\nThe Hidden Flaw of L1 (Shrinkage): L1 penalizes the MAGNITUDE of active features along with their presence. To reduce the L1 penalty, the model artificially shrinks the active feature values below their true true size! This 'shrinkage' damages reconstruction accuracy.\n\n3. Hard TopK Activation (Makhzani & Frey, 2013 → Gao et al., 2024):\nInstead of adding an L1 penalty to the loss, TopK modifies the network architecture directly! The encoder computes pre-activations for all 10,000 features. Then, a TopK operator selects the top k largest pre-activations (e.g. k=32), keeps their exact values, and forcefully SETS ALL OTHER 9,968 ACTIVATIONS TO ZERO!\nBecause TopK keeps the exact magnitude of the top k features without shrinking them, it achieves much better reconstruction at matched sparsity levels than L1.\n\n--- STEP 3: Autoencoders vs VAEs (Variational Autoencoders) ---\nAn Autoencoder consists of an Encoder z = f(x) that compresses input x into latent code z, and a Decoder x_hat = g(z) that reconstructs x.\n\nWhat is a VAE (Kingma & Welling, 2013)?\nInstead of mapping input x to a single fixed point z, a VAE maps x to a PROBABILISTIC DISTRIBUTION — predicting a mean vector μ and a variance vector σ. The latent z is then sampled from N(μ, σ²).\n\nHow does backprop flow through random sampling? The Reparameterization Trick!\nYou cannot backpropagate gradients through random sampling. Kingma & Welling solved this by separating the randomness: sample noise ε ~ N(0, I) externally, then write z = μ + σ ⊙ ε. Now μ and σ are deterministic node outputs that receive normal gradients!\n\nThe VAE ELBO Loss (Evidence Lower Bound):\nLoss = Reconstruction Error + KL-Divergence(q(z|x) || p(z))\nThe KL-Divergence term forces the learned distribution q(z|x) to stay close to a standard normal prior p(z) = N(0, I), preventing the latent space from leaving empty gaps.\n\nWhy VAEs matter for SetConCA:\nYou don't need to become a VAE researcher, but when SetConCA aggregates multiple activation views using Gaussian distributions or Product-of-Experts (PoE), you are using this exact probabilistic latent vocabulary.",
         "bigPictureDiagram": [
-          "Dense x → Encoder → Overcomplete z → keep sparse → Decoder → x̂",
-          "L1: soft shrink magnitudes | TopK: hard keep k | L0: count of nonzeros"
+          "Dense Input x → Encoder → Overcomplete z (width > N) → Sparsity Gate → Decoder → Reconstruction x_hat",
+          "L1 Sparsity: Soft penalty Σ|z_i| (causes magnitude shrinkage)",
+          "TopK Sparsity: Hard keep top-k values, zero rest (no shrinkage, exact k)",
+          "VAE Latent: Predict μ, σ → Reparameterize z = μ + σ ⊙ ε → ELBO Loss"
         ],
         "conceptsToMaster": [
           {
-            "name": "Overcomplete dictionary",
-            "simple": "More features than dimensions.",
-            "deeper": "Needed if many sparse concepts live in a small activation space (superposition)."
+            "name": "Overcomplete Dictionary",
+            "simple": "Having more feature directions in your hidden layer than dimensions in the input space.",
+            "deeper": "Dictionary matrix W_dec has dimension d_model × d_hidden where d_hidden > d_model (e.g. 4x, 16x, 32x expansion). Essential for unfolding superposed features."
           },
           {
-            "name": "TopK vs L1",
-            "simple": "TopK = exact k actives; L1 = soft penalty that also shrinks magnitudes.",
-            "deeper": "L1 shrinkage motivates Gated SAEs later."
+            "name": "L0 vs L1 vs TopK",
+            "simple": "L0 counts non-zero features. L1 adds up absolute values (causing shrinkage). TopK keeps exactly the k largest features and zeroes the rest.",
+            "deeper": "L0 is non-differentiable. L1 is a convex proxy but penalizes magnitude. TopK enforces exact cardinality k while preserving true pre-activation magnitudes of active units."
           },
           {
-            "name": "ELBO",
-            "simple": "Lower bound on log likelihood: reconstruct − KL to prior.",
-            "deeper": "VAE trains with reparameterization so gradients flow through sampling."
+            "name": "Shrinkage Problem",
+            "simple": "When L1 penalties force active features to be smaller than they should be, harming reconstruction quality.",
+            "deeper": "L1 loss derivative is constant λ w.r.t active z_i. To minimize L1 penalty, optimizer reduces z_i, causing under-estimation of feature firing strength. Resolved by Gated SAEs and TopK SAEs."
+          },
+          {
+            "name": "ELBO (Evidence Lower Bound)",
+            "simple": "The training objective of a VAE balancing reconstruction accuracy with keeping latents near a simple prior distribution.",
+            "deeper": "ELBO = E_q[log p(x|z)] - KL(q(z|x) || p(z)). Maximizing ELBO maximizes log-likelihood lower bound. KL term prevents arbitrary latent cluster dispersion."
+          },
+          {
+            "name": "Reparameterization Trick",
+            "simple": "A trick to let backprop gradients flow through random sampling by writing z = μ + σ * noise.",
+            "deeper": "Expresses stochastic latent z ~ N(μ(x), Σ(x)) as deterministic transformation z = μ(x) + L(x)ε where ε ~ N(0,I). Enables standard gradient computation w.r.t encoder parameters."
           }
         ],
         "checkpoint": {
-          "goal": "Train L1 vs TopK under matched reconstruction.",
+          "goal": "Train a simple L1 Autoencoder versus a TopK Autoencoder on activation data under matched reconstruction budgets.",
           "steps": [
-            "Fix FVU budget",
-            "Vary sparsity",
-            "Compare active features and qualitative codes"
+            "Fix a target FVU budget (e.g. FVU = 0.05).",
+            "Train an L1 SAE by tuning penalty λ.",
+            "Train a TopK SAE by setting parameter k.",
+            "Compare average L0 (active features per token) and inspect active feature magnitudes to observe L1 shrinkage in action."
           ],
-          "successLooksLike": "You can answer all Level-2 questions without notes."
+          "successLooksLike": "You can explain from experimental data why TopK achieves better reconstruction at the same L0 count than L1."
         },
-        "bridgeToNext": "Multi-view methods ask how to align several representations without destroying private information."
+        "bridgeToNext": "Now that you understand single-view sparse dictionaries, Level 3 moves to Multi-View Representation Learning — aligning multiple observations of the same object."
       }
     },
     {
@@ -1594,9 +1756,9 @@ window.CURRICULUM_DATA = {
           "pages": 9,
           "pdfPath": "RAW/andrew13.pdf",
           "teach": {
-            "whyWeRead": "Nonlinear upgrade of CCA — precursor to coordinating neural view encoders.",
-            "oneSentence": "Deep CCA replaces linear CCA projections with neural networks trained to maximise canonical correlation.",
-            "plainLanguage": "Linear CCA can miss shared structure that is nonlinear in the raw views. DCCA puts a neural net on each view, then applies a CCA-style correlation objective on the net outputs.\n\nWhitening / covariance constraints keep the latent dimensions from collapsing into duplicates.\n\nWarning: maximising correlation can discard information that is useful but not shared. That failure mode is why DCCAE later adds reconstruction.",
+            "whyWeRead": "Deep CCA is the non-linear extension of CCA. It is the precursor to coordinating neural view encoders with multi-view alignment objectives.",
+            "oneSentence": "Deep Canonical Correlation Analysis replaces linear CCA projections with neural network encoders trained to maximize canonical correlation.",
+            "plainLanguage": "Welcome to the Deep CCA Masterclass. Let's understand why Galen Andrew et al. developed Deep CCA in 2013.\n\n--- BEYOND LINEAR CCA ---\nIn linear CCA (Level 1), we search for linear projections u and v that maximize correlation between two views. But real-world data (images, text, audio, neural activations) has complex NON-LINEAR relationships. Linear CCA fails when the shared signal requires non-linear transformations.\n\n--- HOW DEEP CCA WORKS ---\nDeep CCA places a deep neural network f_θ on View 1 and a deep neural network g_φ on View 2. The entire system is trained end-to-end to maximize the sum of canonical correlations between output embeddings f_θ(X_1) and g_φ(X_2)!\n\n--- THE WHITENING / COVARIANCE CONSTRAINT ---\nWithout constraints, neural network encoders would cheat! Both networks could output a constant vector (e.g. [1, 1, 1]), achieving a fake 'perfect' correlation of 1.0 (representation collapse).\n\nTo prevent collapse, DCCA enforces a whitening constraint: the output dimensions of each encoder MUST have unit variance and zero correlation with each other (1/N Z_1ᵀ Z_1 = I and 1/N Z_2ᵀ Z_2 = I).\n\n--- THE FAILURE MODE: INFORMATION DISCARD ---\nIf DCCA's ONLY objective is cross-view correlation, the networks learn to THROW AWAY any information that is unique to one view (private details). This failure mode directly motivated DCCAE.",
             "keyIdeas": [
               {
                 "title": "Nonlinear view encoders",
@@ -1625,96 +1787,119 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "DCCA idea",
-                "formula": "max corr(f_θ(X), g_φ(Y))",
-                "original": "DCCA idea: max corr(f_θ(X), g_φ(Y))",
-                "simple": "Learn nonlinear f,g to maximise cross-view correlation (with constraints).",
-                "meaning": "Learn nonlinear f,g to maximise cross-view correlation (with constraints)."
+                "name": "DCCA Optimization",
+                "formula": "max_{θ, φ}  corr( f_θ(X_1), g_φ(X_2) )   s.t. Cov(f_θ) = I, Cov(g_φ) = I",
+                "original": "DCCA Optimization: max_{θ, φ}  corr( f_θ(X_1), g_φ(X_2) )   s.t. Cov(f_θ) = I, Cov(g_φ) = I",
+                "simple": "Train neural network weights θ and φ to maximize canonical correlation under whitening constraints.",
+                "meaning": "Train neural network weights θ and φ to maximize canonical correlation under whitening constraints."
               }
             ],
             "vocabulary": [
               {
                 "term": "Deep CCA",
                 "original": "Technical term: «Deep CCA» as used in this literature.",
-                "simple": "CCA with neural view encoders.",
-                "def": "CCA with neural view encoders."
+                "simple": "Multi-view representation learning using deep neural encoders trained on canonical correlation objectives.",
+                "def": "Multi-view representation learning using deep neural encoders trained on canonical correlation objectives."
               },
               {
-                "term": "Whitening",
-                "original": "Technical term: «Whitening» as used in this literature.",
-                "simple": "Transform so dimensions have unit variance and zero correlation.",
-                "def": "Transform so dimensions have unit variance and zero correlation."
+                "term": "Representation Collapse",
+                "original": "Technical term: «Representation Collapse» as used in this literature.",
+                "simple": "A failure state where neural encoders output constant or degenerate vectors to achieve fake correlation.",
+                "def": "A failure state where neural encoders output constant or degenerate vectors to achieve fake correlation."
               }
             ],
             "whatItShows": [
-              "Nonlinear shared structure can beat linear CCA on some tasks"
+              "That non-linear neural networks can be trained directly on canonical correlation objectives"
             ],
             "whatItDoesNotShow": [
-              "That correlation maximisation preserves all useful activation detail"
+              "How to preserve view-specific private details needed for reconstruction"
             ],
             "setconcaUse": [
-              "Treat DCCA as a nonlinear multi-view baseline.",
-              "Audit whether alignment destroyed private SAE-relevant information."
+              "Use Deep CCA as a non-linear multi-view baseline.",
+              "Audit whether alignment objectives destroy private activation details."
             ],
             "masteryChecklist": [
-              "I can explain DCCA vs linear CCA.",
-              "I can name the discard-information failure mode."
+              "I can explain how Deep CCA extends linear CCA.",
+              "I know why whitening constraints are mandatory in DCCA.",
+              "I can describe the private information discard failure mode."
             ],
             "commonConfusions": [
               {
-                "wrong": "Higher correlation is always better.",
-                "right": "It can erase private structure you still need."
+                "wrong": "Maximizing correlation is always sufficient for multi-view learning.",
+                "right": "Pure correlation objectives throw away useful private details present in single views."
               }
             ],
             "quiz": [
               {
-                "q": "DCCA upgrades CCA with?",
+                "q": "What does Deep CCA add to classical linear CCA?",
                 "options": [
-                  "Neural view encoders",
-                  "TopK only",
-                  "Probes only",
-                  "Attention only"
+                  "Deep neural network view encoders",
+                  "L1 sparse dictionaries",
+                  "Probes",
+                  "Attention layers"
                 ],
                 "a": 0,
-                "explain": "Deep nonlinear maps."
+                "explain": "Deep CCA replaces linear projections with deep neural encoders."
+              },
+              {
+                "q": "Why are covariance whitening constraints necessary in DCCA?",
+                "options": [
+                  "Prevents representation collapse into constant vectors",
+                  "Increases L0 sparsity",
+                  "Computes SVD",
+                  "Speeds up GPU"
+                ],
+                "a": 0,
+                "explain": "Constraints prevent trivial constant solutions where output covariance collapses."
               }
             ],
-            "originalIdea": "Deep CCA replaces linear CCA projections with neural networks trained to maximise canonical correlation.",
-            "simpleLesson": "Linear CCA can miss shared structure that is nonlinear in the raw views. DCCA puts a neural net on each view, then applies a CCA-style correlation objective on the net outputs.\n\nWhitening / covariance constraints keep the latent dimensions from collapsing into duplicates.\n\nWarning: maximising correlation can discard information that is useful but not shared. That failure mode is why DCCAE later adds reconstruction.",
+            "originalIdea": "Deep Canonical Correlation Analysis replaces linear CCA projections with neural network encoders trained to maximize canonical correlation.",
+            "simpleLesson": "Welcome to the Deep CCA Masterclass. Let's understand why Galen Andrew et al. developed Deep CCA in 2013.\n\n--- BEYOND LINEAR CCA ---\nIn linear CCA (Level 1), we search for linear projections u and v that maximize correlation between two views. But real-world data (images, text, audio, neural activations) has complex NON-LINEAR relationships. Linear CCA fails when the shared signal requires non-linear transformations.\n\n--- HOW DEEP CCA WORKS ---\nDeep CCA places a deep neural network f_θ on View 1 and a deep neural network g_φ on View 2. The entire system is trained end-to-end to maximize the sum of canonical correlations between output embeddings f_θ(X_1) and g_φ(X_2)!\n\n--- THE WHITENING / COVARIANCE CONSTRAINT ---\nWithout constraints, neural network encoders would cheat! Both networks could output a constant vector (e.g. [1, 1, 1]), achieving a fake 'perfect' correlation of 1.0 (representation collapse).\n\nTo prevent collapse, DCCA enforces a whitening constraint: the output dimensions of each encoder MUST have unit variance and zero correlation with each other (1/N Z_1ᵀ Z_1 = I and 1/N Z_2ᵀ Z_2 = I).\n\n--- THE FAILURE MODE: INFORMATION DISCARD ---\nIf DCCA's ONLY objective is cross-view correlation, the networks learn to THROW AWAY any information that is unique to one view (private details). This failure mode directly motivated DCCAE.",
             "limitPairs": [
               {
-                "original": "Nonlinear shared structure can beat linear CCA on some tasks",
-                "simple": "In practice this means evidence supports: Nonlinear shared structure can beat linear CCA on some tasks"
+                "original": "That non-linear neural networks can be trained directly on canonical correlation objectives",
+                "simple": "In practice this means evidence supports: That non-linear neural networks can be trained directly on canonical correlation objectives"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That correlation maximisation preserves all useful activation detail",
-                "simple": "Do not overclaim: That correlation maximisation preserves all useful activation detail"
+                "original": "How to preserve view-specific private details needed for reconstruction",
+                "simple": "Do not overclaim: How to preserve view-specific private details needed for reconstruction"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Treat DCCA as a nonlinear multi-view baseline.",
-                "simple": "Action item: Treat DCCA as a nonlinear multi-view baseline."
+                "original": "Use Deep CCA as a non-linear multi-view baseline.",
+                "simple": "Action item: Use Deep CCA as a non-linear multi-view baseline."
               },
               {
-                "original": "Audit whether alignment destroyed private SAE-relevant information.",
-                "simple": "Action item: Audit whether alignment destroyed private SAE-relevant information."
+                "original": "Audit whether alignment objectives destroy private activation details.",
+                "simple": "Action item: Audit whether alignment objectives destroy private activation details."
               }
             ]
           },
           "quiz": [
             {
-              "q": "DCCA upgrades CCA with?",
+              "q": "What does Deep CCA add to classical linear CCA?",
               "options": [
-                "Neural view encoders",
-                "TopK only",
-                "Probes only",
-                "Attention only"
+                "Deep neural network view encoders",
+                "L1 sparse dictionaries",
+                "Probes",
+                "Attention layers"
               ],
               "a": 0,
-              "explain": "Deep nonlinear maps."
+              "explain": "Deep CCA replaces linear projections with deep neural encoders."
+            },
+            {
+              "q": "Why are covariance whitening constraints necessary in DCCA?",
+              "options": [
+                "Prevents representation collapse into constant vectors",
+                "Increases L0 sparsity",
+                "Computes SVD",
+                "Speeds up GPU"
+              ],
+              "a": 0,
+              "explain": "Constraints prevent trivial constant solutions where output covariance collapses."
             }
           ]
         },
@@ -1735,9 +1920,9 @@ window.CURRICULUM_DATA = {
           "pages": 34,
           "pdfPath": "RAW/1602.01024v1.pdf",
           "teach": {
-            "whyWeRead": "Central tradeoff for SetConCA: cross-view correlation vs within-view reconstruction.",
-            "oneSentence": "Studies deep multi-view objectives, introducing DCCAE which balances correlation and autoencoding.",
-            "plainLanguage": "If you only maximise correlation, you may learn a tiny shared signal and throw away the rest. If you only reconstruct each view, you may never align them.\n\nDCCAE combines both: learn representations that correlate across views and reconstruct each view. This is almost exactly SetConCA's tension — coordinate views without destroying activation information.",
+            "whyWeRead": "DCCAE illuminates the central tradeoff for SetConCA: balancing cross-view alignment correlation against within-view reconstruction fidelity.",
+            "oneSentence": "Deep Canonically Correlated Autoencoders (DCCAE) combine cross-view correlation maximization with autoencoder reconstruction losses.",
+            "plainLanguage": "Welcome to the DCCAE Masterclass. Let's understand why Weiran Wang et al. introduced DCCAE in 2015.\n\n--- THE MULTI-VIEW DILEMMA ---\nIn Deep CCA, you maximize cross-view correlation. But correlation-only training discards view-specific (private) information.\nIn standard Autoencoders, you maximize within-view reconstruction. But autoencoders trained independently never align their representations across views!\n\n--- THE DCCAE SYNTHESIS ---\nDCCAE solves this dilemma by combining BOTH objectives into a single unified loss function:\n\nLoss = - Canonical_Correlation(z_1, z_2) + λ_1 ||x_1 - dec_1(z_1)||² + λ_2 ||x_2 - dec_2(z_2)||²\n\n• The CCA term pulls shared representations into cross-view alignment.\n• The Autoencoder reconstruction terms FORCE each encoder to retain enough private detail to reconstruct raw inputs!\n\n--- LESSON FOR SETCONCA ---\nSetConCA faces this exact same tension! When coordinating sparse autoencoders across multiple activation views, you must balance contrastive set alignment against within-view reconstruction (FVU). Tuning λ traces out an alignment-fidelity Pareto curve.",
             "keyIdeas": [
               {
                 "title": "Correlation–reconstruction tradeoff",
@@ -1766,90 +1951,90 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "Schematic DCCAE loss",
-                "formula": "L ≈ −corr(z_x,z_y) + λ(‖x−x̂‖²+‖y−ŷ‖²)",
-                "original": "Schematic DCCAE loss: L ≈ −corr(z_x,z_y) + λ(‖x−x̂‖²+‖y−ŷ‖²)",
-                "simple": "Align shared codes while reconstructing views.",
-                "meaning": "Align shared codes while reconstructing views."
+                "name": "DCCAE Combined Loss",
+                "formula": "Loss = - corr(z_1, z_2) + λ ( ||x_1 - x̂_1||² + ||x_2 - x̂_2||² )",
+                "original": "DCCAE Combined Loss: Loss = - corr(z_1, z_2) + λ ( ||x_1 - x̂_1||² + ||x_2 - x̂_2||² )",
+                "simple": "Trade off cross-view canonical correlation against individual view reconstruction errors.",
+                "meaning": "Trade off cross-view canonical correlation against individual view reconstruction errors."
               }
             ],
             "vocabulary": [
               {
                 "term": "DCCAE",
                 "original": "Technical term: «DCCAE» as used in this literature.",
-                "simple": "Deep canonically correlated autoencoders.",
-                "def": "Deep canonically correlated autoencoders."
+                "simple": "Deep Canonically Correlated Autoencoders; multi-view model combining correlation and autoencoding.",
+                "def": "Deep Canonically Correlated Autoencoders; multi-view model combining correlation and autoencoding."
               }
             ],
             "whatItShows": [
-              "Explicit tradeoff between alignment and preservation"
+              "That combining alignment and reconstruction objectives preserves both shared and private information"
             ],
             "whatItDoesNotShow": [
-              "The unique correct λ for language-model SAEs"
+              "The optimal hyperparameter λ for sparse autoencoders on language model activations"
             ],
             "setconcaUse": [
-              "When adding contrastive alignment to SAEs, keep a reconstruction term and ablate λ.",
-              "Report both retrieval and FVU."
+              "Always include reconstruction loss when adding contrastive alignment to SAEs.",
+              "Sweep alignment weight λ and plot alignment vs. FVU Pareto curves."
             ],
             "masteryChecklist": [
-              "I can explain why correlation-only training is dangerous.",
-              "I can state the DCCAE design pattern."
+              "I can explain why correlation-only multi-view training is dangerous.",
+              "I can write the combined DCCAE loss function and explain both parts."
             ],
             "commonConfusions": [
               {
-                "wrong": "Alignment replaces reconstruction.",
-                "right": "You often need both."
+                "wrong": "Cross-view alignment replaces the need for reconstruction loss.",
+                "right": "Alignment alone discards private information. You need reconstruction to preserve activation detail."
               }
             ],
             "quiz": [
               {
-                "q": "DCCAE adds what to DCCA?",
+                "q": "What does DCCAE add to Deep CCA?",
                 "options": [
-                  "Within-view reconstruction",
-                  "Only TopK",
-                  "Only probes",
-                  "Only PCA"
+                  "Autoencoder reconstruction losses for each view",
+                  "TopK sparsity",
+                  "Linear probes",
+                  "Random dropout"
                 ],
                 "a": 0,
-                "explain": "Autoencoding term."
+                "explain": "DCCAE adds within-view reconstruction losses to protect private information."
               }
             ],
-            "originalIdea": "Studies deep multi-view objectives, introducing DCCAE which balances correlation and autoencoding.",
-            "simpleLesson": "If you only maximise correlation, you may learn a tiny shared signal and throw away the rest. If you only reconstruct each view, you may never align them.\n\nDCCAE combines both: learn representations that correlate across views and reconstruct each view. This is almost exactly SetConCA's tension — coordinate views without destroying activation information.",
+            "originalIdea": "Deep Canonically Correlated Autoencoders (DCCAE) combine cross-view correlation maximization with autoencoder reconstruction losses.",
+            "simpleLesson": "Welcome to the DCCAE Masterclass. Let's understand why Weiran Wang et al. introduced DCCAE in 2015.\n\n--- THE MULTI-VIEW DILEMMA ---\nIn Deep CCA, you maximize cross-view correlation. But correlation-only training discards view-specific (private) information.\nIn standard Autoencoders, you maximize within-view reconstruction. But autoencoders trained independently never align their representations across views!\n\n--- THE DCCAE SYNTHESIS ---\nDCCAE solves this dilemma by combining BOTH objectives into a single unified loss function:\n\nLoss = - Canonical_Correlation(z_1, z_2) + λ_1 ||x_1 - dec_1(z_1)||² + λ_2 ||x_2 - dec_2(z_2)||²\n\n• The CCA term pulls shared representations into cross-view alignment.\n• The Autoencoder reconstruction terms FORCE each encoder to retain enough private detail to reconstruct raw inputs!\n\n--- LESSON FOR SETCONCA ---\nSetConCA faces this exact same tension! When coordinating sparse autoencoders across multiple activation views, you must balance contrastive set alignment against within-view reconstruction (FVU). Tuning λ traces out an alignment-fidelity Pareto curve.",
             "limitPairs": [
               {
-                "original": "Explicit tradeoff between alignment and preservation",
-                "simple": "In practice this means evidence supports: Explicit tradeoff between alignment and preservation"
+                "original": "That combining alignment and reconstruction objectives preserves both shared and private information",
+                "simple": "In practice this means evidence supports: That combining alignment and reconstruction objectives preserves both shared and private information"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "The unique correct λ for language-model SAEs",
-                "simple": "Do not overclaim: The unique correct λ for language-model SAEs"
+                "original": "The optimal hyperparameter λ for sparse autoencoders on language model activations",
+                "simple": "Do not overclaim: The optimal hyperparameter λ for sparse autoencoders on language model activations"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "When adding contrastive alignment to SAEs, keep a reconstruction term and ablate λ.",
-                "simple": "Action item: When adding contrastive alignment to SAEs, keep a reconstruction term and ablate λ."
+                "original": "Always include reconstruction loss when adding contrastive alignment to SAEs.",
+                "simple": "Action item: Always include reconstruction loss when adding contrastive alignment to SAEs."
               },
               {
-                "original": "Report both retrieval and FVU.",
-                "simple": "Action item: Report both retrieval and FVU."
+                "original": "Sweep alignment weight λ and plot alignment vs. FVU Pareto curves.",
+                "simple": "Action item: Sweep alignment weight λ and plot alignment vs. FVU Pareto curves."
               }
             ]
           },
           "quiz": [
             {
-              "q": "DCCAE adds what to DCCA?",
+              "q": "What does DCCAE add to Deep CCA?",
               "options": [
-                "Within-view reconstruction",
-                "Only TopK",
-                "Only probes",
-                "Only PCA"
+                "Autoencoder reconstruction losses for each view",
+                "TopK sparsity",
+                "Linear probes",
+                "Random dropout"
               ],
               "a": 0,
-              "explain": "Autoencoding term."
+              "explain": "DCCAE adds within-view reconstruction losses to protect private information."
             }
           ]
         },
@@ -1871,9 +2056,9 @@ window.CURRICULUM_DATA = {
           "pages": 13,
           "pdfPath": "RAW/1610.03454v3.pdf",
           "teach": {
-            "whyWeRead": "Probabilistic multi-view model with shared and private latents — closest classical cousin to probabilistic SetConCA.",
-            "oneSentence": "Deep variational CCA with shared (and optionally private) latents and a generative multi-view story.",
-            "plainLanguage": "VCCA extends the latent-variable view of CCA into deep generative models. A shared latent explains both views; private latents can explain view-specific details.\n\nBecause it is generative, it can handle missing views in principle. The probabilistic framing clarifies what 'alignment' means: shared latents, not forced identical embeddings.",
+            "whyWeRead": "VCCA introduces explicit shared and private latent variable factorizations in a probabilistic multi-view generative model.",
+            "oneSentence": "Deep Variational CCA models multi-view data using variational inference with explicit shared and private latent variables.",
+            "plainLanguage": "Welcome to the VCCA Masterclass. Let's understand how Weiran Wang et al. (2016) formalized multi-view learning probablistically.\n\n--- EXPLICIT SHARED AND PRIVATE LATENTS ---\nRather than hoping a single latent vector contains a mixture of shared and private information, VCCA EXPLICITLY SPLITS the latent representation into separate vectors:\n• z_shared: Shared latent vector explaining commonality across all views.\n• z_priv1: Private latent vector explaining view 1 details.\n• z_priv2: Private latent vector explaining view 2 details.\n\nView 1 is decoded from (z_shared, z_priv1). View 2 is decoded from (z_shared, z_priv2).\n\n--- HANDLING MISSING VIEWS ---\nBecause VCCA is a probabilistic generative model, if View 2 is missing at test time, the model can still infer z_shared from View 1 alone! This provides robustness against incomplete view sets.",
             "keyIdeas": [
               {
                 "title": "Shared latent",
@@ -1900,98 +2085,90 @@ window.CURRICULUM_DATA = {
                 "explain": "A generative multi-view model can in principle condition or impute when a view is absent."
               }
             ],
-            "simplifiedMath": [
-              {
-                "name": "Shared factor idea",
-                "formula": "x ← dec_x(z_shared, z_x), y ← dec_y(z_shared, z_y)",
-                "original": "Shared factor idea: x ← dec_x(z_shared, z_x), y ← dec_y(z_shared, z_y)",
-                "simple": "Both views generated from shared + private latents.",
-                "meaning": "Both views generated from shared + private latents."
-              }
-            ],
+            "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Private latent",
-                "original": "Technical term: «Private latent» as used in this literature.",
-                "simple": "Latent used by only one view.",
-                "def": "Latent used by only one view."
+                "term": "Private Latent",
+                "original": "Technical term: «Private Latent» as used in this literature.",
+                "simple": "A latent variable dedicated strictly to modeling variance unique to a single view.",
+                "def": "A latent variable dedicated strictly to modeling variance unique to a single view."
               },
               {
                 "term": "VCCA",
                 "original": "Technical term: «VCCA» as used in this literature.",
-                "simple": "Variational deep CCA / multi-view VAE-style model.",
-                "def": "Variational deep CCA / multi-view VAE-style model."
+                "simple": "Variational Deep Canonical Correlation Analysis.",
+                "def": "Variational Deep Canonical Correlation Analysis."
               }
             ],
             "whatItShows": [
-              "Shared/private decomposition in a probabilistic multi-view model"
+              "How to explicitly factorize multi-view representations into shared and private probabilistic latents"
             ],
             "whatItDoesNotShow": [
-              "Automatic monosemantic concepts"
+              "How to discover sparse monosemantic dictionaries"
             ],
             "setconcaUse": [
-              "Borrow shared/private design in multi-view SAE experiments.",
-              "Evaluate missing-view robustness."
+              "Incorporate explicit shared/private split designs when building multi-view SAE architectures.",
+              "Test SetConCA robustness under missing view conditions."
             ],
             "masteryChecklist": [
-              "I can draw shared vs private latents.",
-              "I can relate VCCA to VAE + CCA ideas."
+              "I can draw the VCCA generative diagram showing shared and private latents.",
+              "I can explain how VCCA handles missing views."
             ],
             "commonConfusions": [
               {
-                "wrong": "Shared latent means views are identical.",
-                "right": "Shared explains commonality; private can differ."
+                "wrong": "Shared latent means view embeddings are identical.",
+                "right": "Shared latent models common underlying factors; private latents model view differences."
               }
             ],
             "quiz": [
               {
-                "q": "VCCA's private latents capture?",
+                "q": "VCCA's private latents capture what type of information?",
                 "options": [
-                  "View-specific information",
-                  "Only noise always",
-                  "Only labels",
-                  "Only TopK"
+                  "View-specific variance unique to one view",
+                  "Shared correlation",
+                  "Label noise only",
+                  "TopK indices"
                 ],
                 "a": 0,
-                "explain": "Private = view-specific."
+                "explain": "Private latents explicitly capture view-specific details."
               }
             ],
-            "originalIdea": "Deep variational CCA with shared (and optionally private) latents and a generative multi-view story.",
-            "simpleLesson": "VCCA extends the latent-variable view of CCA into deep generative models. A shared latent explains both views; private latents can explain view-specific details.\n\nBecause it is generative, it can handle missing views in principle. The probabilistic framing clarifies what 'alignment' means: shared latents, not forced identical embeddings.",
+            "originalIdea": "Deep Variational CCA models multi-view data using variational inference with explicit shared and private latent variables.",
+            "simpleLesson": "Welcome to the VCCA Masterclass. Let's understand how Weiran Wang et al. (2016) formalized multi-view learning probablistically.\n\n--- EXPLICIT SHARED AND PRIVATE LATENTS ---\nRather than hoping a single latent vector contains a mixture of shared and private information, VCCA EXPLICITLY SPLITS the latent representation into separate vectors:\n• z_shared: Shared latent vector explaining commonality across all views.\n• z_priv1: Private latent vector explaining view 1 details.\n• z_priv2: Private latent vector explaining view 2 details.\n\nView 1 is decoded from (z_shared, z_priv1). View 2 is decoded from (z_shared, z_priv2).\n\n--- HANDLING MISSING VIEWS ---\nBecause VCCA is a probabilistic generative model, if View 2 is missing at test time, the model can still infer z_shared from View 1 alone! This provides robustness against incomplete view sets.",
             "limitPairs": [
               {
-                "original": "Shared/private decomposition in a probabilistic multi-view model",
-                "simple": "In practice this means evidence supports: Shared/private decomposition in a probabilistic multi-view model"
+                "original": "How to explicitly factorize multi-view representations into shared and private probabilistic latents",
+                "simple": "In practice this means evidence supports: How to explicitly factorize multi-view representations into shared and private probabilistic latents"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Automatic monosemantic concepts",
-                "simple": "Do not overclaim: Automatic monosemantic concepts"
+                "original": "How to discover sparse monosemantic dictionaries",
+                "simple": "Do not overclaim: How to discover sparse monosemantic dictionaries"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Borrow shared/private design in multi-view SAE experiments.",
-                "simple": "Action item: Borrow shared/private design in multi-view SAE experiments."
+                "original": "Incorporate explicit shared/private split designs when building multi-view SAE architectures.",
+                "simple": "Action item: Incorporate explicit shared/private split designs when building multi-view SAE architectures."
               },
               {
-                "original": "Evaluate missing-view robustness.",
-                "simple": "Action item: Evaluate missing-view robustness."
+                "original": "Test SetConCA robustness under missing view conditions.",
+                "simple": "Action item: Test SetConCA robustness under missing view conditions."
               }
             ]
           },
           "quiz": [
             {
-              "q": "VCCA's private latents capture?",
+              "q": "VCCA's private latents capture what type of information?",
               "options": [
-                "View-specific information",
-                "Only noise always",
-                "Only labels",
-                "Only TopK"
+                "View-specific variance unique to one view",
+                "Shared correlation",
+                "Label noise only",
+                "TopK indices"
               ],
               "a": 0,
-              "explain": "Private = view-specific."
+              "explain": "Private latents explicitly capture view-specific details."
             }
           ]
         },
@@ -2012,9 +2189,9 @@ window.CURRICULUM_DATA = {
           "pages": 14,
           "pdfPath": "RAW/1702.02519v2.pdf",
           "teach": {
-            "whyWeRead": "Extends CCA thinking from two views to many views — the conceptual jump SetConCA needs.",
-            "oneSentence": "Deep generalized CCA learns a common representation across an arbitrary number of views.",
-            "plainLanguage": "Real problems often have more than two views: many layers, many paraphrases, many sites. DGCCA seeks a common representation that explains shared information across several views.\n\nThe key question becomes: what common code should all views agree on? Not: how do we force every view embedding to be identical.",
+            "whyWeRead": "DGCCA extends CCA thinking from 2 views to an arbitrary number of views (N views) — essential for multi-view set coordination.",
+            "oneSentence": "Deep Generalized CCA learns a central common representation across an arbitrary number of neural view encoders.",
+            "plainLanguage": "Welcome to DGCCA. What happens when you have 5 layers, 10 prompt paraphrases, or 4 image modalities?\n\nPairwise CCA requires N(N-1)/2 separate pairwise models. Deep Generalized CCA (DGCCA, Benton et al., 2017) introduces a single central target matrix G. Every view encoder f_i(X_i) is trained to project into this common shared matrix G simultaneously!",
             "keyIdeas": [
               {
                 "title": "Many-view generalisation",
@@ -2038,117 +2215,123 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "GCCA / DGCCA",
-                "original": "Technical term: «GCCA / DGCCA» as used in this literature.",
-                "simple": "Generalized CCA; deep version for many views.",
-                "def": "Generalized CCA; deep version for many views."
+                "term": "DGCCA",
+                "original": "Technical term: «DGCCA» as used in this literature.",
+                "simple": "Deep Generalized Canonical Correlation Analysis for N > 2 views.",
+                "def": "Deep Generalized Canonical Correlation Analysis for N > 2 views."
               }
             ],
             "whatItShows": [
-              "Multi-view shared representation beyond two views"
+              "How to scale multi-view alignment to arbitrary numbers of views"
             ],
             "whatItDoesNotShow": [
-              "Optimal aggregation for SAE feature dictionaries"
+              "Sparse dictionary dictionary learning"
             ],
             "setconcaUse": [
-              "Motivate multi-view SetConCA with DGCCA's question.",
-              "Use many-view CCA baselines before contrastive set losses."
+              "Use DGCCA conceptual framework when extending SetConCA beyond pairs to multi-view activation sets."
             ],
             "masteryChecklist": [
-              "I can explain why two-view CCA is not enough for SetConCA.",
-              "I can state DGCCA's central question."
+              "I can explain why pairwise CCA scales poorly for N views and how DGCCA solves it."
             ],
             "commonConfusions": [
               {
-                "wrong": "More views means force them all equal.",
-                "right": "Seek common shared structure; keep private."
+                "wrong": "DGCCA forces all views to output identical vectors.",
+                "right": "DGCCA aligns view projections with a shared central target space G."
               }
             ],
             "quiz": [
               {
-                "q": "DGCCA is for?",
+                "q": "DGCCA is designed for how many views?",
                 "options": [
-                  "Many views",
-                  "Only images",
-                  "Only TopK SAEs",
-                  "Only probes"
+                  "Arbitrary N views (N ≥ 2)",
+                  "Exactly 2 views only",
+                  "1 view only",
+                  "0 views"
                 ],
                 "a": 0,
-                "explain": "Generalized multi-view CCA."
+                "explain": "DGCCA generalizes CCA to arbitrary numbers of views."
               }
             ],
-            "originalIdea": "Deep generalized CCA learns a common representation across an arbitrary number of views.",
-            "simpleLesson": "Real problems often have more than two views: many layers, many paraphrases, many sites. DGCCA seeks a common representation that explains shared information across several views.\n\nThe key question becomes: what common code should all views agree on? Not: how do we force every view embedding to be identical.",
+            "originalIdea": "Deep Generalized CCA learns a central common representation across an arbitrary number of neural view encoders.",
+            "simpleLesson": "Welcome to DGCCA. What happens when you have 5 layers, 10 prompt paraphrases, or 4 image modalities?\n\nPairwise CCA requires N(N-1)/2 separate pairwise models. Deep Generalized CCA (DGCCA, Benton et al., 2017) introduces a single central target matrix G. Every view encoder f_i(X_i) is trained to project into this common shared matrix G simultaneously!",
             "limitPairs": [
               {
-                "original": "Multi-view shared representation beyond two views",
-                "simple": "In practice this means evidence supports: Multi-view shared representation beyond two views"
+                "original": "How to scale multi-view alignment to arbitrary numbers of views",
+                "simple": "In practice this means evidence supports: How to scale multi-view alignment to arbitrary numbers of views"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Optimal aggregation for SAE feature dictionaries",
-                "simple": "Do not overclaim: Optimal aggregation for SAE feature dictionaries"
+                "original": "Sparse dictionary dictionary learning",
+                "simple": "Do not overclaim: Sparse dictionary dictionary learning"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Motivate multi-view SetConCA with DGCCA's question.",
-                "simple": "Action item: Motivate multi-view SetConCA with DGCCA's question."
-              },
-              {
-                "original": "Use many-view CCA baselines before contrastive set losses.",
-                "simple": "Action item: Use many-view CCA baselines before contrastive set losses."
+                "original": "Use DGCCA conceptual framework when extending SetConCA beyond pairs to multi-view activation sets.",
+                "simple": "Action item: Use DGCCA conceptual framework when extending SetConCA beyond pairs to multi-view activation sets."
               }
             ]
           },
           "quiz": [
             {
-              "q": "DGCCA is for?",
+              "q": "DGCCA is designed for how many views?",
               "options": [
-                "Many views",
-                "Only images",
-                "Only TopK SAEs",
-                "Only probes"
+                "Arbitrary N views (N ≥ 2)",
+                "Exactly 2 views only",
+                "1 view only",
+                "0 views"
               ],
               "a": 0,
-              "explain": "Generalized multi-view CCA."
+              "explain": "DGCCA generalizes CCA to arbitrary numbers of views."
             }
           ]
         }
       ],
       "primer": {
         "title": "Nonlinear multi-view representation learning",
-        "mission": "Separate shared vs view-specific information; know DCCA, DCCAE, VCCA, DGCCA.",
-        "beforeYouStart": "CCA from Level 1; reconstruction from Level 2.",
-        "primer": "A view is one observation of the same underlying object: two layers, two paraphrases, two modalities, or several activation sites.\n\nLinear CCA finds shared linear directions. Deep CCA replaces the linear maps with neural nets.\n\nDanger: maximizing correlation alone can throw away useful view-specific structure. DCCAE adds reconstruction to protect information. VCCA uses shared and private latents in a generative model. DGCCA extends the idea to many views.\n\nSetConCA must not force all views to become identical. Align what is shared; preserve what is private.",
+        "mission": "Master Deep CCA, DCCAE, VCCA, and DGCCA. Learn how to separate shared cross-view information from private view-specific information.",
+        "beforeYouStart": "Level 1 CCA and Level 2 Autoencoders.",
+        "primer": "Welcome to Level 3. What is a 'view'? A view is one observation of an underlying object. In AI research, multiple views arise naturally:\n• Two different layers of a transformer processing the same text.\n• Two different prompt paraphrases expressing the same concept ('A photo of a dog' vs 'An image showing a canine').\n• Two different modalities (e.g. image + caption in CLIP).\n\nIn Level 1, we learned linear CCA. But neural networks process data nonlinearly. How do we extend multi-view alignment to deep neural networks?\n\n--- STEP 1: Deep CCA (Andrew et al., 2013) ---\nDeep CCA places a neural network encoder f_θ on View 1 and a neural network encoder g_φ on View 2. The objective trains both networks simultaneously to maximize the canonical correlation between their output embeddings!\n\nThe Whitening Constraint in DCCA:\nIf you simply maximize cosine similarity between network outputs without constraints, the networks can cheat by collapsing all outputs into a single constant vector (representation collapse)! DCCA prevents this by enforcing a covariance constraint (whitening): the output dimensions of each view must have unit variance and zero correlation with each other.\n\n--- STEP 2: The Critical Danger of DCCA — Information Discard ---\nSuppose View 1 is a detailed text description of a scene and View 2 is a low-resolution thumbnail image. If your ONLY objective is to maximize correlation between the two views, what will the text encoder do?\nIt will THROW AWAY 90% of the text details (specific names, dates, fine details) because those details do not exist in the thumbnail image! Correlation-only objectives erase useful view-specific (private) information.\n\n--- STEP 3: DCCAE (Wang et al., 2015) — Balancing Alignment and Reconstruction ---\nTo solve the information discard problem, Deep Canonically Correlated Autoencoders (DCCAE) add an autoencoding reconstruction loss to each view!\n\nDCCAE Loss = - Canonical_Correlation(z_A, z_B) + λ * (||x_A - dec_A(z_A)||² + ||x_B - dec_B(z_B)||²)\n\nNow the model is forced to find a shared code z that aligns across views while preserving enough internal information to reconstruct each raw view!\n\n--- STEP 4: VCCA & DGCCA — Probabilistic Shared/Private Latents & Many Views ---\n• VCCA (Wang et al., 2016) explicitly splits the latent representation into TWO parts: a Shared Latent z_shared (explaining what is common) and Private Latents z_privA, z_privB (explaining view-specific details). View A is reconstructed from (z_shared, z_privA).\n• DGCCA (Benton et al., 2017) extends GCCA to deep networks for 3, 4, or 100 views, learning a single central shared representation matrix G that all view encoders target.\n\nSETCONCA MANDATE:\nNever force all view representations to become identical. A healthy multi-view representation aligns shared concept directions while preserving view-specific details!",
         "bigPictureDiagram": [
-          "View A ─┐",
-          "         ├─→ shared z  → align",
-          "View B ─┘      private z_a, z_b → reconstruct each view"
+          "View A (x_A) → Encoder f_θ → z_A ──┐",
+          "                                    ├─→ Maximize Cross-View Correlation",
+          "View B (x_B) → Encoder g_φ → z_B ──┘",
+          "DCCAE Addition: z_A → Decoder_A → x_hat_A  |  z_B → Decoder_B → x_hat_B (Preserves private info!)",
+          "VCCA Explicit Split: z = [z_shared | z_private]"
         ],
         "conceptsToMaster": [
           {
-            "name": "Shared vs private",
-            "simple": "Shared = common across views; private = view-only.",
-            "deeper": "Aligning everything can erase useful activation structure."
+            "name": "Shared vs. Private Information",
+            "simple": "Shared = what is common across all views. Private = view-specific details that exist in only one view.",
+            "deeper": "In multi-view setup (X_1, X_2), I(X_1; X_2) is shared information. I(X_1; X_1 | X_2) is private information of view 1. Maximizing multi-view correlation targets shared info but risks destroying private info unless reconstruction losses are included."
           },
           {
-            "name": "Whitening / covariance constraints",
-            "simple": "Normalize so correlation is meaningful.",
-            "deeper": "DCCA typically constrains latent covariance."
+            "name": "Covariance / Whitening Constraints",
+            "simple": "Forcing latent dimensions to be uncorrelated and normalized so the network cannot cheat by collapsing.",
+            "deeper": "DCCA requires 1/N Z_A^T Z_A = I and 1/N Z_B^T Z_B = I. Prevents trivial solution where all output coordinates become identical or scalar multiples."
+          },
+          {
+            "name": "DCCAE Tradeoff",
+            "simple": "The hyperparameter balancing cross-view alignment correlation against within-view reconstruction quality.",
+            "deeper": "Loss = -CCA_loss(f(X_1), g(X_2)) + λ_1 ||X_1 - dec_1(f(X_1))||^2 + λ_2 ||X_2 - dec_2(g(X_2))||^2. Tuning λ traces out an alignment-fidelity Pareto frontier."
+          },
+          {
+            "name": "Generalized CCA (DGCCA)",
+            "simple": "Extending CCA math from 2 views to an arbitrary number of views (e.g. 5 layers or 10 prompt views).",
+            "deeper": "DGCCA optimizes min_G sum_i ||G - U_i^T f_i(X_i)||_F^2 where G is a shared target representation matrix and U_i are view-specific projections."
           }
         ],
         "checkpoint": {
-          "goal": "Visualize shared vs private latents.",
+          "goal": "Implement a shared vs private latent decomposition on a 2-view synthetic dataset.",
           "steps": [
-            "Train a simple multi-view model",
-            "Ablate shared vs private",
-            "See what retrieval vs reconstruction need"
+            "Generate synthetic paired views with known shared factors and view-specific noise.",
+            "Train a DCCA model (correlation only) versus a DCCAE model (correlation + reconstruction).",
+            "Test downstream retrieval (shared task) and view reconstruction (private task)."
           ],
-          "successLooksLike": "You refuse to equate 'aligned' with 'identical'."
+          "successLooksLike": "You can demonstrate visually how pure DCCA discards private details while DCCAE retains both."
         },
-        "bridgeToNext": "When views form an unordered set, you need set architectures."
+        "bridgeToNext": "In Level 3, views had fixed pairings (View A & View B). In Level 4, views form an UNORDERED SET — requiring Set Representation architectures."
       }
     },
     {
@@ -2175,9 +2358,9 @@ window.CURRICULUM_DATA = {
           "pages": 29,
           "pdfPath": "RAW/1703.06114v3.pdf",
           "teach": {
-            "whyWeRead": "Essential theory for aggregating unordered activation views into one concept code.",
-            "oneSentence": "Characterises permutation-invariant set functions as ρ(Σ φ(x)).",
-            "plainLanguage": "If your input is a set, order must not matter. Deep Sets shows that (under mild conditions) invariant functions can be written as: encode each element, sum the encodings, then apply a network ρ.\n\nMean pooling is the special case where φ is identity-ish and ρ is simple. Sum/mean can lose information about pairwise relations and multiplicities in some tasks.\n\nIf SetConCA's meaning depends on how views relate — not just their average — Deep Sets alone may be insufficient; consider attention.",
+            "whyWeRead": "Deep Sets provides the fundamental mathematical theory for constructing permutation-invariant set representations.",
+            "oneSentence": "Proves that any continuous permutation-invariant set function can be factorized as f(X) = ρ( Σ_{x∈X} φ(x) ).",
+            "plainLanguage": "Welcome to the Deep Sets Masterclass. Let's understand why Manzil Zaheer et al. published this landmark paper in 2017.\n\n--- WHAT IS A SET? ---\nA set is an UNORDERED collection of items: X = {x_1, x_2, ..., x_N}. The set {A, B, C} is IDENTICAL to {C, A, B}.\n\n--- WHY STANDARD NEURAL NETWORKS FAIL ON SETS ---\nIf you concatenate set elements [x_1, x_2, x_3] into a standard MLP, the network treats input position 1 differently from position 2! If you swap inputs, the output changes. That violates the mathematical definition of a set function.\n\n--- THE DEEP SETS THEOREM ---\nZaheer et al. proved that ANY valid permutation-invariant function f(X) can be decomposed into three clean steps:\n1. Element Encoder φ: Map each set member x_i independently through a neural network φ(x_i).\n2. Commutative Aggregation: Sum (or average) the encodings: Σ φ(x_i).\n3. Set Decoder ρ: Map the aggregated sum vector through a post-processing network ρ.\n\nFormula: f(X) = ρ( Σ_{x ∈ X} φ(x) )\n\nWhy SUM/MEAN pooling guarantees invariance: Addition is commutative (a + b = b + a). The sum is 100% identical regardless of input order!\n\nFOR SETCONCA:\nDeep Sets (mean pooling over φ(x_i)) is the foundational aggregator for combining multiple activation views into one concept code.",
             "keyIdeas": [
               {
                 "title": "Permutation invariance",
@@ -2206,96 +2389,91 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "Deep Sets form",
-                "formula": "f(X)=ρ(∑_{x∈X} φ(x))",
-                "original": "Deep Sets form: f(X)=ρ(∑_{x∈X} φ(x))",
-                "simple": "Encode, sum-pool, transform.",
-                "meaning": "Encode, sum-pool, transform."
+                "name": "Deep Sets Universal Form",
+                "formula": "f(X) = ρ( Σ_{x ∈ X} φ(x) )",
+                "original": "Deep Sets Universal Form: f(X) = ρ( Σ_{x ∈ X} φ(x) )",
+                "simple": "Process elements with φ, sum pool, then transform with ρ.",
+                "meaning": "Process elements with φ, sum pool, then transform with ρ."
               }
             ],
             "vocabulary": [
               {
-                "term": "Permutation invariance",
-                "original": "Technical term: «Permutation invariance» as used in this literature.",
-                "simple": "Order-independent set function.",
-                "def": "Order-independent set function."
+                "term": "Permutation Invariance",
+                "original": "Technical term: «Permutation Invariance» as used in this literature.",
+                "simple": "The property that input order does not alter output.",
+                "def": "The property that input order does not alter output."
               },
               {
-                "term": "Pooling",
-                "original": "Technical term: «Pooling» as used in this literature.",
-                "simple": "Aggregate many vectors into one.",
-                "def": "Aggregate many vectors into one."
+                "term": "Permutation Equivariance",
+                "original": "Technical term: «Permutation Equivariance» as used in this literature.",
+                "simple": "The property that permuting inputs permutes outputs identically.",
+                "def": "The property that permuting inputs permutes outputs identically."
               }
             ],
             "whatItShows": [
-              "A universal architectural pattern for invariant set learning"
+              "The exact architectural requirement for universal permutation-invariant set learning"
             ],
             "whatItDoesNotShow": [
-              "That mean pooling is always enough semantically"
+              "That simple mean pooling is sufficient when element relationships matter"
             ],
             "setconcaUse": [
-              "Default aggregator candidate: Deep Sets.",
-              "Ablate against mean and Set Transformer."
+              "Use Deep Sets (mean pooling of φ(x)) as the baseline set aggregator in SetConCA."
             ],
             "masteryChecklist": [
-              "I can write the Deep Sets formula.",
-              "I know when mean pooling fails."
+              "I can write the Deep Sets formula and explain φ, Σ, and ρ.",
+              "I can explain why addition guarantees permutation invariance."
             ],
             "commonConfusions": [
               {
-                "wrong": "Any MLP on concatenated views is fine.",
-                "right": "Concatenation encodes order unless carefully handled."
+                "wrong": "Concatenating set items into an MLP works fine for sets.",
+                "right": "Concatenation encodes arbitrary order. Deep Sets sum pooling is required for true set invariance."
               }
             ],
             "quiz": [
               {
-                "q": "Deep Sets core form?",
+                "q": "What is the core Deep Sets formula?",
                 "options": [
-                  "ρ(sum φ(x))",
-                  "softmax only",
-                  "PCA only",
-                  "CCA only"
+                  "ρ( Σ φ(x) )",
+                  "TopK(x)",
+                  "CCA(x,y)",
+                  "InfoNCE(q,k)"
                 ],
                 "a": 0,
-                "explain": "Encode–sum–transform."
+                "explain": "Deep Sets factorizes set functions as ρ( Σ φ(x) )."
               }
             ],
-            "originalIdea": "Characterises permutation-invariant set functions as ρ(Σ φ(x)).",
-            "simpleLesson": "If your input is a set, order must not matter. Deep Sets shows that (under mild conditions) invariant functions can be written as: encode each element, sum the encodings, then apply a network ρ.\n\nMean pooling is the special case where φ is identity-ish and ρ is simple. Sum/mean can lose information about pairwise relations and multiplicities in some tasks.\n\nIf SetConCA's meaning depends on how views relate — not just their average — Deep Sets alone may be insufficient; consider attention.",
+            "originalIdea": "Proves that any continuous permutation-invariant set function can be factorized as f(X) = ρ( Σ_{x∈X} φ(x) ).",
+            "simpleLesson": "Welcome to the Deep Sets Masterclass. Let's understand why Manzil Zaheer et al. published this landmark paper in 2017.\n\n--- WHAT IS A SET? ---\nA set is an UNORDERED collection of items: X = {x_1, x_2, ..., x_N}. The set {A, B, C} is IDENTICAL to {C, A, B}.\n\n--- WHY STANDARD NEURAL NETWORKS FAIL ON SETS ---\nIf you concatenate set elements [x_1, x_2, x_3] into a standard MLP, the network treats input position 1 differently from position 2! If you swap inputs, the output changes. That violates the mathematical definition of a set function.\n\n--- THE DEEP SETS THEOREM ---\nZaheer et al. proved that ANY valid permutation-invariant function f(X) can be decomposed into three clean steps:\n1. Element Encoder φ: Map each set member x_i independently through a neural network φ(x_i).\n2. Commutative Aggregation: Sum (or average) the encodings: Σ φ(x_i).\n3. Set Decoder ρ: Map the aggregated sum vector through a post-processing network ρ.\n\nFormula: f(X) = ρ( Σ_{x ∈ X} φ(x) )\n\nWhy SUM/MEAN pooling guarantees invariance: Addition is commutative (a + b = b + a). The sum is 100% identical regardless of input order!\n\nFOR SETCONCA:\nDeep Sets (mean pooling over φ(x_i)) is the foundational aggregator for combining multiple activation views into one concept code.",
             "limitPairs": [
               {
-                "original": "A universal architectural pattern for invariant set learning",
-                "simple": "In practice this means evidence supports: A universal architectural pattern for invariant set learning"
+                "original": "The exact architectural requirement for universal permutation-invariant set learning",
+                "simple": "In practice this means evidence supports: The exact architectural requirement for universal permutation-invariant set learning"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That mean pooling is always enough semantically",
-                "simple": "Do not overclaim: That mean pooling is always enough semantically"
+                "original": "That simple mean pooling is sufficient when element relationships matter",
+                "simple": "Do not overclaim: That simple mean pooling is sufficient when element relationships matter"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Default aggregator candidate: Deep Sets.",
-                "simple": "Action item: Default aggregator candidate: Deep Sets."
-              },
-              {
-                "original": "Ablate against mean and Set Transformer.",
-                "simple": "Action item: Ablate against mean and Set Transformer."
+                "original": "Use Deep Sets (mean pooling of φ(x)) as the baseline set aggregator in SetConCA.",
+                "simple": "Action item: Use Deep Sets (mean pooling of φ(x)) as the baseline set aggregator in SetConCA."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Deep Sets core form?",
+              "q": "What is the core Deep Sets formula?",
               "options": [
-                "ρ(sum φ(x))",
-                "softmax only",
-                "PCA only",
-                "CCA only"
+                "ρ( Σ φ(x) )",
+                "TopK(x)",
+                "CCA(x,y)",
+                "InfoNCE(q,k)"
               ],
               "a": 0,
-              "explain": "Encode–sum–transform."
+              "explain": "Deep Sets factorizes set functions as ρ( Σ φ(x) )."
             }
           ]
         },
@@ -2316,9 +2494,9 @@ window.CURRICULUM_DATA = {
           "pages": 13,
           "pdfPath": "RAW/1606.02185v2.pdf",
           "teach": {
-            "whyWeRead": "Treats a whole set/dataset as an object with a latent — clarifies what a set code should mean.",
-            "oneSentence": "Learns latent representations of datasets/sets, aiming to capture shared generative structure.",
-            "plainLanguage": "Sometimes the object of interest is not one example but a collection: a dataset, a class, a bag of views. The Neural Statistician learns a latent that represents the set's underlying distributional structure.\n\nAsk: should your set code reconstruct members, or capture the distribution they come from? For SetConCA, a concept code might need shared structure across views more than perfect member reconstruction.",
+            "whyWeRead": "Neural Statistician treats an entire dataset or set as a single probabilistic object with a latent code.",
+            "oneSentence": "Learns latent representations of entire datasets/sets to capture underlying generative distributions.",
+            "plainLanguage": "Welcome to Neural Statistician (Edwards & Storkey, 2016). Instead of creating a latent vector for a single image, what if your goal is to represent an ENTIRE DATASET or BAG OF VIEWS as a single latent statistic?\n\nNeural Statistician builds a statistic network that pools summary statistics across a set to infer a set-level latent c. The set code c represents the underlying probability distribution that generated the set items.",
             "keyIdeas": [
               {
                 "title": "Set as object",
@@ -2342,75 +2520,75 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Set latent",
-                "original": "Technical term: «Set latent» as used in this literature.",
-                "simple": "A code for an entire set, not one element.",
-                "def": "A code for an entire set, not one element."
+                "term": "Set Latent",
+                "original": "Technical term: «Set Latent» as used in this literature.",
+                "simple": "A latent code representing an entire set or distribution of items.",
+                "def": "A latent code representing an entire set or distribution of items."
               }
             ],
             "whatItShows": [
-              "Sets can be first-class latent objects"
+              "That entire sets can be represented as latent probabilistic objects"
             ],
             "whatItDoesNotShow": [
-              "Exact recipe for SAE multi-view fusion"
+              "How to construct sparse autoencoder dictionaries"
             ],
             "setconcaUse": [
-              "Decide whether set codes target member recon or shared concept structure."
+              "Inspiration for defining what a SetConCA concept code should capture across activation view sets."
             ],
             "masteryChecklist": [
-              "I can state what a set-level latent is for."
+              "I can explain the difference between an item latent and a set latent."
             ],
             "commonConfusions": [
               {
-                "wrong": "Set code = mean of members always.",
-                "right": "Mean is one statistic; latents can be richer."
+                "wrong": "A set representation must reconstruct every individual member perfectly.",
+                "right": "Set latents can target the shared generative distribution rather than raw member noise."
               }
             ],
             "quiz": [
               {
-                "q": "Neural Statistician mainly represents?",
+                "q": "Neural Statistician primarily represents what object as a latent code?",
                 "options": [
-                  "A whole set/dataset",
-                  "One pixel",
-                  "Only a probe",
-                  "Only PCA"
+                  "An entire set/dataset",
+                  "A single pixel",
+                  "A linear probe",
+                  "A single token"
                 ],
                 "a": 0,
-                "explain": "Set-level latent."
+                "explain": "Neural Statistician represents an entire set/dataset as a latent object."
               }
             ],
-            "originalIdea": "Learns latent representations of datasets/sets, aiming to capture shared generative structure.",
-            "simpleLesson": "Sometimes the object of interest is not one example but a collection: a dataset, a class, a bag of views. The Neural Statistician learns a latent that represents the set's underlying distributional structure.\n\nAsk: should your set code reconstruct members, or capture the distribution they come from? For SetConCA, a concept code might need shared structure across views more than perfect member reconstruction.",
+            "originalIdea": "Learns latent representations of entire datasets/sets to capture underlying generative distributions.",
+            "simpleLesson": "Welcome to Neural Statistician (Edwards & Storkey, 2016). Instead of creating a latent vector for a single image, what if your goal is to represent an ENTIRE DATASET or BAG OF VIEWS as a single latent statistic?\n\nNeural Statistician builds a statistic network that pools summary statistics across a set to infer a set-level latent c. The set code c represents the underlying probability distribution that generated the set items.",
             "limitPairs": [
               {
-                "original": "Sets can be first-class latent objects",
-                "simple": "In practice this means evidence supports: Sets can be first-class latent objects"
+                "original": "That entire sets can be represented as latent probabilistic objects",
+                "simple": "In practice this means evidence supports: That entire sets can be represented as latent probabilistic objects"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Exact recipe for SAE multi-view fusion",
-                "simple": "Do not overclaim: Exact recipe for SAE multi-view fusion"
+                "original": "How to construct sparse autoencoder dictionaries",
+                "simple": "Do not overclaim: How to construct sparse autoencoder dictionaries"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Decide whether set codes target member recon or shared concept structure.",
-                "simple": "Action item: Decide whether set codes target member recon or shared concept structure."
+                "original": "Inspiration for defining what a SetConCA concept code should capture across activation view sets.",
+                "simple": "Action item: Inspiration for defining what a SetConCA concept code should capture across activation view sets."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Neural Statistician mainly represents?",
+              "q": "Neural Statistician primarily represents what object as a latent code?",
               "options": [
-                "A whole set/dataset",
-                "One pixel",
-                "Only a probe",
-                "Only PCA"
+                "An entire set/dataset",
+                "A single pixel",
+                "A linear probe",
+                "A single token"
               ],
               "a": 0,
-              "explain": "Set-level latent."
+              "explain": "Neural Statistician represents an entire set/dataset as a latent object."
             }
           ]
         },
@@ -2431,9 +2609,9 @@ window.CURRICULUM_DATA = {
           "pages": 17,
           "pdfPath": "RAW/1810.00825v3.pdf",
           "teach": {
-            "whyWeRead": "When set meaning needs interactions among members, attention beats independent pooling.",
-            "oneSentence": "Attention-based permutation-invariant networks with self-attention and inducing points.",
-            "plainLanguage": "Deep Sets encodes members independently before pooling. Set Transformer lets members attend to each other, modelling pairwise structure, then pools (including attention pooling).\n\nInducing points reduce quadratic cost by attending through a smaller set of learned points.\n\nUse this when average pooling cannot recover the concept — e.g. when a few views are critical and others are distractors.",
+            "whyWeRead": "Set Transformer handles sets where meaning depends on INTERACTIONS among members, outperforming independent Deep Sets pooling.",
+            "oneSentence": "An attention-based permutation-invariant network using self-attention over set members and inducing points for efficiency.",
+            "plainLanguage": "Welcome to the Set Transformer Masterclass. Let me explain why Juho Lee et al. invented Set Transformer in 2019.\n\n--- WHERE DEEP SETS STRUGGLES ---\nDeep Sets encodes every set member in COMPLETE ISOLATION (φ(x_i)) before sum pooling. But what if the meaning of a set depends on PAIRWISE RELATIONSHIPS between members?\nExample: If an intruder/outlier activation is added to a set, Deep Sets blindly adds the intruder into the sum, corrupting the set representation!\n\n--- THE SET TRANSFORMER SOLUTION ---\nSet Transformer lets set members ATTEND TO EACH OTHER using Self-Attention before pooling!\nMembers can compare values, identify outliers, and weight contributions dynamically. To maintain permutation invariance, Set Transformer uses Pooling by Multihead Attention (PMA) with learned seed vectors.\n\n--- INDUCING POINTS (ISAB) FOR COMPUTATIONAL EFFICIENCY ---\nStandard self-attention over N set members costs O(N²) memory/compute. For large sets, this is expensive.\nSet Transformer introduces Induced Set Attention Blocks (ISAB): members attend to M learned 'Inducing Points' (where M << N), reducing computational complexity from O(N²) to O(N M)!",
             "keyIdeas": [
               {
                 "title": "Self-attention over members",
@@ -2460,90 +2638,115 @@ window.CURRICULUM_DATA = {
                 "explain": "Higher relational expressivity increases compute and sample needs."
               }
             ],
-            "simplifiedMath": [],
+            "simplifiedMath": [
+              {
+                "name": "ISAB Complexity",
+                "formula": "O(N · M)  where M << N",
+                "original": "ISAB Complexity: O(N · M)  where M << N",
+                "simple": "Linear scaling w.r.t set size N using M inducing points.",
+                "meaning": "Linear scaling w.r.t set size N using M inducing points."
+              }
+            ],
             "vocabulary": [
               {
-                "term": "Inducing points",
-                "original": "Technical term: «Inducing points» as used in this literature.",
-                "simple": "Learned bottleneck elements for efficient attention.",
-                "def": "Learned bottleneck elements for efficient attention."
+                "term": "Inducing Points",
+                "original": "Technical term: «Inducing Points» as used in this literature.",
+                "simple": "Learned memory vectors acting as attention bottlenecks to speed up set self-attention.",
+                "def": "Learned memory vectors acting as attention bottlenecks to speed up set self-attention."
               },
               {
-                "term": "Attention pooling",
-                "original": "Technical term: «Attention pooling» as used in this literature.",
-                "simple": "Pool by attention weights rather than uniform mean.",
-                "def": "Pool by attention weights rather than uniform mean."
+                "term": "PMA",
+                "original": "Technical term: «PMA» as used in this literature.",
+                "simple": "Pooling by Multihead Attention; attention-based set aggregation operator.",
+                "def": "Pooling by Multihead Attention; attention-based set aggregation operator."
               }
             ],
             "whatItShows": [
-              "Interaction-aware set models outperform independent pooling on relational tasks"
+              "That interaction-aware attention pooling beats independent sum pooling on relational set tasks"
             ],
             "whatItDoesNotShow": [
-              "That attention always helps SAE stability"
+              "That attention pooling is always necessary for simple independent set averages"
             ],
             "setconcaUse": [
-              "Baseline aggregator when intruders/relations matter.",
-              "Watch compute and overfitting on small view sets."
+              "Use Set Transformer as the relational aggregator when view sets contain intruders or complex view interactions."
             ],
             "masteryChecklist": [
-              "I can contrast Deep Sets vs Set Transformer.",
-              "I know what inducing points buy."
+              "I can contrast Deep Sets independent pooling with Set Transformer self-attention.",
+              "I understand how Inducing Points reduce computational cost."
             ],
             "commonConfusions": [
               {
-                "wrong": "Attention always beats mean pooling.",
-                "right": "Not if the concept truly is an average and data is tiny."
+                "wrong": "Set Transformer loses permutation invariance because it uses attention.",
+                "right": "Self-attention is permutation-equivariant, and PMA pooling with learned seeds ensures complete permutation invariance."
               }
             ],
             "quiz": [
               {
-                "q": "Set Transformer adds?",
+                "q": "What key mechanism does Set Transformer add over Deep Sets?",
                 "options": [
-                  "Member interactions via attention",
-                  "Only PCA",
-                  "Only L1",
-                  "Only CCA"
+                  "Self-attention over set members before pooling",
+                  "L1 penalty",
+                  "PCA reduction",
+                  "Linear probing"
                 ],
                 "a": 0,
-                "explain": "Self-attention over set elements."
+                "explain": "Set Transformer allows members to interact via self-attention before pooling."
+              },
+              {
+                "q": "What is the computational benefit of Inducing Points (ISAB)?",
+                "options": [
+                  "Reduces self-attention complexity from O(N²) to O(N M)",
+                  "Increases L0 sparsity",
+                  "Eliminates decoder",
+                  "Computes CKA"
+                ],
+                "a": 0,
+                "explain": "Inducing points reduce self-attention complexity to linear scaling O(N M)."
               }
             ],
-            "originalIdea": "Attention-based permutation-invariant networks with self-attention and inducing points.",
-            "simpleLesson": "Deep Sets encodes members independently before pooling. Set Transformer lets members attend to each other, modelling pairwise structure, then pools (including attention pooling).\n\nInducing points reduce quadratic cost by attending through a smaller set of learned points.\n\nUse this when average pooling cannot recover the concept — e.g. when a few views are critical and others are distractors.",
+            "originalIdea": "An attention-based permutation-invariant network using self-attention over set members and inducing points for efficiency.",
+            "simpleLesson": "Welcome to the Set Transformer Masterclass. Let me explain why Juho Lee et al. invented Set Transformer in 2019.\n\n--- WHERE DEEP SETS STRUGGLES ---\nDeep Sets encodes every set member in COMPLETE ISOLATION (φ(x_i)) before sum pooling. But what if the meaning of a set depends on PAIRWISE RELATIONSHIPS between members?\nExample: If an intruder/outlier activation is added to a set, Deep Sets blindly adds the intruder into the sum, corrupting the set representation!\n\n--- THE SET TRANSFORMER SOLUTION ---\nSet Transformer lets set members ATTEND TO EACH OTHER using Self-Attention before pooling!\nMembers can compare values, identify outliers, and weight contributions dynamically. To maintain permutation invariance, Set Transformer uses Pooling by Multihead Attention (PMA) with learned seed vectors.\n\n--- INDUCING POINTS (ISAB) FOR COMPUTATIONAL EFFICIENCY ---\nStandard self-attention over N set members costs O(N²) memory/compute. For large sets, this is expensive.\nSet Transformer introduces Induced Set Attention Blocks (ISAB): members attend to M learned 'Inducing Points' (where M << N), reducing computational complexity from O(N²) to O(N M)!",
             "limitPairs": [
               {
-                "original": "Interaction-aware set models outperform independent pooling on relational tasks",
-                "simple": "In practice this means evidence supports: Interaction-aware set models outperform independent pooling on relational tasks"
+                "original": "That interaction-aware attention pooling beats independent sum pooling on relational set tasks",
+                "simple": "In practice this means evidence supports: That interaction-aware attention pooling beats independent sum pooling on relational set tasks"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That attention always helps SAE stability",
-                "simple": "Do not overclaim: That attention always helps SAE stability"
+                "original": "That attention pooling is always necessary for simple independent set averages",
+                "simple": "Do not overclaim: That attention pooling is always necessary for simple independent set averages"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Baseline aggregator when intruders/relations matter.",
-                "simple": "Action item: Baseline aggregator when intruders/relations matter."
-              },
-              {
-                "original": "Watch compute and overfitting on small view sets.",
-                "simple": "Action item: Watch compute and overfitting on small view sets."
+                "original": "Use Set Transformer as the relational aggregator when view sets contain intruders or complex view interactions.",
+                "simple": "Action item: Use Set Transformer as the relational aggregator when view sets contain intruders or complex view interactions."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Set Transformer adds?",
+              "q": "What key mechanism does Set Transformer add over Deep Sets?",
               "options": [
-                "Member interactions via attention",
-                "Only PCA",
-                "Only L1",
-                "Only CCA"
+                "Self-attention over set members before pooling",
+                "L1 penalty",
+                "PCA reduction",
+                "Linear probing"
               ],
               "a": 0,
-              "explain": "Self-attention over set elements."
+              "explain": "Set Transformer allows members to interact via self-attention before pooling."
+            },
+            {
+              "q": "What is the computational benefit of Inducing Points (ISAB)?",
+              "options": [
+                "Reduces self-attention complexity from O(N²) to O(N M)",
+                "Increases L0 sparsity",
+                "Eliminates decoder",
+                "Computes CKA"
+              ],
+              "a": 0,
+              "explain": "Inducing points reduce self-attention complexity to linear scaling O(N M)."
             }
           ]
         },
@@ -2563,9 +2766,9 @@ window.CURRICULUM_DATA = {
           "pages": 11,
           "pdfPath": "RAW/selby22a.pdf",
           "teach": {
-            "whyWeRead": "Optional advanced reading when relationships exist between several sets, not only within one set.",
-            "oneSentence": "Extends set transformers to functions on multiple sets.",
-            "plainLanguage": "Sometimes you have several sets (e.g. views of concept A vs concept B) and need relations between sets. Multi-Set Transformers model within- and between-set interactions.\n\nOnly needed when SetConCA experiments involve multiple concept-sets interacting.",
+            "whyWeRead": "Advanced reading for modeling relationships between multiple distinct sets, extending single-set attention.",
+            "oneSentence": "Learning Functions on Multiple Sets using Multi-Set Transformers models interactions within and between several input sets.",
+            "plainLanguage": "Welcome to Multi-Set Transformer (Selby et al., 2022). Standard Set Transformer operates on a single set. Multi-Set Transformers handle functions that operate on MULTIPLE SETS simultaneously (e.g. Set A vs. Set B).\n\nUses cross-set attention to model relational structure between different set collections.",
             "keyIdeas": [
               {
                 "title": "Multiple sets as input",
@@ -2583,111 +2786,122 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Multi-set model",
-                "original": "Technical term: «Multi-set model» as used in this literature.",
-                "simple": "Architecture taking several sets as arguments.",
-                "def": "Architecture taking several sets as arguments."
+                "term": "Multi-Set Function",
+                "original": "Technical term: «Multi-Set Function» as used in this literature.",
+                "simple": "A function taking multiple sets as arguments and operating symmetrically within and across sets.",
+                "def": "A function taking multiple sets as arguments and operating symmetrically within and across sets."
               }
             ],
             "whatItShows": [
-              "Cross-set relational modelling is possible with attention"
+              "How to model relationships between multiple input sets using attention"
             ],
             "whatItDoesNotShow": [
-              "Necessity for basic SetConCA"
+              "Necessity for simple single-set activation view pooling"
             ],
             "setconcaUse": [
-              "Optional: cross-concept set relations."
+              "Optional extension for modeling relationships between multiple distinct concept-sets."
             ],
             "masteryChecklist": [
-              "I know when multi-set models are needed vs single-set."
+              "I know when multi-set models are needed over single-set aggregators."
             ],
             "commonConfusions": [
               {
-                "wrong": "Required for any multi-view SAE.",
-                "right": "Optional; single-set aggregation often comes first."
+                "wrong": "Required for basic SetConCA.",
+                "right": "Optional advanced extension; single-set aggregation comes first."
               }
             ],
             "quiz": [
               {
-                "q": "Multi-Set Transformers help when?",
+                "q": "Multi-Set Transformers model relationships between?",
                 "options": [
-                  "Relations between several sets matter",
-                  "Only training PCA",
-                  "Only FVU",
-                  "Never"
+                  "Multiple distinct input sets",
+                  "Single vectors only",
+                  "Scalar numbers",
+                  "PCA axes"
                 ],
                 "a": 0,
-                "explain": "Cross-set relations."
+                "explain": "Models interactions within and across multiple input sets."
               }
             ],
-            "originalIdea": "Extends set transformers to functions on multiple sets.",
-            "simpleLesson": "Sometimes you have several sets (e.g. views of concept A vs concept B) and need relations between sets. Multi-Set Transformers model within- and between-set interactions.\n\nOnly needed when SetConCA experiments involve multiple concept-sets interacting.",
+            "originalIdea": "Learning Functions on Multiple Sets using Multi-Set Transformers models interactions within and between several input sets.",
+            "simpleLesson": "Welcome to Multi-Set Transformer (Selby et al., 2022). Standard Set Transformer operates on a single set. Multi-Set Transformers handle functions that operate on MULTIPLE SETS simultaneously (e.g. Set A vs. Set B).\n\nUses cross-set attention to model relational structure between different set collections.",
             "limitPairs": [
               {
-                "original": "Cross-set relational modelling is possible with attention",
-                "simple": "In practice this means evidence supports: Cross-set relational modelling is possible with attention"
+                "original": "How to model relationships between multiple input sets using attention",
+                "simple": "In practice this means evidence supports: How to model relationships between multiple input sets using attention"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Necessity for basic SetConCA",
-                "simple": "Do not overclaim: Necessity for basic SetConCA"
+                "original": "Necessity for simple single-set activation view pooling",
+                "simple": "Do not overclaim: Necessity for simple single-set activation view pooling"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Optional: cross-concept set relations.",
-                "simple": "Action item: Optional: cross-concept set relations."
+                "original": "Optional extension for modeling relationships between multiple distinct concept-sets.",
+                "simple": "Action item: Optional extension for modeling relationships between multiple distinct concept-sets."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Multi-Set Transformers help when?",
+              "q": "Multi-Set Transformers model relationships between?",
               "options": [
-                "Relations between several sets matter",
-                "Only training PCA",
-                "Only FVU",
-                "Never"
+                "Multiple distinct input sets",
+                "Single vectors only",
+                "Scalar numbers",
+                "PCA axes"
               ],
               "a": 0,
-              "explain": "Cross-set relations."
+              "explain": "Models interactions within and across multiple input sets."
             }
           ]
         }
       ],
       "primer": {
         "title": "Learning representations of sets",
-        "mission": "Build permutation-invariant aggregators and know when mean pooling fails.",
-        "beforeYouStart": "Shared/private multi-view from Level 3.",
-        "primer": "A set has no order. The representation of {a,b,c} must equal that of {c,a,b}.\n\nDeep Sets proves a universal form: encode each member with φ, sum (or pool), then transform with ρ. Mean pooling is a special case — and it can lose pairwise structure.\n\nSet Transformer lets members talk via attention before pooling.\n\nNeural Statistician treats a whole dataset as one object with a latent — useful when the set code should capture a distribution, not one member.\n\nIn SetConCA, a concept may appear as several activation views. Aggregation choice is a first-class design decision.",
+        "mission": "Master permutation-invariant set architectures: Deep Sets, Neural Statistician, and Set Transformer.",
+        "beforeYouStart": "Level 3 multi-view representations.",
+        "primer": "Welcome to Level 4. What is a set? A set is an unordered collection of items: X = {x_1, x_2, ..., x_N}. The set {apple, banana, cherry} is EXACTLY THE SAME as {cherry, apple, banana}.\n\nWhy standard neural networks fail on sets:\nIf you feed a set into a standard MLP or RNN by concatenating elements [x_1, x_2, x_3], the network treats the order of elements as meaningful. Swapping the inputs changes the output! That is forbidden for set functions.\n\n--- STEP 1: Deep Sets (Zaheer et al., 2017) — The Universal Set Theorem ---\nZaheer et al. proved a mathematical theorem: ANY valid permutation-invariant function f(X) operating on an unordered set X can be decomposed into three steps:\n1. Process each element independently using a neural network φ(x_i).\n2. Aggregate (pool) the element representations using a commutative pooling operation (SUM or MEAN).\n3. Process the aggregated set vector using a post-processing network ρ.\n\nFormula: f(X) = ρ( Σ_{x ∈ X} φ(x) )\n\nWhy SUM / MEAN pooling works:\nAddition is commutative (a + b = b + a). Therefore, summing element vectors guarantees that input order cannot change the output!\n\n--- STEP 2: When Mean Pooling Fails — The Need for Set Transformer ---\nDeep Sets processes every set member in total isolation before summing. But what if the meaning of a set depends on RELATIONS between members?\nExample: Imagine a set of activations representing a context. If one member is an 'outlier/intruder' activation, simple mean pooling blends the intruder into the average, corrupting the set representation!\n\nSet Transformer (Lee et al., 2019):\nSet Transformer uses Self-Attention OVER set members before pooling! Members can attend to each other, allowing the network to compare items, suppress outliers, or highlight pairwise relationships. To maintain permutation invariance, Set Transformer uses Pooling by Multihead Attention (PMA) with learned seed vectors.\n\n--- STEP 3: Neural Statistician (Edwards & Storkey, 2016) ---\nInstead of outputting a single point vector for a set, Neural Statistician maps a set of observations to a LATENT STATISTICAL DISTRIBUTION capturing the dataset's generative structure.\n\nAPPLICATION TO SETCONCA:\nIn SetConCA, a single concept is observed across multiple activation views. How should we aggregate those views into one concept code? Deep Sets (mean pooling) is our baseline aggregator, and Set Transformer is our relational aggregator.",
         "bigPictureDiagram": [
-          "members → φ(x) → SUM/ATTN pool → ρ → set code"
+          "Unordered Set {x_1, x_2, x_3}",
+          "Deep Sets: φ(x_1) + φ(x_2) + φ(x_3) ──[SUM/MEAN]──→ Vector ──[ρ]──→ Set Code f(X)",
+          "Set Transformer: {x_i} ──[Self-Attention over members]──→ {x_i'} ──[PMA Attention Pool]──→ Relational Set Code"
         ],
         "conceptsToMaster": [
           {
-            "name": "Permutation invariance",
-            "simple": "Order does not change the output.",
-            "deeper": "f(π(X))=f(X) for any permutation π."
+            "name": "Permutation Invariance",
+            "simple": "The property that changing the order of input items does not change the network's output: f(π(X)) = f(X).",
+            "deeper": "A function f: 2^X → Y is permutation invariant if for any permutation matrix P, f(PX) = f(X). Proved by Zaheer et al. to equal ρ(sum φ(x_i)) for continuous set functions."
           },
           {
-            "name": "Equivariance",
-            "simple": "Permuting inputs permutes outputs the same way.",
-            "deeper": "Useful for per-member predictions."
+            "name": "Permutation Equivariance",
+            "simple": "Changing the order of input items changes the output items in the exact same order: f(π(X)) = π(f(X)).",
+            "deeper": "Used when outputting a prediction for each member of a set (e.g. per-element scoring). Maintained by layerwise transformations that treat each element symmetrically."
+          },
+          {
+            "name": "Inducing Points (in Set Transformer)",
+            "simple": "A small set of learned memory vectors used in attention to reduce the computational cost of set self-attention from O(N²) to O(N * M).",
+            "deeper": "Set Attention Blocks (SAB) cost O(N^2). Induced Set Attention Blocks (ISAB) project N elements onto M learned inducing vectors I via attention, then project back, reducing cost to O(N M)."
+          },
+          {
+            "name": "Intruder / Outlier Robustness",
+            "simple": "How well a set aggregator handles noise or an unrelated item inserted into the set.",
+            "deeper": "Mean pooling is vulnerable to outliers (O(1/N) shift). Attention pooling can assign near-zero attention weights to intruder items, preserving set code integrity."
           }
         ],
         "checkpoint": {
-          "goal": "Compare mean, Deep Sets, Set Transformer, Gaussian PoE.",
+          "goal": "Compare Mean Pooling, Deep Sets, and Set Transformer on a synthetic set task with intruder items.",
           "steps": [
-            "Reconstruction",
-            "View removal",
-            "Intruder robustness",
-            "Set-size generalisation",
-            "Collapse checks"
+            "Create set datasets where target label depends on pairwise member relationships.",
+            "Inject 10% intruder (noise) vectors into each set.",
+            "Train Deep Sets vs Set Transformer.",
+            "Evaluate set classification accuracy and code stability under intruder presence."
           ],
-          "successLooksLike": "You know which aggregator fails when meaning is relational."
+          "successLooksLike": "You can demonstrate empirically why Set Transformer's attention mechanism resists intruder corruption better than Deep Sets mean pooling."
         },
-        "bridgeToNext": "Contrastive learning teaches how to pull related views together."
+        "bridgeToNext": "Now that you can represent sets of views, Level 5 teaches Contrastive Learning — how to pull related view sets together while pushing unrelated ones apart."
       }
     },
     {
@@ -2721,9 +2935,9 @@ window.CURRICULUM_DATA = {
           "pages": 13,
           "pdfPath": "RAW/1807.03748v2.pdf",
           "teach": {
-            "whyWeRead": "Conceptual home of InfoNCE — the standard contrastive loss family.",
-            "oneSentence": "Learns representations by predicting future/context with a contrastive InfoNCE objective.",
-            "plainLanguage": "CPC trains an encoder so that a representation of context can identify the true future sample among negatives. The loss is InfoNCE: a softmax cross-entropy over similarities.\n\nPositives define what 'same' means. Negatives define what 'different' means. Change either and you change the learned task.\n\nTemperature and similarity function reshape the geometry. InfoNCE relates to mutual information bounds under assumptions — useful intuition, not a licence to claim MI was measured in your SAE codes.",
+            "whyWeRead": "CPC introduced the InfoNCE loss function — the mathematical foundation for contrastive representation learning.",
+            "oneSentence": "Learns representations by predicting future context using the contrastive InfoNCE objective.",
+            "plainLanguage": "Welcome to the CPC / InfoNCE Masterclass. Let's understand Aaron van den Oord et al.'s (DeepMind 2018) breakthrough.\n\n--- THE CONTRASTIVE PREDICTION IDEA ---\nInstead of predicting raw future data pixels or tokens directly (which wastes capacity on fine noise), CPC predicts FUTURE REPRESENTATIONS by framing representation learning as a DISCRIMINATION TASK!\n\nGiven context query q, the model must select the true positive future sample k⁺ out of a minibatch containing 1 positive key and N-1 negative noise keys {k⁻}.\n\n--- THE INFONCE LOSS ---\nLoss = - log [ exp(qᵀ k⁺ / τ) / ( exp(qᵀ k⁺ / τ) + Σ exp(qᵀ k⁻_i / τ) ) ]\n\nThis is a softmax cross-entropy loss over cosine similarities scaled by temperature τ.\n\n--- MUTUAL INFORMATION BOUND ---\nVan den Oord et al. proved that minimizing InfoNCE loss MAXIMIZES A LOWER BOUND on the Mutual Information I(q; k⁺) between query and positive key:\nI(q; k⁺) ≥ log(K) - L_InfoNCE (where K is minibatch size).\n\nFOR SETCONCA:\nInfoNCE is the exact loss template used to coordinate sparse dictionary codes across multiple activation views.",
             "keyIdeas": [
               {
                 "title": "Positive / negative pairs",
@@ -2752,96 +2966,92 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "InfoNCE (schematic)",
-                "formula": "L = -log Softmax(sim(q,k⁺)/τ among {k⁺,k⁻})",
-                "original": "InfoNCE (schematic): L = -log Softmax(sim(q,k⁺)/τ among {k⁺,k⁻})",
-                "simple": "Pull positive key toward query; push negatives away; τ=temperature.",
-                "meaning": "Pull positive key toward query; push negatives away; τ=temperature."
+                "name": "InfoNCE Loss Formula",
+                "formula": "L_{InfoNCE} = - log \\frac{\\exp(q \\cdot k^+ / \\tau)}{\\exp(q \\cdot k^+ / \\tau) + \\sum_{i} \\exp(q \\cdot k^-_i / \\tau)}",
+                "original": "InfoNCE Loss Formula: L_{InfoNCE} = - log \\frac{\\exp(q \\cdot k^+ / \\tau)}{\\exp(q \\cdot k^+ / \\tau) + \\sum_{i} \\exp(q \\cdot k^-_i / \\tau)}",
+                "simple": "Softmax cross-entropy picking positive key k⁺ over negative keys k⁻ given query q.",
+                "meaning": "Softmax cross-entropy picking positive key k⁺ over negative keys k⁻ given query q."
               }
             ],
             "vocabulary": [
               {
                 "term": "InfoNCE",
                 "original": "Technical term: «InfoNCE» as used in this literature.",
-                "simple": "Contrastive loss identifying the positive among negatives.",
-                "def": "Contrastive loss identifying the positive among negatives."
+                "simple": "Information Noise-Contrastive Estimation loss function.",
+                "def": "Information Noise-Contrastive Estimation loss function."
               },
               {
-                "term": "Temperature τ",
-                "original": "Technical term: «Temperature τ» as used in this literature.",
-                "simple": "Softmax sharpness hyperparameter.",
-                "def": "Softmax sharpness hyperparameter."
+                "term": "Query & Key",
+                "original": "Technical term: «Query & Key» as used in this literature.",
+                "simple": "Query q is the anchor representation; Key k⁺ is positive target; Keys k⁻ are negative noise.",
+                "def": "Query q is the anchor representation; Key k⁺ is positive target; Keys k⁻ are negative noise."
               }
             ],
             "whatItShows": [
-              "Contrastive prediction learns useful representations"
+              "That contrastive prediction extracts rich structural representations without pixel/token generation"
             ],
             "whatItDoesNotShow": [
-              "That low InfoNCE recovers ground-truth concepts in SAEs"
+              "That low InfoNCE loss guarantees monosemantic feature dictionary recovery"
             ],
             "setconcaUse": [
-              "Default language for multi-view contrastive terms.",
-              "Document positive definition carefully."
+              "Default contrastive loss formulation for SetConCA multi-view coordination."
             ],
             "masteryChecklist": [
-              "I can write InfoNCE in words.",
-              "I know why negatives define the task."
+              "I can write the InfoNCE loss formula from memory.",
+              "I can explain the query, positive key, and negative key setup.",
+              "I understand the connection between InfoNCE and mutual information lower bounds."
             ],
             "commonConfusions": [
               {
-                "wrong": "InfoNCE maximises MI exactly.",
-                "right": "It relates to a bound under assumptions; practice is a discrimination task."
+                "wrong": "InfoNCE measures exact mutual information.",
+                "right": "InfoNCE provides a lower bound on mutual information bounded by log(K)."
               }
             ],
             "quiz": [
               {
-                "q": "InfoNCE trains by?",
+                "q": "What task does InfoNCE use to train representations?",
                 "options": [
-                  "Identifying the positive among negatives",
-                  "Only PCA",
-                  "Only FVU",
-                  "Only L0"
+                  "Selecting the true positive key among negative noise keys",
+                  "Predicting raw pixel values",
+                  "L1 autoencoding",
+                  "PCA projection"
                 ],
                 "a": 0,
-                "explain": "Contrastive classification."
+                "explain": "InfoNCE frames learning as selecting the positive key among negative noise keys."
               }
             ],
-            "originalIdea": "Learns representations by predicting future/context with a contrastive InfoNCE objective.",
-            "simpleLesson": "CPC trains an encoder so that a representation of context can identify the true future sample among negatives. The loss is InfoNCE: a softmax cross-entropy over similarities.\n\nPositives define what 'same' means. Negatives define what 'different' means. Change either and you change the learned task.\n\nTemperature and similarity function reshape the geometry. InfoNCE relates to mutual information bounds under assumptions — useful intuition, not a licence to claim MI was measured in your SAE codes.",
+            "originalIdea": "Learns representations by predicting future context using the contrastive InfoNCE objective.",
+            "simpleLesson": "Welcome to the CPC / InfoNCE Masterclass. Let's understand Aaron van den Oord et al.'s (DeepMind 2018) breakthrough.\n\n--- THE CONTRASTIVE PREDICTION IDEA ---\nInstead of predicting raw future data pixels or tokens directly (which wastes capacity on fine noise), CPC predicts FUTURE REPRESENTATIONS by framing representation learning as a DISCRIMINATION TASK!\n\nGiven context query q, the model must select the true positive future sample k⁺ out of a minibatch containing 1 positive key and N-1 negative noise keys {k⁻}.\n\n--- THE INFONCE LOSS ---\nLoss = - log [ exp(qᵀ k⁺ / τ) / ( exp(qᵀ k⁺ / τ) + Σ exp(qᵀ k⁻_i / τ) ) ]\n\nThis is a softmax cross-entropy loss over cosine similarities scaled by temperature τ.\n\n--- MUTUAL INFORMATION BOUND ---\nVan den Oord et al. proved that minimizing InfoNCE loss MAXIMIZES A LOWER BOUND on the Mutual Information I(q; k⁺) between query and positive key:\nI(q; k⁺) ≥ log(K) - L_InfoNCE (where K is minibatch size).\n\nFOR SETCONCA:\nInfoNCE is the exact loss template used to coordinate sparse dictionary codes across multiple activation views.",
             "limitPairs": [
               {
-                "original": "Contrastive prediction learns useful representations",
-                "simple": "In practice this means evidence supports: Contrastive prediction learns useful representations"
+                "original": "That contrastive prediction extracts rich structural representations without pixel/token generation",
+                "simple": "In practice this means evidence supports: That contrastive prediction extracts rich structural representations without pixel/token generation"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That low InfoNCE recovers ground-truth concepts in SAEs",
-                "simple": "Do not overclaim: That low InfoNCE recovers ground-truth concepts in SAEs"
+                "original": "That low InfoNCE loss guarantees monosemantic feature dictionary recovery",
+                "simple": "Do not overclaim: That low InfoNCE loss guarantees monosemantic feature dictionary recovery"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Default language for multi-view contrastive terms.",
-                "simple": "Action item: Default language for multi-view contrastive terms."
-              },
-              {
-                "original": "Document positive definition carefully.",
-                "simple": "Action item: Document positive definition carefully."
+                "original": "Default contrastive loss formulation for SetConCA multi-view coordination.",
+                "simple": "Action item: Default contrastive loss formulation for SetConCA multi-view coordination."
               }
             ]
           },
           "quiz": [
             {
-              "q": "InfoNCE trains by?",
+              "q": "What task does InfoNCE use to train representations?",
               "options": [
-                "Identifying the positive among negatives",
-                "Only PCA",
-                "Only FVU",
-                "Only L0"
+                "Selecting the true positive key among negative noise keys",
+                "Predicting raw pixel values",
+                "L1 autoencoding",
+                "PCA projection"
               ],
               "a": 0,
-              "explain": "Contrastive classification."
+              "explain": "InfoNCE frames learning as selecting the positive key among negative noise keys."
             }
           ]
         },
@@ -2863,9 +3073,9 @@ window.CURRICULUM_DATA = {
           "pages": 20,
           "pdfPath": "RAW/2002.05709v3.pdf",
           "teach": {
-            "whyWeRead": "Shows practical ingredients of contrastive learning: augmentations, projection heads, batch size, temperature.",
-            "oneSentence": "A simple contrastive framework showing what matters empirically for visual representation learning.",
-            "plainLanguage": "SimCLR creates two augmented views of an image as a positive pair, embeds them, maps through a projection head, and applies InfoNCE with in-batch negatives.\n\nLessons that transfer beyond vision: positive-pair definition (augmentation) is crucial; projection heads help training but may be discarded later; normalisation and temperature matter; large batches supply negatives.\n\nFor SetConCA, 'augmentation' becomes 'how you form views of the same concept'.",
+            "whyWeRead": "SimCLR established the practical engineering blueprint for contrastive learning: data augmentations, projection heads, and temperature.",
+            "oneSentence": "A simple framework for contrastive learning showing the critical role of data augmentations, non-linear projection heads, and batch size.",
+            "plainLanguage": "Welcome to the SimCLR Masterclass (Ting Chen et al., Google Brain 2020). SimCLR systematically identified the four practical pillars that make contrastive learning work:\n\n1. Data Augmentations Define the Task: Positive pairs are created by applying two random augmentations to the same image. The choice of augmentation defines what invariant features the model learns!\n2. Non-Linear Projection Head: Maps representation h through MLP g(h) = z BEFORE computing InfoNCE loss. CRITICAL: Projection z is used during training, but DISCARDED afterwards! Pre-projection representation h retains richer downstream information.\n3. Large Batch Size & Negatives: Uses all other images in the minibatch as negative pairs.\n4. Normalized Temperature-scaled Cross-Entropy (NT-Xent).",
             "keyIdeas": [
               {
                 "title": "Augmentation defines positives",
@@ -2895,87 +3105,87 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Projection head",
-                "original": "Technical term: «Projection head» as used in this literature.",
-                "simple": "Network mapping representations to the contrastive space.",
-                "def": "Network mapping representations to the contrastive space."
+                "term": "Projection Head",
+                "original": "Technical term: «Projection Head» as used in this literature.",
+                "simple": "An MLP layer g(h) used during contrastive training and discarded afterwards.",
+                "def": "An MLP layer g(h) used during contrastive training and discarded afterwards."
               },
               {
-                "term": "In-batch negatives",
-                "original": "Technical term: «In-batch negatives» as used in this literature.",
-                "simple": "Negatives taken from other examples in the minibatch.",
-                "def": "Negatives taken from other examples in the minibatch."
+                "term": "In-Batch Negatives",
+                "original": "Technical term: «In-Batch Negatives» as used in this literature.",
+                "simple": "Using other samples in the training minibatch as negative pairs.",
+                "def": "Using other samples in the training minibatch as negative pairs."
               }
             ],
             "whatItShows": [
-              "Which practical choices make contrastive learning work"
+              "Which empirical components (augmentations, projection head, temperature) optimize contrastive performance"
             ],
             "whatItDoesNotShow": [
-              "That vision augmentations translate unchanged to activation views"
+              "That image augmentations translate directly to neural activation views without adaptation"
             ],
             "setconcaUse": [
-              "Treat view construction as carefully as SimCLR treats augmentation.",
-              "Ablate projection head: does info remain in SAE codes?"
+              "Treat prompt/context view generation as carefully as SimCLR treats image augmentation.",
+              "Ablate whether projection heads preserve sparse dictionary features in SetConCA."
             ],
             "masteryChecklist": [
-              "I can list SimCLR's critical ingredients.",
-              "I can translate 'augmentation' to 'view definition'."
+              "I can list SimCLR's four key empirical ingredients.",
+              "I can explain why the projection head is discarded after training."
             ],
             "commonConfusions": [
               {
-                "wrong": "Projection head output is always the representation you should keep.",
-                "right": "Often the pre-projection embedding is used downstream."
+                "wrong": "You should use the projection head output z for downstream evaluation.",
+                "right": "Pre-projection representation h is richer and performs better downstream."
               }
             ],
             "quiz": [
               {
-                "q": "In SimCLR, positives are mainly defined by?",
+                "q": "What is done with SimCLR's projection head g(h) after contrastive training?",
                 "options": [
-                  "Data augmentations of the same image",
-                  "Random labels",
-                  "PCA",
-                  "L1"
+                  "It is discarded, keeping pre-projection embedding h for downstream tasks",
+                  "It is frozen and used for all tasks",
+                  "It replaces the encoder",
+                  "It computes PCA"
                 ],
                 "a": 0,
-                "explain": "Augmentation defines sameness."
+                "explain": "The projection head is discarded after training; pre-projection representation h is used."
               }
             ],
-            "originalIdea": "A simple contrastive framework showing what matters empirically for visual representation learning.",
-            "simpleLesson": "SimCLR creates two augmented views of an image as a positive pair, embeds them, maps through a projection head, and applies InfoNCE with in-batch negatives.\n\nLessons that transfer beyond vision: positive-pair definition (augmentation) is crucial; projection heads help training but may be discarded later; normalisation and temperature matter; large batches supply negatives.\n\nFor SetConCA, 'augmentation' becomes 'how you form views of the same concept'.",
+            "originalIdea": "A simple framework for contrastive learning showing the critical role of data augmentations, non-linear projection heads, and batch size.",
+            "simpleLesson": "Welcome to the SimCLR Masterclass (Ting Chen et al., Google Brain 2020). SimCLR systematically identified the four practical pillars that make contrastive learning work:\n\n1. Data Augmentations Define the Task: Positive pairs are created by applying two random augmentations to the same image. The choice of augmentation defines what invariant features the model learns!\n2. Non-Linear Projection Head: Maps representation h through MLP g(h) = z BEFORE computing InfoNCE loss. CRITICAL: Projection z is used during training, but DISCARDED afterwards! Pre-projection representation h retains richer downstream information.\n3. Large Batch Size & Negatives: Uses all other images in the minibatch as negative pairs.\n4. Normalized Temperature-scaled Cross-Entropy (NT-Xent).",
             "limitPairs": [
               {
-                "original": "Which practical choices make contrastive learning work",
-                "simple": "In practice this means evidence supports: Which practical choices make contrastive learning work"
+                "original": "Which empirical components (augmentations, projection head, temperature) optimize contrastive performance",
+                "simple": "In practice this means evidence supports: Which empirical components (augmentations, projection head, temperature) optimize contrastive performance"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That vision augmentations translate unchanged to activation views",
-                "simple": "Do not overclaim: That vision augmentations translate unchanged to activation views"
+                "original": "That image augmentations translate directly to neural activation views without adaptation",
+                "simple": "Do not overclaim: That image augmentations translate directly to neural activation views without adaptation"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Treat view construction as carefully as SimCLR treats augmentation.",
-                "simple": "Action item: Treat view construction as carefully as SimCLR treats augmentation."
+                "original": "Treat prompt/context view generation as carefully as SimCLR treats image augmentation.",
+                "simple": "Action item: Treat prompt/context view generation as carefully as SimCLR treats image augmentation."
               },
               {
-                "original": "Ablate projection head: does info remain in SAE codes?",
-                "simple": "Action item: Ablate projection head: does info remain in SAE codes?"
+                "original": "Ablate whether projection heads preserve sparse dictionary features in SetConCA.",
+                "simple": "Action item: Ablate whether projection heads preserve sparse dictionary features in SetConCA."
               }
             ]
           },
           "quiz": [
             {
-              "q": "In SimCLR, positives are mainly defined by?",
+              "q": "What is done with SimCLR's projection head g(h) after contrastive training?",
               "options": [
-                "Data augmentations of the same image",
-                "Random labels",
-                "PCA",
-                "L1"
+                "It is discarded, keeping pre-projection embedding h for downstream tasks",
+                "It is frozen and used for all tasks",
+                "It replaces the encoder",
+                "It computes PCA"
               ],
               "a": 0,
-              "explain": "Augmentation defines sameness."
+              "explain": "The projection head is discarded after training; pre-projection representation h is used."
             }
           ]
         },
@@ -2997,9 +3207,9 @@ window.CURRICULUM_DATA = {
           "pages": 23,
           "pdfPath": "RAW/2004.11362v5.pdf",
           "teach": {
-            "whyWeRead": "Directly relevant: multiple positives per semantic class — like multiple views of one concept.",
-            "oneSentence": "Contrastive learning with many positives sharing a class label, encouraging within-class compactness.",
-            "plainLanguage": "Ordinary contrastive learning often has one positive. Supervised Contrastive Learning treats all same-class examples as positives. The loss averages attraction to all positives while repelling other classes.\n\nThis creates class-conditioned geometry: tight within class, separated between classes. Sampling imbalance matters when some classes have more positives.\n\nSetConCA mapping: each activation view of the same semantic object is a positive.",
+            "whyWeRead": "Supervised Contrastive Learning (SupCon) extends contrastive learning to MULTIPLE POSITIVES per anchor — directly applicable to multi-view concept sets.",
+            "oneSentence": "Extends contrastive learning to leverage label information by pulling ALL same-class samples together as positive pairs.",
+            "plainLanguage": "Welcome to SupCon (Khosla et al., Google 2020). Standard SimCLR has only ONE positive key per anchor. But what if you have multiple images of dogs in your dataset?\n\nSupCon treats ALL samples sharing the same class label as POSITIVES for an anchor! The loss averages attraction across all positive keys while repelling all negative class keys.\n\nRESULT: Creates tight class-conditioned clusters in representation space (high within-class compactness, strong between-class separation).\n\nSETCONCA MAPPING:\nEach activation view of the exact same concept is a positive sample. SupCon is the direct mathematical loss for coordinating multi-view concept sets.",
             "keyIdeas": [
               {
                 "title": "Multiple positives",
@@ -3029,81 +3239,76 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Multi-positive contrastive loss",
-                "original": "Technical term: «Multi-positive contrastive loss» as used in this literature.",
-                "simple": "Contrastive objective with several positives per anchor.",
-                "def": "Contrastive objective with several positives per anchor."
+                "term": "Multi-Positive Loss",
+                "original": "Technical term: «Multi-Positive Loss» as used in this literature.",
+                "simple": "Contrastive loss averaging attraction over multiple positive samples per anchor.",
+                "def": "Contrastive loss averaging attraction over multiple positive samples per anchor."
               }
             ],
             "whatItShows": [
-              "Class-level positives improve supervised representation geometry"
+              "That multi-positive contrastive learning improves supervised representation geometry"
             ],
             "whatItDoesNotShow": [
-              "That class labels equal ground-truth concepts in SAE space"
+              "That class labels equal true monosemantic concepts in SAE dictionaries"
             ],
             "setconcaUse": [
-              "Use SupCon-style losses for multi-view positives.",
-              "Watch imbalance when some concepts have more views."
+              "Use SupCon-style multi-positive loss for coordinating activation view sets in SetConCA."
             ],
             "masteryChecklist": [
-              "I can contrast SimCLR-style vs SupCon-style positives.",
-              "I can map SupCon to multi-view concepts."
+              "I can contrast SimCLR single-positive vs. SupCon multi-positive setups.",
+              "I can explain how SupCon maps to multi-view concept sets."
             ],
             "commonConfusions": [
               {
-                "wrong": "More positives always better with no caveats.",
-                "right": "False positives / imbalance can distort geometry."
+                "wrong": "SupCon only works with single positive pairs.",
+                "right": "SupCon explicitly handles arbitrary numbers of positive pairs per anchor."
               }
             ],
             "quiz": [
               {
-                "q": "SupCon differs by allowing?",
+                "q": "How does SupCon differ from SimCLR?",
                 "options": [
-                  "Multiple positives per anchor",
-                  "No encoder",
-                  "No negatives ever",
-                  "Only PCA"
+                  "SupCon allows multiple positive pairs per anchor based on shared labels/concepts",
+                  "SupCon has no negatives",
+                  "SupCon uses L1 loss",
+                  "SupCon removes projection heads"
                 ],
                 "a": 0,
-                "explain": "Class-conditioned multi-positive loss."
+                "explain": "SupCon averages contrastive attraction across multiple positive samples per anchor."
               }
             ],
-            "originalIdea": "Contrastive learning with many positives sharing a class label, encouraging within-class compactness.",
-            "simpleLesson": "Ordinary contrastive learning often has one positive. Supervised Contrastive Learning treats all same-class examples as positives. The loss averages attraction to all positives while repelling other classes.\n\nThis creates class-conditioned geometry: tight within class, separated between classes. Sampling imbalance matters when some classes have more positives.\n\nSetConCA mapping: each activation view of the same semantic object is a positive.",
+            "originalIdea": "Extends contrastive learning to leverage label information by pulling ALL same-class samples together as positive pairs.",
+            "simpleLesson": "Welcome to SupCon (Khosla et al., Google 2020). Standard SimCLR has only ONE positive key per anchor. But what if you have multiple images of dogs in your dataset?\n\nSupCon treats ALL samples sharing the same class label as POSITIVES for an anchor! The loss averages attraction across all positive keys while repelling all negative class keys.\n\nRESULT: Creates tight class-conditioned clusters in representation space (high within-class compactness, strong between-class separation).\n\nSETCONCA MAPPING:\nEach activation view of the exact same concept is a positive sample. SupCon is the direct mathematical loss for coordinating multi-view concept sets.",
             "limitPairs": [
               {
-                "original": "Class-level positives improve supervised representation geometry",
-                "simple": "In practice this means evidence supports: Class-level positives improve supervised representation geometry"
+                "original": "That multi-positive contrastive learning improves supervised representation geometry",
+                "simple": "In practice this means evidence supports: That multi-positive contrastive learning improves supervised representation geometry"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That class labels equal ground-truth concepts in SAE space",
-                "simple": "Do not overclaim: That class labels equal ground-truth concepts in SAE space"
+                "original": "That class labels equal true monosemantic concepts in SAE dictionaries",
+                "simple": "Do not overclaim: That class labels equal true monosemantic concepts in SAE dictionaries"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Use SupCon-style losses for multi-view positives.",
-                "simple": "Action item: Use SupCon-style losses for multi-view positives."
-              },
-              {
-                "original": "Watch imbalance when some concepts have more views.",
-                "simple": "Action item: Watch imbalance when some concepts have more views."
+                "original": "Use SupCon-style multi-positive loss for coordinating activation view sets in SetConCA.",
+                "simple": "Action item: Use SupCon-style multi-positive loss for coordinating activation view sets in SetConCA."
               }
             ]
           },
           "quiz": [
             {
-              "q": "SupCon differs by allowing?",
+              "q": "How does SupCon differ from SimCLR?",
               "options": [
-                "Multiple positives per anchor",
-                "No encoder",
-                "No negatives ever",
-                "Only PCA"
+                "SupCon allows multiple positive pairs per anchor based on shared labels/concepts",
+                "SupCon has no negatives",
+                "SupCon uses L1 loss",
+                "SupCon removes projection heads"
               ],
               "a": 0,
-              "explain": "Class-conditioned multi-positive loss."
+              "explain": "SupCon averages contrastive attraction across multiple positive samples per anchor."
             }
           ]
         },
@@ -3124,9 +3329,9 @@ window.CURRICULUM_DATA = {
           "pages": 41,
           "pdfPath": "RAW/2005.10242v10.pdf",
           "teach": {
-            "whyWeRead": "Gives a clean geometric vocabulary for diagnosing contrastive training: alignment and uniformity.",
-            "oneSentence": "Decomposes contrastive learning into aligning positives and spreading features uniformly on the hypersphere.",
-            "plainLanguage": "Alignment: positive pairs should be close. Uniformity: features should not collapse into a small region of the sphere — they should spread out.\n\nA model can achieve low loss in unhealthy ways if you only watch one side. Plot positive cosine, negative cosine, and their difference with this decomposition in mind.",
+            "whyWeRead": "Wang & Isola give the clean geometric decomposition for diagnosing contrastive training: Alignment and Uniformity on the hypersphere.",
+            "oneSentence": "Decomposes contrastive representation learning into two key geometric properties: Alignment of positive pairs and Uniformity of overall feature distribution.",
+            "plainLanguage": "Welcome to Wang & Isola (MIT 2020). This paper provides the geometric magnifying glass for contrastive learning.\n\nThey proved that optimizing contrastive loss drives two distinct geometric properties on the unit hypersphere:\n\n1. Alignment: Positive pairs should map to nearby points on the sphere. (E[||z - z⁺||²] → 0).\n2. Uniformity: All representations should spread out evenly across the hypersphere, maximizing entropy and preventing representation collapse (log E[exp(-2 ||z_i - z_j||²)] → min).\n\nDIAGNOSTIC HYGIENE:\nIf your model training fails, plot Alignment score vs. Uniformity score! If Alignment is bad, positive views aren't matching. If Uniformity is bad, representations have collapsed into a clump.",
             "keyIdeas": [
               {
                 "title": "Alignment",
@@ -3158,85 +3363,80 @@ window.CURRICULUM_DATA = {
               {
                 "term": "Alignment",
                 "original": "Technical term: «Alignment» as used in this literature.",
-                "simple": "Closeness of positive-pair embeddings.",
-                "def": "Closeness of positive-pair embeddings."
+                "simple": "Expected distance between positive pair representations on the hypersphere.",
+                "def": "Expected distance between positive pair representations on the hypersphere."
               },
               {
                 "term": "Uniformity",
                 "original": "Technical term: «Uniformity» as used in this literature.",
-                "simple": "How evenly embeddings spread (anti-collapse).",
-                "def": "How evenly embeddings spread (anti-collapse)."
+                "simple": "Log expected pairwise Gaussian potential measuring distribution uniformity across the hypersphere.",
+                "def": "Log expected pairwise Gaussian potential measuring distribution uniformity across the hypersphere."
               }
             ],
             "whatItShows": [
-              "Contrastive success factors can be split into two geometric properties"
+              "That contrastive learning optimizes alignment and uniformity on the hypersphere"
             ],
             "whatItDoesNotShow": [
-              "Concept completeness or causal faithfulness"
+              "How alignment/uniformity behave in unnormalized sparse dictionary spaces"
             ],
             "setconcaUse": [
-              "Log alignment and uniformity whenever training contrastive SAE terms.",
-              "Detect collapse early."
+              "Use Alignment and Uniformity metrics to diagnose multi-view SetConCA loss training."
             ],
             "masteryChecklist": [
-              "I can define alignment and uniformity.",
-              "I can diagnose collapse using them."
+              "I can define Alignment and Uniformity in words and geometry.",
+              "I can explain how to use them to diagnose contrastive training failure."
             ],
             "commonConfusions": [
               {
-                "wrong": "Perfect alignment alone is success.",
-                "right": "Without uniformity, everything collapses together."
+                "wrong": "Good alignment alone is sufficient.",
+                "right": "Without uniformity enforcers, all vectors collapse to a single point (perfect alignment, zero utility)."
               }
             ],
             "quiz": [
               {
-                "q": "Uniformity fights?",
+                "q": "What does Uniformity measure in contrastive geometry?",
                 "options": [
-                  "Representation collapse",
-                  "SVD",
-                  "FVU only",
-                  "Probes only"
+                  "How evenly feature vectors spread across the hypersphere to prevent collapse",
+                  "How close positive pairs are",
+                  "L0 count",
+                  "PCA rank"
                 ],
                 "a": 0,
-                "explain": "Spread prevents collapse."
+                "explain": "Uniformity measures feature spread across the hypersphere, preventing representation collapse."
               }
             ],
-            "originalIdea": "Decomposes contrastive learning into aligning positives and spreading features uniformly on the hypersphere.",
-            "simpleLesson": "Alignment: positive pairs should be close. Uniformity: features should not collapse into a small region of the sphere — they should spread out.\n\nA model can achieve low loss in unhealthy ways if you only watch one side. Plot positive cosine, negative cosine, and their difference with this decomposition in mind.",
+            "originalIdea": "Decomposes contrastive representation learning into two key geometric properties: Alignment of positive pairs and Uniformity of overall feature distribution.",
+            "simpleLesson": "Welcome to Wang & Isola (MIT 2020). This paper provides the geometric magnifying glass for contrastive learning.\n\nThey proved that optimizing contrastive loss drives two distinct geometric properties on the unit hypersphere:\n\n1. Alignment: Positive pairs should map to nearby points on the sphere. (E[||z - z⁺||²] → 0).\n2. Uniformity: All representations should spread out evenly across the hypersphere, maximizing entropy and preventing representation collapse (log E[exp(-2 ||z_i - z_j||²)] → min).\n\nDIAGNOSTIC HYGIENE:\nIf your model training fails, plot Alignment score vs. Uniformity score! If Alignment is bad, positive views aren't matching. If Uniformity is bad, representations have collapsed into a clump.",
             "limitPairs": [
               {
-                "original": "Contrastive success factors can be split into two geometric properties",
-                "simple": "In practice this means evidence supports: Contrastive success factors can be split into two geometric properties"
+                "original": "That contrastive learning optimizes alignment and uniformity on the hypersphere",
+                "simple": "In practice this means evidence supports: That contrastive learning optimizes alignment and uniformity on the hypersphere"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Concept completeness or causal faithfulness",
-                "simple": "Do not overclaim: Concept completeness or causal faithfulness"
+                "original": "How alignment/uniformity behave in unnormalized sparse dictionary spaces",
+                "simple": "Do not overclaim: How alignment/uniformity behave in unnormalized sparse dictionary spaces"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Log alignment and uniformity whenever training contrastive SAE terms.",
-                "simple": "Action item: Log alignment and uniformity whenever training contrastive SAE terms."
-              },
-              {
-                "original": "Detect collapse early.",
-                "simple": "Action item: Detect collapse early."
+                "original": "Use Alignment and Uniformity metrics to diagnose multi-view SetConCA loss training.",
+                "simple": "Action item: Use Alignment and Uniformity metrics to diagnose multi-view SetConCA loss training."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Uniformity fights?",
+              "q": "What does Uniformity measure in contrastive geometry?",
               "options": [
-                "Representation collapse",
-                "SVD",
-                "FVU only",
-                "Probes only"
+                "How evenly feature vectors spread across the hypersphere to prevent collapse",
+                "How close positive pairs are",
+                "L0 count",
+                "PCA rank"
               ],
               "a": 0,
-              "explain": "Spread prevents collapse."
+              "explain": "Uniformity measures feature spread across the hypersphere, preventing representation collapse."
             }
           ]
         },
@@ -3257,9 +3457,9 @@ window.CURRICULUM_DATA = {
           "pages": 23,
           "pdfPath": "RAW/2105.04906v3.pdf",
           "teach": {
-            "whyWeRead": "Shows how to keep variance and reduce redundancy without relying heavily on explicit negatives — useful regularisers for SetConCA.",
-            "oneSentence": "Self-supervised learning via Variance–Invariance–Covariance regularisation.",
-            "plainLanguage": "VICReg has three terms: Invariance — related views match; Variance — each dimension keeps enough spread (anti-collapse); Covariance — off-diagonals pushed down (less redundant dimensions).\n\nThis is a toolbox when pure contrastive alignment damages reconstruction or diversity in SAE codes.",
+            "whyWeRead": "VICReg shows how to achieve self-supervised multi-view alignment WITHOUT negative pairs using explicit Variance, Invariance, and Covariance regularizers.",
+            "oneSentence": "Variance-Invariance-Covariance Regularization (VICReg) prevents representation collapse in non-contrastive multi-view learning.",
+            "plainLanguage": "Welcome to VICReg (Bardes et al., Meta 2021). Contrastive methods require large minibatches of negative pairs to prevent collapse. What if you don't want negative pairs?\n\nVICReg achieves non-contrastive multi-view alignment using three explicit loss terms:\n\n1. Variance (V): Forces standard deviation of each feature dimension across a batch to remain above 1 (stops all vectors collapsing to a point).\n2. Invariance (I): Minimizes mean squared error between positive view embeddings (pulls views together).\n3. Covariance (C): Minimizes off-diagonal covariance between feature pairs (decorrelates features, preventing redundancy).\n\nLoss = λ v(Z) + μ i(Z, Z') + ν c(Z)",
             "keyIdeas": [
               {
                 "title": "Invariance",
@@ -3291,73 +3491,73 @@ window.CURRICULUM_DATA = {
               {
                 "term": "VICReg",
                 "original": "Technical term: «VICReg» as used in this literature.",
-                "simple": "Variance–Invariance–Covariance Regularization.",
-                "def": "Variance–Invariance–Covariance Regularization."
+                "simple": "Variance-Invariance-Covariance Regularization for non-contrastive self-supervised learning.",
+                "def": "Variance-Invariance-Covariance Regularization for non-contrastive self-supervised learning."
               }
             ],
             "whatItShows": [
-              "Non-contrastive SSL can avoid collapse with explicit stats penalties"
+              "That explicit variance and covariance regularization prevents representation collapse without negative pairs"
             ],
             "whatItDoesNotShow": [
-              "Automatic concept recovery"
+              "That VICReg features automatically satisfy sparse autoencoder monosemanticity"
             ],
             "setconcaUse": [
-              "Try variance/covariance regularisers when contrastive terms hurt FVU or diversity."
+              "Use VICReg variance/covariance terms as regularizers if negative contrastive pairs damage SAE reconstruction."
             ],
             "masteryChecklist": [
-              "I can name VICReg's three terms and their jobs."
+              "I can explain V, I, and C in VICReg and what each term prevents."
             ],
             "commonConfusions": [
               {
-                "wrong": "VICReg needs InfoNCE.",
-                "right": "It is an alternative regularisation path."
+                "wrong": "VICReg requires thousands of negative pairs.",
+                "right": "VICReg is non-contrastive and uses ZERO negative pairs."
               }
             ],
             "quiz": [
               {
-                "q": "VICReg variance term prevents?",
+                "q": "What does the Variance term in VICReg prevent?",
                 "options": [
-                  "Collapse of embedding dimensions",
-                  "PDF download",
-                  "SVD only",
-                  "Attention only"
+                  "Representation collapse into a constant point by enforcing minimum feature std",
+                  "Feature splitting",
+                  "Slow training",
+                  "PCA rank loss"
                 ],
                 "a": 0,
-                "explain": "Keep per-dimension variance."
+                "explain": "Variance regularization forces feature std ≥ 1, preventing collapse into a constant vector."
               }
             ],
-            "originalIdea": "Self-supervised learning via Variance–Invariance–Covariance regularisation.",
-            "simpleLesson": "VICReg has three terms: Invariance — related views match; Variance — each dimension keeps enough spread (anti-collapse); Covariance — off-diagonals pushed down (less redundant dimensions).\n\nThis is a toolbox when pure contrastive alignment damages reconstruction or diversity in SAE codes.",
+            "originalIdea": "Variance-Invariance-Covariance Regularization (VICReg) prevents representation collapse in non-contrastive multi-view learning.",
+            "simpleLesson": "Welcome to VICReg (Bardes et al., Meta 2021). Contrastive methods require large minibatches of negative pairs to prevent collapse. What if you don't want negative pairs?\n\nVICReg achieves non-contrastive multi-view alignment using three explicit loss terms:\n\n1. Variance (V): Forces standard deviation of each feature dimension across a batch to remain above 1 (stops all vectors collapsing to a point).\n2. Invariance (I): Minimizes mean squared error between positive view embeddings (pulls views together).\n3. Covariance (C): Minimizes off-diagonal covariance between feature pairs (decorrelates features, preventing redundancy).\n\nLoss = λ v(Z) + μ i(Z, Z') + ν c(Z)",
             "limitPairs": [
               {
-                "original": "Non-contrastive SSL can avoid collapse with explicit stats penalties",
-                "simple": "In practice this means evidence supports: Non-contrastive SSL can avoid collapse with explicit stats penalties"
+                "original": "That explicit variance and covariance regularization prevents representation collapse without negative pairs",
+                "simple": "In practice this means evidence supports: That explicit variance and covariance regularization prevents representation collapse without negative pairs"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Automatic concept recovery",
-                "simple": "Do not overclaim: Automatic concept recovery"
+                "original": "That VICReg features automatically satisfy sparse autoencoder monosemanticity",
+                "simple": "Do not overclaim: That VICReg features automatically satisfy sparse autoencoder monosemanticity"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Try variance/covariance regularisers when contrastive terms hurt FVU or diversity.",
-                "simple": "Action item: Try variance/covariance regularisers when contrastive terms hurt FVU or diversity."
+                "original": "Use VICReg variance/covariance terms as regularizers if negative contrastive pairs damage SAE reconstruction.",
+                "simple": "Action item: Use VICReg variance/covariance terms as regularizers if negative contrastive pairs damage SAE reconstruction."
               }
             ]
           },
           "quiz": [
             {
-              "q": "VICReg variance term prevents?",
+              "q": "What does the Variance term in VICReg prevent?",
               "options": [
-                "Collapse of embedding dimensions",
-                "PDF download",
-                "SVD only",
-                "Attention only"
+                "Representation collapse into a constant point by enforcing minimum feature std",
+                "Feature splitting",
+                "Slow training",
+                "PCA rank loss"
               ],
               "a": 0,
-              "explain": "Keep per-dimension variance."
+              "explain": "Variance regularization forces feature std ≥ 1, preventing collapse into a constant vector."
             }
           ]
         },
@@ -3377,9 +3577,9 @@ window.CURRICULUM_DATA = {
           "pages": 12,
           "pdfPath": "RAW/zimmermann21a.pdf",
           "teach": {
-            "whyWeRead": "Optional theory: when contrastive objectives recover latent factors of the data-generating process.",
-            "oneSentence": "Proves conditions under which InfoNCE-like objectives invert the generative process and recover latents.",
-            "plainLanguage": "Contrastive learning often works; this paper asks when it recovers the true latent factors rather than merely a useful retrieval geometry.\n\nThe answer depends on assumptions about the data-generating process and the contrastive setup. Use it as a caution: success on retrieval does not automatically mean identifiability of concepts.",
+            "whyWeRead": "Theoretical analysis showing when InfoNCE contrastive learning inverts the data generating process to recover true latent factors.",
+            "oneSentence": "Contrastive Learning Inverts the Data Generating Process provides identifiability proofs for contrastive learning under specific view-generation assumptions.",
+            "plainLanguage": "Welcome to Zimmermann et al. (2021).\n\nThis paper provides mathematical proofs showing that contrastive learning (InfoNCE) can INVERT the true underlying generative process, recovering ground-truth latent factors up to coordinate-wise transformations IF positive views share true latent factors.",
             "keyIdeas": [
               {
                 "title": "Identifiability lens on contrastive learning",
@@ -3397,115 +3597,124 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Latent inversion",
-                "original": "Technical term: «Latent inversion» as used in this literature.",
-                "simple": "Recovering ground-truth generative factors from observations.",
-                "def": "Recovering ground-truth generative factors from observations."
+                "term": "Generative Process Inversion",
+                "original": "Technical term: «Generative Process Inversion» as used in this literature.",
+                "simple": "Recovering true underlying latent causal variables from observed data using contrastive learning.",
+                "def": "Recovering true underlying latent causal variables from observed data using contrastive learning."
               }
             ],
             "whatItShows": [
-              "Theoretical conditions for contrastive latent recovery"
+              "That contrastive learning can provably recover true latent variables under identifiability conditions"
             ],
             "whatItDoesNotShow": [
-              "That your SAE multi-view positives meet those conditions"
+              "That contrastive learning automatically solves SAE overcompleteness without dictionary constraints"
             ],
             "setconcaUse": [
-              "Cite when claiming concept recovery, not only retrieval gains."
+              "Theoretical foundation supporting contrastive set loss concept recovery claims in SetConCA."
             ],
             "masteryChecklist": [
-              "I distinguish retrieval usefulness from latent identifiability."
+              "I can explain why contrastive learning can invert generative processes."
             ],
             "commonConfusions": [
               {
-                "wrong": "Contrastive success implies factor recovery.",
-                "right": "Only under assumptions."
+                "wrong": "Contrastive loss only does heuristic clustering.",
+                "right": "Under formal assumptions, contrastive loss provably inverts the latent data generating process."
               }
             ],
             "quiz": [
               {
-                "q": "This paper warns that contrastive learning?",
+                "q": "What does Zimmermann et al. (2021) prove about contrastive learning?",
                 "options": [
-                  "May not invert the DGP without assumptions",
-                  "Always finds SAEs",
-                  "Removes need for sparsity",
-                  "Replaces CCA"
+                  "Contrastive learning can provably invert the latent data generating process",
+                  "Contrastive learning always fails",
+                  "PCA is non-linear",
+                  "L0 is non-differentiable"
                 ],
                 "a": 0,
-                "explain": "Identifiability is conditional."
+                "explain": "Proves contrastive learning can invert the data generating process under identifiability assumptions."
               }
             ],
-            "originalIdea": "Proves conditions under which InfoNCE-like objectives invert the generative process and recover latents.",
-            "simpleLesson": "Contrastive learning often works; this paper asks when it recovers the true latent factors rather than merely a useful retrieval geometry.\n\nThe answer depends on assumptions about the data-generating process and the contrastive setup. Use it as a caution: success on retrieval does not automatically mean identifiability of concepts.",
+            "originalIdea": "Contrastive Learning Inverts the Data Generating Process provides identifiability proofs for contrastive learning under specific view-generation assumptions.",
+            "simpleLesson": "Welcome to Zimmermann et al. (2021).\n\nThis paper provides mathematical proofs showing that contrastive learning (InfoNCE) can INVERT the true underlying generative process, recovering ground-truth latent factors up to coordinate-wise transformations IF positive views share true latent factors.",
             "limitPairs": [
               {
-                "original": "Theoretical conditions for contrastive latent recovery",
-                "simple": "In practice this means evidence supports: Theoretical conditions for contrastive latent recovery"
+                "original": "That contrastive learning can provably recover true latent variables under identifiability conditions",
+                "simple": "In practice this means evidence supports: That contrastive learning can provably recover true latent variables under identifiability conditions"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That your SAE multi-view positives meet those conditions",
-                "simple": "Do not overclaim: That your SAE multi-view positives meet those conditions"
+                "original": "That contrastive learning automatically solves SAE overcompleteness without dictionary constraints",
+                "simple": "Do not overclaim: That contrastive learning automatically solves SAE overcompleteness without dictionary constraints"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Cite when claiming concept recovery, not only retrieval gains.",
-                "simple": "Action item: Cite when claiming concept recovery, not only retrieval gains."
+                "original": "Theoretical foundation supporting contrastive set loss concept recovery claims in SetConCA.",
+                "simple": "Action item: Theoretical foundation supporting contrastive set loss concept recovery claims in SetConCA."
               }
             ]
           },
           "quiz": [
             {
-              "q": "This paper warns that contrastive learning?",
+              "q": "What does Zimmermann et al. (2021) prove about contrastive learning?",
               "options": [
-                "May not invert the DGP without assumptions",
-                "Always finds SAEs",
-                "Removes need for sparsity",
-                "Replaces CCA"
+                "Contrastive learning can provably invert the latent data generating process",
+                "Contrastive learning always fails",
+                "PCA is non-linear",
+                "L0 is non-differentiable"
               ],
               "a": 0,
-              "explain": "Identifiability is conditional."
+              "explain": "Proves contrastive learning can invert the data generating process under identifiability assumptions."
             }
           ]
         }
       ],
       "primer": {
         "title": "Contrastive representation learning",
-        "mission": "Design positives/negatives correctly and diagnose alignment vs collapse.",
-        "beforeYouStart": "Set aggregation from Level 4.",
-        "primer": "Contrastive learning pulls positive pairs together and pushes negatives apart.\n\nCPC introduces InfoNCE. SimCLR shows augmentation + projection heads matter. Supervised Contrastive Learning allows many positives per class — exactly like multiple views of one concept. Alignment–Uniformity decomposes the geometry. VICReg can align without heavy negatives via variance and covariance regularizers.\n\nBefore inventing another loss for SetConCA, write down: what makes a positive? Can negatives be false negatives? Does low loss mean concept recovery?",
+        "mission": "Master InfoNCE, SimCLR, Supervised Contrastive Learning (SupCon), Alignment & Uniformity, and VICReg.",
+        "beforeYouStart": "Level 4 set representations.",
+        "primer": "Welcome to Level 5. Contrastive learning is the dominant self-supervised paradigm in modern AI. The core intuition is beautifully simple:\nPULL representations of related items (Positive Pairs) CLOSER TOGETHER in vector space, and PUSH representations of unrelated items (Negative Pairs) FARTHER APART!\n\n--- STEP 1: CPC & InfoNCE Loss (van den Oord et al., 2018) ---\nWhat is InfoNCE?\nInfoNCE is a multi-class softmax loss where the network must correctly identify the single true positive key k⁺ among a minibatch of negative keys {k⁻}.\n\nFormula:\nLoss = - log [ exp( sim(q, k⁺) / τ ) / ( exp( sim(q, k⁺) / τ ) + Σ exp( sim(q, k⁻_i) / τ ) ) ]\n\nLet's unpack every symbol:\n• q: The Query representation vector.\n• k⁺: The Positive Key representation vector (e.g. another view of the same concept).\n• k⁻_i: Negative Key vectors (other unrelated samples in the batch).\n• sim(a, b): Cosine similarity (aᵀb / (||a|| ||b||)).\n• τ (Temperature): A hyperparameter scaling cosine scores. Small τ (e.g. 0.07) makes the softmax extremely peaky, forcing the network to focus heavily on hard negatives!\n\n--- STEP 2: SimCLR (Chen et al., 2020) — Practical Engineering Rules ---\nSimCLR established four critical rules for contrastive learning:\n1. Positive Definition: Positives are created by data augmentations of the same image (or prompt/view variations of the same concept).\n2. Projection Head: Maps representations through a non-linear MLP g(h) BEFORE computing InfoNCE loss. CRITICAL FINDING: The output of the projection head is used for loss computation, but DISCARDED after training! The pre-projection representation h retains much richer detail.\n3. Large Batch Size: Larger minibatches provide more negative pairs, improving geometric quality.\n\n--- STEP 3: SupCon (Khosla et al., 2020) — Multiple Positives Per Anchor ---\nStandard SimCLR has only ONE positive per anchor. But in Supervised Contrastive Learning (SupCon), ALL items sharing the same class label are treated as positives!\nSupCon averages attraction across MULTIPLE positives while repelling all other classes.\n\nSetConCA Connection: This is EXACTLY what SetConCA needs! A single semantic concept has MULTIPLE activation views. SupCon is the loss template for coordinating set views.\n\n--- STEP 4: Alignment vs Uniformity (Wang & Isola, 2020) ---\nWang & Isola proved that contrastive learning optimizes two distinct geometric properties on the unit hypersphere:\n1. Alignment: Positive pairs map to nearby points on the sphere. (E[||z - z⁺||²]).\n2. Uniformity: All representations spread out evenly across the hypersphere, preventing representation collapse. (log E[exp(-2 ||z_i - z_j||²)]).\n\n--- STEP 5: VICReg (Bardes et al., 2021) — Alignment Without Negatives ---\nWhat if you don't have negative pairs? VICReg prevents collapse using three explicit regularizers:\n• Variance (V): Forces variance of each feature dimension to stay above a threshold.\n• Invariance (I): Minimizes distance between positive view embeddings.\n• Covariance (C): Minimizes off-diagonal covariance between feature pairs, driving decorrelation.",
         "bigPictureDiagram": [
-          "anchor ↔ positives (close) | negatives (far)",
-          "alignment ↑ + uniformity ↑ = healthy geometry"
+          "Anchor Vector q",
+          "  ├─→ Pull toward Positive Key k⁺ (High Cosine Sim)",
+          "  └─→ Push away from Negative Keys k⁻_1, k⁻_2, ... k⁻_N (Low Cosine Sim)",
+          "Geometry on Hypersphere: Alignment (Positives close) + Uniformity (Spread evenly, anti-collapse)",
+          "VICReg Non-Contrastive: Variance (Keep std > 1) + Invariance (Match views) + Covariance (Decorrelate features)"
         ],
         "conceptsToMaster": [
           {
-            "name": "InfoNCE",
-            "simple": "Classify the true positive among negatives via softmax of similarities.",
-            "deeper": "Related to a mutual-information lower bound under assumptions."
+            "name": "InfoNCE Loss",
+            "simple": "A softmax classification loss over cosine similarities that picks out the true positive view among many negative distractors.",
+            "deeper": "L_InfoNCE = -log ( exp(q·k⁺/τ) / [exp(q·k⁺/τ) + sum_i exp(q·k⁻_i/τ)] ). Lower bounds mutual information I(X;Y) <= log(K) - L_InfoNCE under density ratio assumptions."
           },
           {
-            "name": "Projection head",
-            "simple": "Extra MLP before the loss; often discarded for downstream use.",
-            "deeper": "Can hide info unavailable in the SAE code — check carefully."
+            "name": "Temperature (τ)",
+            "simple": "A scale factor that controls how harshly the loss punishes hard negatives.",
+            "deeper": "Scales cosine similarities before softmax. Low temperature (τ < 0.1) amplifies gradients for hard negatives (negatives close to anchor), creating tight local clusters. High temperature spreads gradients uniformly."
           },
           {
-            "name": "Temperature",
-            "simple": "Softmax sharpness hyperparameter.",
-            "deeper": "Changes geometry and optimisation, not just 'learning rate'."
+            "name": "Projection Head",
+            "simple": "An extra MLP layer placed after the encoder during contrastive training, then discarded when using embeddings downstream.",
+            "deeper": "Prevents contrastive loss from discarding high-frequency non-invariant information needed for downstream tasks. The encoder representation h preserves details, while projection z = g(h) is invariant."
+          },
+          {
+            "name": "Alignment and Uniformity",
+            "simple": "Alignment = positive pairs are close. Uniformity = embeddings cover the entire sphere evenly without collapsing into a clump.",
+            "deeper": "Alignment = E_{(x,x⁺)} [||f(x) - f(x⁺)||^2]. Uniformity = log E_{x,y ~ p} [exp(-2 ||f(x) - f(y)||^2)]. Healthy contrastive geometry requires both."
           }
         ],
         "checkpoint": {
-          "goal": "Ablate positive definition, temperature, projection head.",
+          "goal": "Ablate temperature τ and projection head presence on an activation view dataset.",
           "steps": [
-            "Measure alignment and uniformity",
-            "Check false negatives",
-            "Compare retrieval vs reconstruction"
+            "Implement InfoNCE loss.",
+            "Vary temperature τ from 0.01 to 1.0.",
+            "Train with and without a 2-layer MLP projection head.",
+            "Measure Alignment score, Uniformity score, and downstream retrieval accuracy."
           ],
-          "successLooksLike": "You never treat low contrastive loss as proof of concept recovery."
+          "successLooksLike": "You can plot Alignment vs Uniformity and explain why training without a projection head harms downstream generalisation."
         },
-        "bridgeToNext": "Level 6 teaches metrics that prevent fooling yourself."
+        "bridgeToNext": "Now that you know how to build multi-view and contrastive models, Level 6 teaches how to MEASURE and COMPARE representations honestly without fooling yourself."
       }
     },
     {
@@ -3534,7 +3743,7 @@ window.CURRICULUM_DATA = {
           "teach": {
             "whyWeRead": "Tool to compare neural subspaces across layers/models when coordinates differ.",
             "oneSentence": "SVCCA combines SVD dimensionality reduction with CCA to compare representations invariantly to affine transforms.",
-            "plainLanguage": "Two networks can encode the same information with different neuron coordinates. Coordinate-wise comparison fails. SVCCA first reduces each representation with SVD, then runs CCA to measure shared subspace structure.\n\nHigh SVCCA means similar subspaces — not that individual features match.",
+            "plainLanguage": "Welcome to the SVCCA Masterclass. Let's understand why Raghu et al. (NIPS 2017) created SVCCA.\n\nSuppose you have Model A and Model B. Both process the same inputs, but Model A has 4096 neurons while Model B has 2048 neurons. You cannot match Neuron #5 of Model A to Neuron #5 of Model B.\n\n--- HOW SVCCA WORKS ---\n1. Take activations matrix X from Model A and Y from Model B.\n2. Step 1 (SVD Truncation): Run Singular Value Decomposition (SVD) on X and Y to keep only top principal components that explain 99% of variance, throwing away low-variance noise.\n3. Step 2 (CCA Alignment): Perform CCA on the truncated subspaces to compute canonical correlations!\n\nWhat SVCCA proves: SVCCA measures SUBSPACE OVERLAP between models. High SVCCA score means the models represent similar subspace geometries.\nWhat SVCCA DOES NOT prove: SVCCA does NOT prove individual neurons or feature dictionaries are identical.",
             "keyIdeas": [
               {
                 "title": "Subspace comparison",
@@ -3564,86 +3773,75 @@ window.CURRICULUM_DATA = {
                 "def": "Singular Vector Canonical Correlation Analysis."
               },
               {
-                "term": "Subspace similarity",
-                "original": "Technical term: «Subspace similarity» as used in this literature.",
-                "simple": "Overlap of representational spaces ignoring basis choice.",
-                "def": "Overlap of representational spaces ignoring basis choice."
+                "term": "Subspace Similarity",
+                "original": "Technical term: «Subspace Similarity» as used in this literature.",
+                "simple": "Degree of overlap between representational subspaces ignoring basis choice.",
+                "def": "Degree of overlap between representational subspaces ignoring basis choice."
               }
             ],
             "whatItShows": [
-              "Representations can be similar as subspaces across training/layers"
+              "That neural representations can be compared across architectures and layers using subspace correlation"
             ],
             "whatItDoesNotShow": [
-              "Same individual concepts",
-              "Causal mechanisms"
+              "That individual features or concepts match one-to-one"
             ],
             "setconcaUse": [
-              "Compare SetConCA codes vs pointwise SAE with SVCCA/CKA.",
-              "Never equate high SVCCA with identical features."
+              "Use SVCCA as a subspace similarity baseline when comparing SetConCA feature spaces against pointwise SAEs."
             ],
             "masteryChecklist": [
-              "I know what SVCCA compares.",
-              "I know what it does not prove."
+              "I can explain the two steps of SVCCA (SVD truncation then CCA)."
             ],
             "commonConfusions": [
               {
-                "wrong": "SVCCA = feature matching.",
-                "right": "It is subspace correlation, not one-to-one features."
+                "wrong": "High SVCCA means features match one-to-one.",
+                "right": "SVCCA measures subspace overlap, not feature-level alignment."
               }
             ],
             "quiz": [
               {
-                "q": "SVCCA primarily measures?",
+                "q": "What does SVCCA perform before running CCA?",
                 "options": [
-                  "Subspace similarity via CCA after SVD",
-                  "Monosemanticity",
-                  "L0 sparsity",
-                  "Steering effect"
+                  "SVD truncation to keep high-variance components and remove noise",
+                  "TopK sparsity",
+                  "Linear probing",
+                  "L1 loss"
                 ],
                 "a": 0,
-                "explain": "Subspace tool."
+                "explain": "SVCCA runs SVD truncation first to reduce noise before computing canonical correlations."
               }
             ],
             "originalIdea": "SVCCA combines SVD dimensionality reduction with CCA to compare representations invariantly to affine transforms.",
-            "simpleLesson": "Two networks can encode the same information with different neuron coordinates. Coordinate-wise comparison fails. SVCCA first reduces each representation with SVD, then runs CCA to measure shared subspace structure.\n\nHigh SVCCA means similar subspaces — not that individual features match.",
+            "simpleLesson": "Welcome to the SVCCA Masterclass. Let's understand why Raghu et al. (NIPS 2017) created SVCCA.\n\nSuppose you have Model A and Model B. Both process the same inputs, but Model A has 4096 neurons while Model B has 2048 neurons. You cannot match Neuron #5 of Model A to Neuron #5 of Model B.\n\n--- HOW SVCCA WORKS ---\n1. Take activations matrix X from Model A and Y from Model B.\n2. Step 1 (SVD Truncation): Run Singular Value Decomposition (SVD) on X and Y to keep only top principal components that explain 99% of variance, throwing away low-variance noise.\n3. Step 2 (CCA Alignment): Perform CCA on the truncated subspaces to compute canonical correlations!\n\nWhat SVCCA proves: SVCCA measures SUBSPACE OVERLAP between models. High SVCCA score means the models represent similar subspace geometries.\nWhat SVCCA DOES NOT prove: SVCCA does NOT prove individual neurons or feature dictionaries are identical.",
             "limitPairs": [
               {
-                "original": "Representations can be similar as subspaces across training/layers",
-                "simple": "In practice this means evidence supports: Representations can be similar as subspaces across training/layers"
+                "original": "That neural representations can be compared across architectures and layers using subspace correlation",
+                "simple": "In practice this means evidence supports: That neural representations can be compared across architectures and layers using subspace correlation"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Same individual concepts",
-                "simple": "Do not overclaim: Same individual concepts"
-              },
-              {
-                "original": "Causal mechanisms",
-                "simple": "Do not overclaim: Causal mechanisms"
+                "original": "That individual features or concepts match one-to-one",
+                "simple": "Do not overclaim: That individual features or concepts match one-to-one"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Compare SetConCA codes vs pointwise SAE with SVCCA/CKA.",
-                "simple": "Action item: Compare SetConCA codes vs pointwise SAE with SVCCA/CKA."
-              },
-              {
-                "original": "Never equate high SVCCA with identical features.",
-                "simple": "Action item: Never equate high SVCCA with identical features."
+                "original": "Use SVCCA as a subspace similarity baseline when comparing SetConCA feature spaces against pointwise SAEs.",
+                "simple": "Action item: Use SVCCA as a subspace similarity baseline when comparing SetConCA feature spaces against pointwise SAEs."
               }
             ]
           },
           "quiz": [
             {
-              "q": "SVCCA primarily measures?",
+              "q": "What does SVCCA perform before running CCA?",
               "options": [
-                "Subspace similarity via CCA after SVD",
-                "Monosemanticity",
-                "L0 sparsity",
-                "Steering effect"
+                "SVD truncation to keep high-variance components and remove noise",
+                "TopK sparsity",
+                "Linear probing",
+                "L1 loss"
               ],
               "a": 0,
-              "explain": "Subspace tool."
+              "explain": "SVCCA runs SVD truncation first to reduce noise before computing canonical correlations."
             }
           ]
         },
@@ -3665,9 +3863,9 @@ window.CURRICULUM_DATA = {
           "pages": 20,
           "pdfPath": "RAW/1905.00414v4.pdf",
           "teach": {
-            "whyWeRead": "Most practical representation similarity metric for your comparisons.",
-            "oneSentence": "CKA compares representations using Gram matrices; linear and kernel variants; invariant to orthogonal transforms.",
-            "plainLanguage": "CKA asks: do two representation matrices induce similar similarity structures across examples? It uses Gram matrices (pairwise relationships among examples) rather than trying to match neuron i to neuron j.\n\nLinear CKA is common and fast. Kernel CKA can capture more structure. Orthogonal transforms do not change CKA — good, because bases are arbitrary.\n\nHigh CKA ≠ same concepts. It means similar geometry of examples.",
+            "whyWeRead": "CKA is the standard representation similarity metric used in modern deep learning research to compare model layers and architectures.",
+            "oneSentence": "Centered Kernel Alignment (CKA) measures representation similarity using Gram matrices, invariant to orthogonal transformations.",
+            "plainLanguage": "Welcome to the CKA Masterclass (Kornblith et al., ICML 2019).\n\n--- WHY PREVIOUS METRICS FAILED ---\nLinear regression probes overfit high dimensions. CCA is unstable when feature dimension > sample size. SVCCA requires arbitrary SVD cutoff hyperparameter tuning.\n\n--- HOW CKA WORKS ---\nCKA asks: do two representations induce SIMILAR EXAMPLE-TO-EXAMPLE SIMILARITY STRUCTURES?\n\n1. Compute N × N Gram Matrix K = X Xᵀ for Model A (where K_ij is cosine similarity between example i and example j in Model A).\n2. Compute N × N Gram Matrix L = Y Yᵀ for Model B (pairwise similarity of examples in Model B).\n3. CKA computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between centered matrices K and L.\n\nFormula: CKA(K, L) = HSIC(K, L) / sqrt( HSIC(K,K) * HSIC(L,L) )\n\nPROPERTIES:\n• Invariant to orthogonal rotation and isotropic scaling.\n• Robust to high dimensions and sample sizes.\n• High CKA means two models structure example similarities similarly.",
             "keyIdeas": [
               {
                 "title": "Gram matrix view",
@@ -3696,101 +3894,91 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "CKA idea",
-                "formula": "CKA(X,Y) ∝ HSIC(X,Y)/√(HSIC(X,X)HSIC(Y,Y))",
-                "original": "CKA idea: CKA(X,Y) ∝ HSIC(X,Y)/√(HSIC(X,X)HSIC(Y,Y))",
-                "simple": "Normalised similarity of centered Gram structures.",
-                "meaning": "Normalised similarity of centered Gram structures."
+                "name": "Linear CKA Formula",
+                "formula": "CKA(X,Y) = ||Yᵀ X||_F² / ( ||Xᵀ X||_F ||Yᵀ Y||_F )",
+                "original": "Linear CKA Formula: CKA(X,Y) = ||Yᵀ X||_F² / ( ||Xᵀ X||_F ||Yᵀ Y||_F )",
+                "simple": "Normalized Frobenius norm of cross-covariance matrix between activation matrices X and Y.",
+                "meaning": "Normalized Frobenius norm of cross-covariance matrix between activation matrices X and Y."
               }
             ],
             "vocabulary": [
               {
                 "term": "CKA",
                 "original": "Technical term: «CKA» as used in this literature.",
-                "simple": "Centered Kernel Alignment — representation similarity.",
-                "def": "Centered Kernel Alignment — representation similarity."
+                "simple": "Centered Kernel Alignment.",
+                "def": "Centered Kernel Alignment."
               },
               {
-                "term": "Gram matrix",
-                "original": "Technical term: «Gram matrix» as used in this literature.",
-                "simple": "Matrix of pairwise similarities among examples.",
-                "def": "Matrix of pairwise similarities among examples."
+                "term": "Gram Matrix",
+                "original": "Technical term: «Gram Matrix» as used in this literature.",
+                "simple": "An N × N matrix storing pairwise inner products between N example representations.",
+                "def": "An N × N matrix storing pairwise inner products between N example representations."
               }
             ],
             "whatItShows": [
-              "When two nets organise examples similarly"
+              "When two neural network layers or models organize example geometry similarly"
             ],
             "whatItDoesNotShow": [
-              "Identical concepts",
-              "Causal sharing"
+              "That individual dictionary features or concepts are identical"
             ],
             "setconcaUse": [
-              "Primary similarity metric across methods/seeds.",
-              "Pair with probes and interventions."
+              "Primary metric for measuring overall representational similarity across training seeds and architectures."
             ],
             "masteryChecklist": [
-              "I can explain CKA without saying 'neuron matching'.",
-              "I can state its non-claims."
+              "I can explain Gram matrices and why CKA uses them.",
+              "I can state CKA's invariance properties."
             ],
             "commonConfusions": [
               {
-                "wrong": "CKA high means same SAE features.",
-                "right": "Means similar example geometry."
+                "wrong": "High CKA = identical SAE features.",
+                "right": "High CKA means similar example geometry, not identical individual features."
               }
             ],
             "quiz": [
               {
-                "q": "CKA is invariant to?",
+                "q": "CKA is invariant to which transformation?",
                 "options": [
-                  "Orthogonal transforms",
-                  "Arbitrary nonlinear warps always",
-                  "Relabeling classes only",
-                  "Changing the dataset freely"
+                  "Orthogonal rotations and isotropic scaling",
+                  "Non-linear warps",
+                  "Arbitrary token deletion",
+                  "L0 changes"
                 ],
                 "a": 0,
-                "explain": "Orthogonal invariance is key."
+                "explain": "CKA is invariant to orthogonal rotation and isotropic scaling."
               }
             ],
-            "originalIdea": "CKA compares representations using Gram matrices; linear and kernel variants; invariant to orthogonal transforms.",
-            "simpleLesson": "CKA asks: do two representation matrices induce similar similarity structures across examples? It uses Gram matrices (pairwise relationships among examples) rather than trying to match neuron i to neuron j.\n\nLinear CKA is common and fast. Kernel CKA can capture more structure. Orthogonal transforms do not change CKA — good, because bases are arbitrary.\n\nHigh CKA ≠ same concepts. It means similar geometry of examples.",
+            "originalIdea": "Centered Kernel Alignment (CKA) measures representation similarity using Gram matrices, invariant to orthogonal transformations.",
+            "simpleLesson": "Welcome to the CKA Masterclass (Kornblith et al., ICML 2019).\n\n--- WHY PREVIOUS METRICS FAILED ---\nLinear regression probes overfit high dimensions. CCA is unstable when feature dimension > sample size. SVCCA requires arbitrary SVD cutoff hyperparameter tuning.\n\n--- HOW CKA WORKS ---\nCKA asks: do two representations induce SIMILAR EXAMPLE-TO-EXAMPLE SIMILARITY STRUCTURES?\n\n1. Compute N × N Gram Matrix K = X Xᵀ for Model A (where K_ij is cosine similarity between example i and example j in Model A).\n2. Compute N × N Gram Matrix L = Y Yᵀ for Model B (pairwise similarity of examples in Model B).\n3. CKA computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between centered matrices K and L.\n\nFormula: CKA(K, L) = HSIC(K, L) / sqrt( HSIC(K,K) * HSIC(L,L) )\n\nPROPERTIES:\n• Invariant to orthogonal rotation and isotropic scaling.\n• Robust to high dimensions and sample sizes.\n• High CKA means two models structure example similarities similarly.",
             "limitPairs": [
               {
-                "original": "When two nets organise examples similarly",
-                "simple": "In practice this means evidence supports: When two nets organise examples similarly"
+                "original": "When two neural network layers or models organize example geometry similarly",
+                "simple": "In practice this means evidence supports: When two neural network layers or models organize example geometry similarly"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Identical concepts",
-                "simple": "Do not overclaim: Identical concepts"
-              },
-              {
-                "original": "Causal sharing",
-                "simple": "Do not overclaim: Causal sharing"
+                "original": "That individual dictionary features or concepts are identical",
+                "simple": "Do not overclaim: That individual dictionary features or concepts are identical"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Primary similarity metric across methods/seeds.",
-                "simple": "Action item: Primary similarity metric across methods/seeds."
-              },
-              {
-                "original": "Pair with probes and interventions.",
-                "simple": "Action item: Pair with probes and interventions."
+                "original": "Primary metric for measuring overall representational similarity across training seeds and architectures.",
+                "simple": "Action item: Primary metric for measuring overall representational similarity across training seeds and architectures."
               }
             ]
           },
           "quiz": [
             {
-              "q": "CKA is invariant to?",
+              "q": "CKA is invariant to which transformation?",
               "options": [
-                "Orthogonal transforms",
-                "Arbitrary nonlinear warps always",
-                "Relabeling classes only",
-                "Changing the dataset freely"
+                "Orthogonal rotations and isotropic scaling",
+                "Non-linear warps",
+                "Arbitrary token deletion",
+                "L0 changes"
               ],
               "a": 0,
-              "explain": "Orthogonal invariance is key."
+              "explain": "CKA is invariant to orthogonal rotation and isotropic scaling."
             }
           ]
         },
@@ -3811,9 +3999,9 @@ window.CURRICULUM_DATA = {
           "pages": 11,
           "pdfPath": "RAW/1909.03368v1.pdf",
           "teach": {
-            "whyWeRead": "Stops you from overclaiming when a probe 'finds' a property in a representation.",
-            "oneSentence": "Introduces control tasks and selectivity so probe accuracy is not mistaken for linguistic structure in the representation.",
-            "plainLanguage": "A probe is a supervised model predicting a property from frozen representations. High accuracy can mean (1) the property is organised in the representation, (2) the probe memorised, or (3) the property is easy for the probe architecture.\n\nControl tasks assign random outputs with similar structure. Selectivity compares real-task accuracy vs control-task accuracy. High selectivity suggests the representation — not just the probe — carries the property accessibly.",
+            "whyWeRead": "Introduces Control Tasks and Selectivity to prevent mistaking probe capacity for representational structure.",
+            "oneSentence": "Designing and Interpreting Probes with Control Tasks demonstrates that high probe accuracy alone does not prove representation structure.",
+            "plainLanguage": "Welcome to Hewitt & Liang (EMNLP 2019). This paper exposed a major scientific vulnerability in NLP probing research.\n\n--- THE PROBE FALLACY ---\nResearchers used to train linear probes on model activations to predict part-of-speech tags. When the probe achieved 97% accuracy, they concluded: 'Layer 8 represents part-of-speech structure!'\n\nHewitt & Liang proved this is flawed: high-capacity probes can MEMORIZE random target labels even when representations contain NO linguistic structure!\n\n--- THE CONTROL TASK SOLUTION ---\nConstruct a Control Task: assign random, arbitrary pseudo-labels to input words (matched in output distribution to real tags).\n1. Train probe on Real Task -> Real Accuracy.\n2. Train probe on Control Task -> Control Accuracy.\n3. Selectivity = Real Accuracy - Control Accuracy.\n\nHigh Selectivity proves the representation ITSELF carries accessible structure for the task, ruling out probe memorization!",
             "keyIdeas": [
               {
                 "title": "Probe pitfalls",
@@ -3839,80 +4027,79 @@ window.CURRICULUM_DATA = {
               {
                 "term": "Probe",
                 "original": "Technical term: «Probe» as used in this literature.",
-                "simple": "Supervised decoder trained on frozen representations.",
-                "def": "Supervised decoder trained on frozen representations."
+                "simple": "A supervised classifier trained on frozen representations to evaluate property extractability.",
+                "def": "A supervised classifier trained on frozen representations to evaluate property extractability."
               },
               {
                 "term": "Selectivity",
                 "original": "Technical term: «Selectivity» as used in this literature.",
-                "simple": "Difference between linguistic-task and control-task probe performance.",
-                "def": "Difference between linguistic-task and control-task probe performance."
+                "simple": "Real Task Accuracy minus Control Task Accuracy; measures true representation structure.",
+                "def": "Real Task Accuracy minus Control Task Accuracy; measures true representation structure."
               }
             ],
             "whatItShows": [
-              "How to interpret probes more carefully"
+              "How to measure whether a representation genuinely structures a property using control tasks"
             ],
             "whatItDoesNotShow": [
-              "Causal use of the property by the network"
+              "That the model causally uses the probed property during generation"
             ],
             "setconcaUse": [
-              "Any claim 'concepts are decodable from SetConCA codes' needs controls."
+              "Every probing claim in SetConCA must report Selectivity using control tasks."
             ],
             "masteryChecklist": [
-              "I can define selectivity.",
-              "I refuse probe accuracy alone as proof."
+              "I can define Selectivity and explain why control tasks are mandatory."
             ],
             "commonConfusions": [
               {
-                "wrong": "Probe accuracy proves the model uses the feature.",
-                "right": "It proves extractability under the probe class."
+                "wrong": "High probe accuracy proves the model uses the feature.",
+                "right": "High probe accuracy only proves extractability by that probe. Selectivity is needed to rule out memorization."
               }
             ],
             "quiz": [
               {
-                "q": "Control tasks help detect?",
+                "q": "What does Probe Selectivity measure?",
                 "options": [
-                  "Probe memorisation / easy decoding",
-                  "GPU temperature",
-                  "PDF size",
-                  "BatchNorm"
+                  "Real Task Accuracy minus Control Task Accuracy",
+                  "Total L0 count",
+                  "CKA score",
+                  "FVU"
                 ],
                 "a": 0,
-                "explain": "Selectivity vs controls."
+                "explain": "Selectivity = Real Task Accuracy - Control Task Accuracy."
               }
             ],
-            "originalIdea": "Introduces control tasks and selectivity so probe accuracy is not mistaken for linguistic structure in the representation.",
-            "simpleLesson": "A probe is a supervised model predicting a property from frozen representations. High accuracy can mean (1) the property is organised in the representation, (2) the probe memorised, or (3) the property is easy for the probe architecture.\n\nControl tasks assign random outputs with similar structure. Selectivity compares real-task accuracy vs control-task accuracy. High selectivity suggests the representation — not just the probe — carries the property accessibly.",
+            "originalIdea": "Designing and Interpreting Probes with Control Tasks demonstrates that high probe accuracy alone does not prove representation structure.",
+            "simpleLesson": "Welcome to Hewitt & Liang (EMNLP 2019). This paper exposed a major scientific vulnerability in NLP probing research.\n\n--- THE PROBE FALLACY ---\nResearchers used to train linear probes on model activations to predict part-of-speech tags. When the probe achieved 97% accuracy, they concluded: 'Layer 8 represents part-of-speech structure!'\n\nHewitt & Liang proved this is flawed: high-capacity probes can MEMORIZE random target labels even when representations contain NO linguistic structure!\n\n--- THE CONTROL TASK SOLUTION ---\nConstruct a Control Task: assign random, arbitrary pseudo-labels to input words (matched in output distribution to real tags).\n1. Train probe on Real Task -> Real Accuracy.\n2. Train probe on Control Task -> Control Accuracy.\n3. Selectivity = Real Accuracy - Control Accuracy.\n\nHigh Selectivity proves the representation ITSELF carries accessible structure for the task, ruling out probe memorization!",
             "limitPairs": [
               {
-                "original": "How to interpret probes more carefully",
-                "simple": "In practice this means evidence supports: How to interpret probes more carefully"
+                "original": "How to measure whether a representation genuinely structures a property using control tasks",
+                "simple": "In practice this means evidence supports: How to measure whether a representation genuinely structures a property using control tasks"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Causal use of the property by the network",
-                "simple": "Do not overclaim: Causal use of the property by the network"
+                "original": "That the model causally uses the probed property during generation",
+                "simple": "Do not overclaim: That the model causally uses the probed property during generation"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Any claim 'concepts are decodable from SetConCA codes' needs controls.",
-                "simple": "Action item: Any claim 'concepts are decodable from SetConCA codes' needs controls."
+                "original": "Every probing claim in SetConCA must report Selectivity using control tasks.",
+                "simple": "Action item: Every probing claim in SetConCA must report Selectivity using control tasks."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Control tasks help detect?",
+              "q": "What does Probe Selectivity measure?",
               "options": [
-                "Probe memorisation / easy decoding",
-                "GPU temperature",
-                "PDF size",
-                "BatchNorm"
+                "Real Task Accuracy minus Control Task Accuracy",
+                "Total L0 count",
+                "CKA score",
+                "FVU"
               ],
               "a": 0,
-              "explain": "Selectivity vs controls."
+              "explain": "Selectivity = Real Task Accuracy - Control Task Accuracy."
             }
           ]
         },
@@ -3932,9 +4119,9 @@ window.CURRICULUM_DATA = {
           "pages": 14,
           "pdfPath": "RAW/2003.12298v1.pdf",
           "teach": {
-            "whyWeRead": "Distinguishes 'information exists' from 'information is efficiently organised'.",
-            "oneSentence": "MDL probing measures how much description length is needed to learn a property from a representation.",
-            "plainLanguage": "Even if a probe can eventually reach high accuracy, the property might be buried and hard to extract. Minimum Description Length probing asks how efficiently the probe can learn — shorter description length means more accessible organisation.\n\nHigh accuracy + high description length: information exists but is messy. High accuracy + low description length: information is neatly organised.",
+            "whyWeRead": "MDL Probing measures information accessibility and organization effort using minimum description length.",
+            "oneSentence": "Information-Theoretic Probing with Minimum Description Length measures how easily a property is extracted from a representation.",
+            "plainLanguage": "Welcome to Voita & Titov (EMNLP 2020). MDL Probing evaluates HOW EFFICIENTLY a probe learns a task from representations.\n\nEven if two representations both achieve 90% probe accuracy, one representation might require only 100 bits of description length for the probe to learn, while the other requires 5,000 bits!\n\n• Short Description Length = Information is neatly, accessibly organized.\n• Long Description Length = Information is buried and complex.",
             "keyIdeas": [
               {
                 "title": "Existence vs accessibility",
@@ -3958,112 +4145,125 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "MDL probing",
-                "original": "Technical term: «MDL probing» as used in this literature.",
-                "simple": "Probe evaluation via minimum description length / online coding.",
-                "def": "Probe evaluation via minimum description length / online coding."
+                "term": "MDL Probing",
+                "original": "Technical term: «MDL Probing» as used in this literature.",
+                "simple": "Evaluating representations by the description length (bits) required for a probe to learn a task.",
+                "def": "Evaluating representations by the description length (bits) required for a probe to learn a task."
               }
             ],
             "whatItShows": [
-              "Organisation efficiency of information in representations"
+              "That description length measures how neatly information is organized in representations"
             ],
             "whatItDoesNotShow": [
-              "Causal necessity"
+              "Causal intervention effects"
             ],
             "setconcaUse": [
-              "If SetConCA claims better concept organisation, MDL is a fitting metric."
+              "Use MDL description length when evaluating concept organization in SetConCA codes."
             ],
             "masteryChecklist": [
-              "I can contrast accuracy vs description length."
+              "I can explain why description length provides deeper insight than probe accuracy alone."
             ],
             "commonConfusions": [
               {
-                "wrong": "Same accuracy means same representation quality.",
-                "right": "Learning effort/MDL can differ."
+                "wrong": "Same probe accuracy means identical representation quality.",
+                "right": "Probes can require vast differences in description length to achieve the same accuracy."
               }
             ],
             "quiz": [
               {
-                "q": "Low description length suggests?",
+                "q": "What does a short MDL description length indicate?",
                 "options": [
-                  "Property is organised accessibly",
-                  "Model is smaller only",
-                  "No information",
-                  "Infinite sparsity"
+                  "The property is accessibly and neatly organized in the representation",
+                  "The model has zero parameters",
+                  "High L0 sparsity",
+                  "Low CKA"
                 ],
                 "a": 0,
-                "explain": "Accessible organisation."
+                "explain": "Short description length means the probe learned the property easily from accessible structure."
               }
             ],
-            "originalIdea": "MDL probing measures how much description length is needed to learn a property from a representation.",
-            "simpleLesson": "Even if a probe can eventually reach high accuracy, the property might be buried and hard to extract. Minimum Description Length probing asks how efficiently the probe can learn — shorter description length means more accessible organisation.\n\nHigh accuracy + high description length: information exists but is messy. High accuracy + low description length: information is neatly organised.",
+            "originalIdea": "Information-Theoretic Probing with Minimum Description Length measures how easily a property is extracted from a representation.",
+            "simpleLesson": "Welcome to Voita & Titov (EMNLP 2020). MDL Probing evaluates HOW EFFICIENTLY a probe learns a task from representations.\n\nEven if two representations both achieve 90% probe accuracy, one representation might require only 100 bits of description length for the probe to learn, while the other requires 5,000 bits!\n\n• Short Description Length = Information is neatly, accessibly organized.\n• Long Description Length = Information is buried and complex.",
             "limitPairs": [
               {
-                "original": "Organisation efficiency of information in representations",
-                "simple": "In practice this means evidence supports: Organisation efficiency of information in representations"
+                "original": "That description length measures how neatly information is organized in representations",
+                "simple": "In practice this means evidence supports: That description length measures how neatly information is organized in representations"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Causal necessity",
-                "simple": "Do not overclaim: Causal necessity"
+                "original": "Causal intervention effects",
+                "simple": "Do not overclaim: Causal intervention effects"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "If SetConCA claims better concept organisation, MDL is a fitting metric.",
-                "simple": "Action item: If SetConCA claims better concept organisation, MDL is a fitting metric."
+                "original": "Use MDL description length when evaluating concept organization in SetConCA codes.",
+                "simple": "Action item: Use MDL description length when evaluating concept organization in SetConCA codes."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Low description length suggests?",
+              "q": "What does a short MDL description length indicate?",
               "options": [
-                "Property is organised accessibly",
-                "Model is smaller only",
-                "No information",
-                "Infinite sparsity"
+                "The property is accessibly and neatly organized in the representation",
+                "The model has zero parameters",
+                "High L0 sparsity",
+                "Low CKA"
               ],
               "a": 0,
-              "explain": "Accessible organisation."
+              "explain": "Short description length means the probe learned the property easily from accessible structure."
             }
           ]
         }
       ],
       "primer": {
         "title": "Measuring and comparing representations",
-        "mission": "Know what each metric supports and what it does not establish.",
-        "beforeYouStart": "Levels 1–5 vocabulary.",
-        "primer": "No single number measures interpretability.\n\nSVCCA and CKA compare subspaces — similar geometry ≠ same concepts. Probes test decodability — high accuracy can be probe memorisation unless you use control tasks. MDL probing asks how efficiently information is organised.\n\nMemorize the table: reconstruction ≠ interpretability; sparsity ≠ monosemanticity; CKA ≠ same features; probe ≠ causal use; steering ≠ complete mechanism.",
+        "mission": "Master CKA, SVCCA, Probes with Control Tasks, and Minimum Description Length (MDL) probing.",
+        "beforeYouStart": "Levels 1–5 foundational concepts.",
+        "primer": "Welcome to Level 6. In AI research, self-deception is easy. A researcher trains a model, runs one evaluation, gets a 92% score, and claims 'We discovered the internal concept!'\n\nLevel 6 is your scientific reality check. You will learn what each metric ACTUALLY proves and what it CANNOT establish.\n\n--- STEP 1: CKA (Centered Kernel Alignment) — Comparing Geometries Across Models ---\nSuppose Model A has 4096 dimensions and Model B has 2048 dimensions. How do you compare if Model A and Model B represent data similarly?\n\nYou CANNOT compare neuron indices (Neuron #12 in Model A has nothing to do with Neuron #12 in Model B). You CANNOT use raw Euclidean distance because Model A might be rotated relative to Model B.\n\nHow CKA works (Kornblith et al., 2019):\n1. Take N example inputs. Pass them through Model A to get N activation vectors. Compute the N × N Gram Matrix K = X Xᵀ (pairwise similarity of examples in Model A).\n2. Pass the same N inputs through Model B to get N activation vectors. Compute Gram Matrix L = Y Yᵀ (pairwise similarity of examples in Model B).\n3. CKA measures the Hilbert-Schmidt Independence Criterion (HSIC) between centered matrices K and L!\n\nWhat CKA proves: High CKA means Model A and Model B organize example similarities similarly. CKA is invariant to orthogonal rotations.\nWhat CKA DOES NOT prove: High CKA does NOT mean the individual features or concepts inside Model A and Model B are identical!\n\n--- STEP 2: Linear Probing and Hewitt & Liang's Control Tasks ---\nWhat is a Probe?\nA probe is a simple classifier (e.g. linear logistic regression) trained on top of frozen model activations to predict a property (e.g. part-of-speech tag).\n\nThe Probe Fallacy:\nIf a linear probe achieves 98% accuracy predicting part-of-speech tags from Layer 8 activations, does that mean Layer 8 internally uses part-of-speech tags?\n\nNOT NECESSARILY! Hewitt & Liang (2019) showed that powerful probes can MEMORIZE random target labels even when the representation carries no real structure!\n\nThe Fix — Control Tasks & Selectivity:\nConstruct a Control Task by assigning random, arbitrary labels to input words (matched in output distribution to real tags). Train the probe on real tags (Real Accuracy) and on control tags (Control Accuracy).\nSelectivity = Real Accuracy - Control Accuracy.\nHigh Selectivity proves the representation itself carries structured, accessible information about the property — not just that the probe memorized!\n\n--- STEP 3: MDL Probing (Voita & Titov, 2020) — Description Length ---\nMinimum Description Length (MDL) probing measures HOW MUCH EFFORT (code length in bits) a probe requires to learn the task from the representation.\n• High Accuracy + Short Description Length = Information is neatly, efficiently organized.\n• High Accuracy + Long Description Length = Information is buried and messy; the probe worked hard to extract it.\n\nTHE METRIC TRUTH TABLE TO MEMORIZE:\n• Low Reconstruction FVU → High fidelity (preserved variance). Does NOT prove monosemantic concepts.\n• High Sparsity (L0) → Few active units. Does NOT prove individual units are pure concepts.\n• High CKA → Similar example geometry across models. Does NOT prove identical features.\n• High Probe Accuracy → Property is extractable. Does NOT prove model uses it without Control Tasks.\n• Steering Effect → Causal intervention alters output. Does NOT prove complete mechanism.",
         "bigPictureDiagram": [
-          "Preservation (FVU) | Similarity (CKA) | Decodability (probe) | Causality (intervention)",
-          "Need several families for a strong claim."
+          "Dataset of N Examples",
+          "Model A → Activations X → N×N Gram Matrix K (Similarity of examples in A)",
+          "Model B → Activations Y → N×N Gram Matrix L (Similarity of examples in B)",
+          "CKA(K, L) = HSIC(K, L) / √(HSIC(K,K) HSIC(L,L))  ──[Invariant to Orthogonal Rotation]──",
+          "Probing: Real Task Accuracy vs. Control Task Accuracy → Selectivity = Real - Control"
         ],
         "conceptsToMaster": [
           {
-            "name": "CKA",
-            "simple": "Similarity of representation Gram matrices.",
-            "deeper": "Invariant to orthogonal transforms; not feature matching."
+            "name": "CKA (Centered Kernel Alignment)",
+            "simple": "A metric that compares whether two different neural networks organize a set of examples in the same geometric pattern, regardless of rotation or matrix size.",
+            "deeper": "CKA(K,L) = HSIC(K,L) / sqrt(HSIC(K,K) HSIC(L,L)) where K = X Xᵀ and L = Y Yᵀ are centered Gram matrices. Invariant to orthogonal transformation and isotropic scaling. Measures representational similarity without needing feature alignment."
           },
           {
-            "name": "Selectivity",
-            "simple": "Probe accuracy on real labels vs control tasks.",
-            "deeper": "Hewitt & Liang: without controls, probes can look good for the wrong reason."
+            "name": "Probe Selectivity",
+            "simple": "The difference between probe accuracy on real labels versus probe accuracy on random control labels. High selectivity proves representation structure.",
+            "deeper": "Selectivity = Accuracy(Real Task) - Accuracy(Control Task). Control task assigns pseudo-labels with identical marginal distribution. High selectivity rules out probe memorization capacity."
+          },
+          {
+            "name": "MDL Probing (Minimum Description Length)",
+            "simple": "Measuring how many bits of information a probe needs to learn a task from a representation. Shorter code length = more accessible organization.",
+            "deeper": "Measures codelength L_{online}(Y|X) using online coding (prequential code). Evaluates representation quality by total description length required to transmit labels given representations."
+          },
+          {
+            "name": "Subspace Similarity (SVCCA)",
+            "simple": "Running SVD first to remove noise, then running CCA to compare shared subspaces between two models.",
+            "deeper": "Truncates low-variance singular values via SVD to reduce noise dimensions, then computes canonical correlations on truncated subspace. Measures affine-invariant subspace overlap."
           }
         ],
         "checkpoint": {
-          "goal": "Build an evaluation notebook.",
+          "goal": "Build a complete evaluation notebook computing CKA, Linear Probe Accuracy, Control Task Accuracy, and Selectivity on two model layers.",
           "steps": [
-            "CKA",
-            "SVCCA",
-            "linear probe",
-            "MDL probe",
-            "control tasks"
+            "Extract activations from Layer 8 and Layer 16 of a model.",
+            "Compute Linear CKA between Layer 8 and Layer 16.",
+            "Train a linear probe to predict a linguistic property (Real Task).",
+            "Construct a Control Task with randomized labels; train probe (Control Task).",
+            "Calculate Selectivity and plot the results."
           ],
-          "successLooksLike": "You refuse any paper claim backed by one metric alone."
+          "successLooksLike": "You can explain why a probe with 95% real accuracy and 90% control accuracy provides WEAKER evidence than a probe with 85% real accuracy and 20% control accuracy."
         },
-        "bridgeToNext": "Mechanistic interpretability explains why sparse features matter inside transformers."
+        "bridgeToNext": "Armed with honest metrics, Levels 7–9 enter Mechanistic Interpretability — exploring transformer internals, superposition, and Sparse Autoencoders."
       }
     },
     {
@@ -4090,9 +4290,9 @@ window.CURRICULUM_DATA = {
           "missing_local": true,
           "abstract": "",
           "teach": {
-            "whyWeRead": "Gives the residual-stream / circuit vocabulary for where SAE features live.",
-            "oneSentence": "A framework treating transformers as circuits on a residual stream with attention as QK/OV operations.",
-            "plainLanguage": "Think of the residual stream as a shared communication bus. Each layer reads from it and writes updates back. Attention heads can be factored into QK circuits (where to attend) and OV circuits (what to write).\n\nMechanistic interpretability studies these paths, not only input–output correlations. SAE features are often analysed as directions in residual-stream activations.",
+            "whyWeRead": "Gives the foundational residual stream and circuit vocabulary for Mechanistic Interpretability.",
+            "oneSentence": "A Mathematical Framework for Transformer Circuits treats transformers as circuits operating on a central residual stream.",
+            "plainLanguage": "Welcome to Elhage et al. (Anthropic 2021).\n\n--- THE RESIDUAL STREAM BUS ---\nThink of the Transformer residual stream as a central conveyor belt running through all layers. Attention heads and MLP layers read from the stream and write updates back linearly:\nx_{l+1} = x_l + Attention(x_l) + MLP(x_l)\n\n--- QK AND OV CIRCUITS ---\nAttention heads factor into two independent operations:\n1. QK Circuit (Query-Key): Determines WHERE to attend (computes attention pattern A = Softmax(xᵀ W_Qᵀ W_K x)).\n2. OV Circuit (Output-Value): Determines WHAT information to move (computes output W_O W_V x).\n\nSAE features live as directions in this residual stream!",
             "keyIdeas": [
               {
                 "title": "Residual stream",
@@ -4128,86 +4328,82 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Residual stream",
-                "original": "Technical term: «Residual stream» as used in this literature.",
-                "simple": "The main residual pathway carrying activations through the transformer.",
-                "def": "The main residual pathway carrying activations through the transformer."
+                "term": "Residual Stream",
+                "original": "Technical term: «Residual Stream» as used in this literature.",
+                "simple": "The main linear activation pathway running through a Transformer model.",
+                "def": "The main linear activation pathway running through a Transformer model."
               },
               {
                 "term": "Circuit",
                 "original": "Technical term: «Circuit» as used in this literature.",
-                "simple": "A subgraph of model components implementing a behaviour.",
-                "def": "A subgraph of model components implementing a behaviour."
+                "simple": "A computational subgraph of attention heads and MLP neurons implementing a specific behavior.",
+                "def": "A computational subgraph of attention heads and MLP neurons implementing a specific behavior."
               }
             ],
             "whatItShows": [
-              "A productive language for analysing transformer internals"
+              "How Transformer layers interact via linear residual stream updates and factored attention circuits"
             ],
             "whatItDoesNotShow": [
-              "Automatic discovery of all circuits"
+              "Automated feature dictionary extraction"
             ],
             "setconcaUse": [
-              "Specify which residual sites your views come from.",
-              "Plan interventions on SAE directions in the stream."
+              "Specify exact residual stream layer sites for multi-view activation extraction in SetConCA."
             ],
             "masteryChecklist": [
-              "I can explain residual stream, QK, OV in one minute."
+              "I can explain residual stream linear addition.",
+              "I can contrast QK circuits (where to attend) with OV circuits (what to write)."
             ],
             "commonConfusions": [
               {
-                "wrong": "Neurons alone are the right unit always.",
-                "right": "Directions/circuits in the stream often matter more."
+                "wrong": "Layers replace the residual stream at each step.",
+                "right": "Layers add updates to the residual stream; the main stream vector persists through the model."
               }
             ],
             "quiz": [
               {
-                "q": "OV circuits mainly handle?",
+                "q": "What does the OV circuit in a Transformer attention head determine?",
                 "options": [
-                  "What information is written",
-                  "Only tokenisation",
-                  "Only dropout",
-                  "Only FVU"
+                  "WHAT information is written to the residual stream",
+                  "WHERE attention focuses",
+                  "Sparsity L0",
+                  "PCA rank"
                 ],
                 "a": 0,
-                "explain": "OV moves values."
+                "explain": "OV circuit determines what value content is moved to the residual stream."
               }
             ],
-            "originalIdea": "A framework treating transformers as circuits on a residual stream with attention as QK/OV operations.",
-            "simpleLesson": "Think of the residual stream as a shared communication bus. Each layer reads from it and writes updates back. Attention heads can be factored into QK circuits (where to attend) and OV circuits (what to write).\n\nMechanistic interpretability studies these paths, not only input–output correlations. SAE features are often analysed as directions in residual-stream activations.",
+            "originalIdea": "A Mathematical Framework for Transformer Circuits treats transformers as circuits operating on a central residual stream.",
+            "simpleLesson": "Welcome to Elhage et al. (Anthropic 2021).\n\n--- THE RESIDUAL STREAM BUS ---\nThink of the Transformer residual stream as a central conveyor belt running through all layers. Attention heads and MLP layers read from the stream and write updates back linearly:\nx_{l+1} = x_l + Attention(x_l) + MLP(x_l)\n\n--- QK AND OV CIRCUITS ---\nAttention heads factor into two independent operations:\n1. QK Circuit (Query-Key): Determines WHERE to attend (computes attention pattern A = Softmax(xᵀ W_Qᵀ W_K x)).\n2. OV Circuit (Output-Value): Determines WHAT information to move (computes output W_O W_V x).\n\nSAE features live as directions in this residual stream!",
             "limitPairs": [
               {
-                "original": "A productive language for analysing transformer internals",
-                "simple": "In practice this means evidence supports: A productive language for analysing transformer internals"
+                "original": "How Transformer layers interact via linear residual stream updates and factored attention circuits",
+                "simple": "In practice this means evidence supports: How Transformer layers interact via linear residual stream updates and factored attention circuits"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Automatic discovery of all circuits",
-                "simple": "Do not overclaim: Automatic discovery of all circuits"
+                "original": "Automated feature dictionary extraction",
+                "simple": "Do not overclaim: Automated feature dictionary extraction"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Specify which residual sites your views come from.",
-                "simple": "Action item: Specify which residual sites your views come from."
-              },
-              {
-                "original": "Plan interventions on SAE directions in the stream.",
-                "simple": "Action item: Plan interventions on SAE directions in the stream."
+                "original": "Specify exact residual stream layer sites for multi-view activation extraction in SetConCA.",
+                "simple": "Action item: Specify exact residual stream layer sites for multi-view activation extraction in SetConCA."
               }
             ]
           },
           "quiz": [
             {
-              "q": "OV circuits mainly handle?",
+              "q": "What does the OV circuit in a Transformer attention head determine?",
               "options": [
-                "What information is written",
-                "Only tokenisation",
-                "Only dropout",
-                "Only FVU"
+                "WHAT information is written to the residual stream",
+                "WHERE attention focuses",
+                "Sparsity L0",
+                "PCA rank"
               ],
               "a": 0,
-              "explain": "OV moves values."
+              "explain": "OV circuit determines what value content is moved to the residual stream."
             }
           ]
         },
@@ -4469,9 +4665,9 @@ window.CURRICULUM_DATA = {
           "abstract": "",
           "pdfPath": "RAW/2209.pdf",
           "teach": {
-            "whyWeRead": "Conceptual foundation for why SAEs exist — more features than dimensions.",
-            "oneSentence": "Toy ReLU models demonstrate superposition, phase changes, geometric feature packing, and why polysemantic neurons appear.",
-            "plainLanguage": "When features are sparse, a network can store more features than it has dimensions by packing them into almost-orthogonal directions. Interference is the cost; nonlinearities can filter small interference.\n\nWhether a feature is ignored, superposed, or given a dedicated dimension depends on sparsity and importance — often as a phase change. Features form geometric arrangements (antipodal pairs, triangles, pentagons…).\n\nSAEs are the practical response: find an overcomplete sparse dictionary that unfolds superposed features. This paper literally lists that as Approach 2.",
+            "whyWeRead": "The foundational Anthropic paper establishing why SAEs exist — explaining superposition, polysemanticity, and geometric feature packing.",
+            "oneSentence": "Toy Models of Superposition demonstrates how networks pack more sparse features than dimensions via almost-orthogonal directions.",
+            "plainLanguage": "Welcome to Anthropic's Toy Models of Superposition (Elhage et al., 2022).\n\n--- THE PARADOX OF NEURAL REPRESENTATIONS ---\nA model with 4,096 activation dimensions can represent TENS OF THOUSANDS of distinct concepts. How?\n\n--- THE SUPERPOSITION HYPOTHESIS ---\nWhen features are SPARSE (active rarely), a network can pack M features into d dimensions (M > d) by embedding features as ALMOST-ORTHOGONAL directions!\n\nThe Interference Cost:\nBecause features are not strictly 90° orthogonal, activating Feature A causes small non-zero interference (crosstalk) on Feature B. When features are sparse, interference happens rarely, and non-linearities (ReLU) wipe out small interference noise.\n\n--- POLYSEMANTIC NEURONS ---\nBecause packed feature directions do not line up with standard neuron basis axes, single neurons become POLYSEMANTIC — activating for multiple unrelated concepts!\n\n--- THREE WAYS OUT -> SPARSITY DICTIONARIES (SAES) ---\nAnthropic listed three ways to resolve superposition:\n1. Train models without superposition (costly).\n2. Find an Overcomplete Basis after training (SAEs / Dictionary Learning).\n3. Hybrid approaches.",
             "keyIdeas": [
               {
                 "title": "Superposition hypothesis",
@@ -4518,178 +4714,124 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "Feature dimensionality",
-                "formula": "D_i = ||W_i||² / Σ_j (Ŵ_i·W_j)²",
-                "original": "Feature dimensionality: D_i = ||W_i||² / Σ_j (Ŵ_i·W_j)²",
-                "simple": "How much of its dimension a feature owns after interference.",
-                "meaning": "How much of its dimension a feature owns after interference."
-              },
-              {
-                "name": "Linear vs ReLU toy",
-                "formula": "x' = WᵀWx vs ReLU(WᵀWx+b)",
-                "original": "Linear vs ReLU toy: x' = WᵀWx vs ReLU(WᵀWx+b)",
-                "simple": "ReLU enables superposition solutions linear models lack.",
-                "meaning": "ReLU enables superposition solutions linear models lack."
+                "name": "Feature Dimensionality Formula",
+                "formula": "D_i = \\frac{||W_i||^2}{\\sum_j (\\hat{W}_i \\cdot W_j)^2}",
+                "original": "Feature Dimensionality Formula: D_i = \\frac{||W_i||^2}{\\sum_j (\\hat{W}_i \\cdot W_j)^2}",
+                "simple": "Measures effective dimensionality fraction owned by feature i after interference from all other features j.",
+                "meaning": "Measures effective dimensionality fraction owned by feature i after interference from all other features j."
               }
             ],
             "vocabulary": [
               {
                 "term": "Superposition",
                 "original": "Technical term: «Superposition» as used in this literature.",
-                "simple": "Representing more features than dimensions with interference.",
-                "def": "Representing more features than dimensions with interference."
+                "simple": "Representing M > d sparse features in d dimensions using almost-orthogonal vectors.",
+                "def": "Representing M > d sparse features in d dimensions using almost-orthogonal vectors."
               },
               {
-                "term": "Polysemantic",
-                "original": "Technical term: «Polysemantic» as used in this literature.",
-                "simple": "Unit activates for multiple unrelated concepts.",
-                "def": "Unit activates for multiple unrelated concepts."
+                "term": "Polysemanticity",
+                "original": "Technical term: «Polysemanticity» as used in this literature.",
+                "simple": "A single neuron activating for multiple unrelated concepts due to superposition.",
+                "def": "A single neuron activating for multiple unrelated concepts due to superposition."
               },
               {
-                "term": "Privileged basis",
-                "original": "Technical term: «Privileged basis» as used in this literature.",
-                "simple": "Architecture makes neuron axes special (e.g. after nonlinearity).",
-                "def": "Architecture makes neuron axes special (e.g. after nonlinearity)."
+                "term": "Privileged Basis",
+                "original": "Technical term: «Privileged Basis» as used in this literature.",
+                "simple": "A coordinate basis made special by architectural non-linearities (e.g. ReLU).",
+                "def": "A coordinate basis made special by architectural non-linearities (e.g. ReLU)."
               }
             ],
             "whatItShows": [
-              "Superposition occurs in natural toy setups",
-              "Phase structure and geometry",
-              "Link to adversarial vulnerability"
+              "That superposition occurs naturally in ReLU networks under feature sparsity",
+              "That SAE dictionary learning is the mathematical solution to unfolding superposition"
             ],
             "whatItDoesNotShow": [
-              "Exact feature geometry of large LMs",
-              "That SAEs uniquely recover ground truth"
+              "That standard SAEs uniquely recover canonical ground-truth features"
             ],
             "setconcaUse": [
-              "Justify SAEs as Approach 2.",
-              "Expect phase-sensitive behaviour when adding multi-view terms.",
-              "Track interference/correlation between concept views."
+              "Use Superposition Theory as the fundamental justification for why SAE dictionaries are required."
             ],
             "masteryChecklist": [
-              "I can explain superposition to a beginner.",
-              "I can name the three ways out.",
-              "I know D=1/2 means antipodal packing."
+              "I can explain superposition, interference, and polysemanticity to a beginner.",
+              "I can list the three ways out and identify SAEs as Approach 2."
             ],
             "commonConfusions": [
               {
-                "wrong": "More parameters always removes superposition.",
-                "right": "Depends on sparsity/importance; may persist at scale."
-              },
-              {
-                "wrong": "SAEs are Approach 1.",
-                "right": "SAEs are overcomplete basis finding (Approach 2)."
+                "wrong": "Superposition happens because networks don't have enough parameters.",
+                "right": "Superposition happens because feature sparsity enables efficient high-dimensional packing even in large models."
               }
             ],
             "quiz": [
               {
-                "q": "Superposition stores?",
+                "q": "Superposition allows a network to represent?",
                 "options": [
-                  "More features than dimensions",
-                  "Fewer features always",
-                  "Only labels",
-                  "Only PCA comps"
+                  "More sparse features than activation dimensions",
+                  "Fewer features",
+                  "Only orthogonal features",
+                  "Only linear PCA"
                 ],
                 "a": 0,
-                "explain": "Packed almost-orthogonal features."
+                "explain": "Superposition packs more sparse features than dimensions into activation space."
               },
               {
-                "q": "SAEs correspond to which way out?",
+                "q": "Sparse Autoencoders represent which 'way out' of superposition?",
                 "options": [
-                  "Overcomplete basis after the fact",
-                  "Delete all MLP layers",
-                  "Only adversarial training",
-                  "Ignore sparsity"
+                  "Approach 2: Finding an overcomplete basis after training",
+                  "Deleting MLP layers",
+                  "Increasing learning rate",
+                  "Using PCA"
                 ],
                 "a": 0,
-                "explain": "Approach 2."
-              },
-              {
-                "q": "Linear toy models superpose like ReLU toys?",
-                "options": [
-                  "No — ReLU enables it",
-                  "Yes always",
-                  "Only with CKA",
-                  "Only with probes"
-                ],
-                "a": 0,
-                "explain": "Nonlinearity matters."
+                "explain": "SAEs are Approach 2: finding an overcomplete sparse basis."
               }
             ],
-            "originalIdea": "Toy ReLU models demonstrate superposition, phase changes, geometric feature packing, and why polysemantic neurons appear.",
-            "simpleLesson": "When features are sparse, a network can store more features than it has dimensions by packing them into almost-orthogonal directions. Interference is the cost; nonlinearities can filter small interference.\n\nWhether a feature is ignored, superposed, or given a dedicated dimension depends on sparsity and importance — often as a phase change. Features form geometric arrangements (antipodal pairs, triangles, pentagons…).\n\nSAEs are the practical response: find an overcomplete sparse dictionary that unfolds superposed features. This paper literally lists that as Approach 2.",
+            "originalIdea": "Toy Models of Superposition demonstrates how networks pack more sparse features than dimensions via almost-orthogonal directions.",
+            "simpleLesson": "Welcome to Anthropic's Toy Models of Superposition (Elhage et al., 2022).\n\n--- THE PARADOX OF NEURAL REPRESENTATIONS ---\nA model with 4,096 activation dimensions can represent TENS OF THOUSANDS of distinct concepts. How?\n\n--- THE SUPERPOSITION HYPOTHESIS ---\nWhen features are SPARSE (active rarely), a network can pack M features into d dimensions (M > d) by embedding features as ALMOST-ORTHOGONAL directions!\n\nThe Interference Cost:\nBecause features are not strictly 90° orthogonal, activating Feature A causes small non-zero interference (crosstalk) on Feature B. When features are sparse, interference happens rarely, and non-linearities (ReLU) wipe out small interference noise.\n\n--- POLYSEMANTIC NEURONS ---\nBecause packed feature directions do not line up with standard neuron basis axes, single neurons become POLYSEMANTIC — activating for multiple unrelated concepts!\n\n--- THREE WAYS OUT -> SPARSITY DICTIONARIES (SAES) ---\nAnthropic listed three ways to resolve superposition:\n1. Train models without superposition (costly).\n2. Find an Overcomplete Basis after training (SAEs / Dictionary Learning).\n3. Hybrid approaches.",
             "limitPairs": [
               {
-                "original": "Superposition occurs in natural toy setups",
-                "simple": "In practice this means evidence supports: Superposition occurs in natural toy setups"
+                "original": "That superposition occurs naturally in ReLU networks under feature sparsity",
+                "simple": "In practice this means evidence supports: That superposition occurs naturally in ReLU networks under feature sparsity"
               },
               {
-                "original": "Phase structure and geometry",
-                "simple": "In practice this means evidence supports: Phase structure and geometry"
-              },
-              {
-                "original": "Link to adversarial vulnerability",
-                "simple": "In practice this means evidence supports: Link to adversarial vulnerability"
+                "original": "That SAE dictionary learning is the mathematical solution to unfolding superposition",
+                "simple": "In practice this means evidence supports: That SAE dictionary learning is the mathematical solution to unfolding superposition"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Exact feature geometry of large LMs",
-                "simple": "Do not overclaim: Exact feature geometry of large LMs"
-              },
-              {
-                "original": "That SAEs uniquely recover ground truth",
-                "simple": "Do not overclaim: That SAEs uniquely recover ground truth"
+                "original": "That standard SAEs uniquely recover canonical ground-truth features",
+                "simple": "Do not overclaim: That standard SAEs uniquely recover canonical ground-truth features"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Justify SAEs as Approach 2.",
-                "simple": "Action item: Justify SAEs as Approach 2."
-              },
-              {
-                "original": "Expect phase-sensitive behaviour when adding multi-view terms.",
-                "simple": "Action item: Expect phase-sensitive behaviour when adding multi-view terms."
-              },
-              {
-                "original": "Track interference/correlation between concept views.",
-                "simple": "Action item: Track interference/correlation between concept views."
+                "original": "Use Superposition Theory as the fundamental justification for why SAE dictionaries are required.",
+                "simple": "Action item: Use Superposition Theory as the fundamental justification for why SAE dictionaries are required."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Superposition stores?",
+              "q": "Superposition allows a network to represent?",
               "options": [
-                "More features than dimensions",
-                "Fewer features always",
-                "Only labels",
-                "Only PCA comps"
+                "More sparse features than activation dimensions",
+                "Fewer features",
+                "Only orthogonal features",
+                "Only linear PCA"
               ],
               "a": 0,
-              "explain": "Packed almost-orthogonal features."
+              "explain": "Superposition packs more sparse features than dimensions into activation space."
             },
             {
-              "q": "SAEs correspond to which way out?",
+              "q": "Sparse Autoencoders represent which 'way out' of superposition?",
               "options": [
-                "Overcomplete basis after the fact",
-                "Delete all MLP layers",
-                "Only adversarial training",
-                "Ignore sparsity"
+                "Approach 2: Finding an overcomplete basis after training",
+                "Deleting MLP layers",
+                "Increasing learning rate",
+                "Using PCA"
               ],
               "a": 0,
-              "explain": "Approach 2."
-            },
-            {
-              "q": "Linear toy models superpose like ReLU toys?",
-              "options": [
-                "No — ReLU enables it",
-                "Yes always",
-                "Only with CKA",
-                "Only with probes"
-              ],
-              "a": 0,
-              "explain": "Nonlinearity matters."
+              "explain": "SAEs are Approach 2: finding an overcomplete sparse basis."
             }
           ]
         },
@@ -4711,9 +4853,9 @@ window.CURRICULUM_DATA = {
           "pages": 97,
           "pdfPath": "RAW/Bricken - 2023 - Towards Monosemanticity Decomposing Language Mode.pdf",
           "teach": {
-            "whyWeRead": "Landmark application of dictionary learning to LM activations — features vs neurons.",
-            "oneSentence": "Shows sparse dictionary learning can extract more monosemantic features than neurons in a small LM.",
-            "plainLanguage": "Towards Monosemanticity trains sparse autoencoders on transformer activations and studies the resulting features. Many features look more monosemantic than neurons. Dictionary width and sparsity trade off against reconstruction.\n\nThey discuss feature splitting and residual polysemanticity. Interpretation mixes manual and automated methods. This sets cultural expectations for SAE research: show features, interventions, and limitations.",
+            "whyWeRead": "First large-scale application of sparse dictionary learning to extract monosemantic features from a language model.",
+            "oneSentence": "Towards Monosemanticity demonstrates that sparse autoencoders extract interpretable, monosemantic feature directions from language model activations.",
+            "plainLanguage": "Welcome to Bricken et al. (Anthropic 2023).\n\nAnthropic applied sparse autoencoders to a 1-layer language model. They showed that SAE dictionary features are significantly more MONOSEMANTIC than raw model neurons!\n\nFeatures activated for specific, consistent concepts (e.g. 'DNA sequences', 'legal terms', 'Hebrew text'). They also demonstrated feature splitting and feature interventions.",
             "keyIdeas": [
               {
                 "title": "Features vs neurons",
@@ -4743,87 +4885,75 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Dictionary learning",
-                "original": "Technical term: «Dictionary learning» as used in this literature.",
-                "simple": "Learning sparse codes over an overcomplete basis.",
-                "def": "Learning sparse codes over an overcomplete basis."
-              },
-              {
-                "term": "Feature splitting",
-                "original": "Technical term: «Feature splitting» as used in this literature.",
-                "simple": "One concept spread across multiple dictionary features.",
-                "def": "One concept spread across multiple dictionary features."
+                "term": "Monosemanticity",
+                "original": "Technical term: «Monosemanticity» as used in this literature.",
+                "simple": "The degree to which a feature or neuron responds to a single, consistent concept.",
+                "def": "The degree to which a feature or neuron responds to a single, consistent concept."
               }
             ],
             "whatItShows": [
-              "SAE features can be highly interpretable relative to neurons in studied settings"
+              "That sparse dictionary learning extracts highly interpretable monosemantic feature directions from LM activations"
             ],
             "whatItDoesNotShow": [
-              "Completeness or uniqueness of the dictionary"
+              "That learned dictionaries are complete or canonically unique"
             ],
             "setconcaUse": [
-              "Adopt their qualitative+intervention reporting style.",
-              "Expect splitting as a failure mode to measure."
+              "Adopt their qualitative feature presentation and intervention protocols in SetConCA."
             ],
             "masteryChecklist": [
-              "I can explain why features beat neurons under superposition.",
-              "I can list limitations they emphasise."
+              "I can explain why SAE features are more monosemantic than neurons."
             ],
             "commonConfusions": [
               {
-                "wrong": "Monosemanticity paper proves SAEs solve interpretability.",
-                "right": "It shows promising decomposition with remaining issues."
+                "wrong": "Towards Monosemanticity proved all SAE features are 100% pure.",
+                "right": "It showed strong monosemanticity improvement while documenting feature splitting and leftover polysemanticity."
               }
             ],
             "quiz": [
               {
-                "q": "Main empirical claim?",
+                "q": "What did Towards Monosemanticity demonstrate?",
                 "options": [
-                  "SAE features can be more monosemantic than neurons",
-                  "PCA is enough",
-                  "Attention is unused",
-                  "Probes replace SAEs"
+                  "SAE dictionary features are significantly more monosemantic than raw model neurons",
+                  "Neurons are pure",
+                  "PCA replaces SAEs",
+                  "Probes fail"
                 ],
                 "a": 0,
-                "explain": "Dictionary features vs neurons."
+                "explain": "Showed SAE features are much more monosemantic than raw model neurons."
               }
             ],
-            "originalIdea": "Shows sparse dictionary learning can extract more monosemantic features than neurons in a small LM.",
-            "simpleLesson": "Towards Monosemanticity trains sparse autoencoders on transformer activations and studies the resulting features. Many features look more monosemantic than neurons. Dictionary width and sparsity trade off against reconstruction.\n\nThey discuss feature splitting and residual polysemanticity. Interpretation mixes manual and automated methods. This sets cultural expectations for SAE research: show features, interventions, and limitations.",
+            "originalIdea": "Towards Monosemanticity demonstrates that sparse autoencoders extract interpretable, monosemantic feature directions from language model activations.",
+            "simpleLesson": "Welcome to Bricken et al. (Anthropic 2023).\n\nAnthropic applied sparse autoencoders to a 1-layer language model. They showed that SAE dictionary features are significantly more MONOSEMANTIC than raw model neurons!\n\nFeatures activated for specific, consistent concepts (e.g. 'DNA sequences', 'legal terms', 'Hebrew text'). They also demonstrated feature splitting and feature interventions.",
             "limitPairs": [
               {
-                "original": "SAE features can be highly interpretable relative to neurons in studied settings",
-                "simple": "In practice this means evidence supports: SAE features can be highly interpretable relative to neurons in studied settings"
+                "original": "That sparse dictionary learning extracts highly interpretable monosemantic feature directions from LM activations",
+                "simple": "In practice this means evidence supports: That sparse dictionary learning extracts highly interpretable monosemantic feature directions from LM activations"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Completeness or uniqueness of the dictionary",
-                "simple": "Do not overclaim: Completeness or uniqueness of the dictionary"
+                "original": "That learned dictionaries are complete or canonically unique",
+                "simple": "Do not overclaim: That learned dictionaries are complete or canonically unique"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Adopt their qualitative+intervention reporting style.",
-                "simple": "Action item: Adopt their qualitative+intervention reporting style."
-              },
-              {
-                "original": "Expect splitting as a failure mode to measure.",
-                "simple": "Action item: Expect splitting as a failure mode to measure."
+                "original": "Adopt their qualitative feature presentation and intervention protocols in SetConCA.",
+                "simple": "Action item: Adopt their qualitative feature presentation and intervention protocols in SetConCA."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Main empirical claim?",
+              "q": "What did Towards Monosemanticity demonstrate?",
               "options": [
-                "SAE features can be more monosemantic than neurons",
-                "PCA is enough",
-                "Attention is unused",
-                "Probes replace SAEs"
+                "SAE dictionary features are significantly more monosemantic than raw model neurons",
+                "Neurons are pure",
+                "PCA replaces SAEs",
+                "Probes fail"
               ],
               "a": 0,
-              "explain": "Dictionary features vs neurons."
+              "explain": "Showed SAE features are much more monosemantic than raw model neurons."
             }
           ]
         },
@@ -4845,9 +4975,9 @@ window.CURRICULUM_DATA = {
           "pages": 20,
           "pdfPath": "RAW/2309.08600v3.pdf",
           "teach": {
-            "whyWeRead": "Central academic SAE paper — architecture, objectives, interventions, comparisons.",
-            "oneSentence": "Trains SAEs on LM activations showing sparse features are more interpretable and useful for interventions than alternatives.",
-            "plainLanguage": "This paper presents sparse autoencoders that reconstruct activations under a sparsity penalty, then evaluates feature interpretability and causal usefulness via interventions.\n\nComparisons against neurons and other decompositions matter. Take the methodology: reconstruction+sparsity training, qualitative interpretation, and activation interventions.",
+            "whyWeRead": "Central academic SAE paper establishing sparse autoencoder architectures, reconstruction/sparsity objectives, and intervention methodology.",
+            "oneSentence": "Sparse Autoencoders Find Highly Interpretable Features in Language Models presents academic SAE training, evaluation, and activation interventions.",
+            "plainLanguage": "Welcome to Cunningham et al. (2023).\n\nPublished concurrently with Anthropic's work, Cunningham et al. established academic SAE methodology:\n1. Train SAE: Loss = ||x - x_hat||² + λ ||z||₁\n2. Evaluate Feature Interpretability: Compare SAE features against raw neuron baselines.\n3. Activation Interventions: Clamp or ablate feature activations z_i to verify causal impact on language model token output probabilities!",
             "keyIdeas": [
               {
                 "title": "SAE objective",
@@ -4876,101 +5006,84 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "Typical SAE loss",
-                "formula": "‖x−x̂‖² + λ Sparsity(z)",
-                "original": "Typical SAE loss: ‖x−x̂‖² + λ Sparsity(z)",
-                "simple": "Fidelity plus sparse codes z=enc(x), x̂=dec(z).",
-                "meaning": "Fidelity plus sparse codes z=enc(x), x̂=dec(z)."
+                "name": "Standard SAE Loss",
+                "formula": "L = ||x - x̂||² + λ ||z||₁",
+                "original": "Standard SAE Loss: L = ||x - x̂||² + λ ||z||₁",
+                "simple": "MSE reconstruction loss plus L1 sparsity penalty on hidden codes z.",
+                "meaning": "MSE reconstruction loss plus L1 sparsity penalty on hidden codes z."
               }
             ],
             "vocabulary": [
               {
-                "term": "SAE",
-                "original": "Technical term: «SAE» as used in this literature.",
-                "simple": "Sparse autoencoder on model activations.",
-                "def": "Sparse autoencoder on model activations."
-              },
-              {
-                "term": "Activation intervention",
-                "original": "Technical term: «Activation intervention» as used in this literature.",
-                "simple": "Edit feature activations to test causal effects.",
-                "def": "Edit feature activations to test causal effects."
+                "term": "Activation Intervention",
+                "original": "Technical term: «Activation Intervention» as used in this literature.",
+                "simple": "Modifying feature activations during forward pass to measure causal downstream effect.",
+                "def": "Modifying feature activations during forward pass to measure causal downstream effect."
               }
             ],
             "whatItShows": [
-              "Sparse dictionary features can be interpretable and intervention-relevant"
+              "That SAE features enable precise causal intervention steering of LM output probabilities"
             ],
             "whatItDoesNotShow": [
-              "Canonical uniqueness",
-              "Perfect completeness"
+              "Canonical uniqueness of dictionaries across random seeds"
             ],
             "setconcaUse": [
-              "Pointwise SAE from this lineage is your primary baseline.",
-              "Replicate intervention-style evaluations."
+              "Pointwise SAEs from this paper are the core baseline for SetConCA comparisons."
             ],
             "masteryChecklist": [
-              "I can write the SAE loss in words.",
-              "I know why interventions matter beyond FVU."
+              "I can write the classic SAE loss and describe activation intervention evaluation."
             ],
             "commonConfusions": [
               {
-                "wrong": "Interpretable examples prove the dictionary is complete.",
-                "right": "Examples are existence proofs, not completeness."
+                "wrong": "Interpretable activation text alone proves causal utility.",
+                "right": "Causal interventions (clamping/ablation) are required to verify true model impact."
               }
             ],
             "quiz": [
               {
-                "q": "SAE training typically minimises?",
+                "q": "How do Cunningham et al. verify causal feature importance?",
                 "options": [
-                  "Reconstruction + sparsity",
-                  "Only CKA",
-                  "Only InfoNCE",
-                  "Only accuracy"
+                  "By clamping/ablating feature activations during forward pass and measuring output probability changes",
+                  "By plotting FVU",
+                  "By computing CKA",
+                  "By running PCA"
                 ],
                 "a": 0,
-                "explain": "Classic SAE objective."
+                "explain": "Activation interventions (clamping/ablating) verify direct causal impact on model outputs."
               }
             ],
-            "originalIdea": "Trains SAEs on LM activations showing sparse features are more interpretable and useful for interventions than alternatives.",
-            "simpleLesson": "This paper presents sparse autoencoders that reconstruct activations under a sparsity penalty, then evaluates feature interpretability and causal usefulness via interventions.\n\nComparisons against neurons and other decompositions matter. Take the methodology: reconstruction+sparsity training, qualitative interpretation, and activation interventions.",
+            "originalIdea": "Sparse Autoencoders Find Highly Interpretable Features in Language Models presents academic SAE training, evaluation, and activation interventions.",
+            "simpleLesson": "Welcome to Cunningham et al. (2023).\n\nPublished concurrently with Anthropic's work, Cunningham et al. established academic SAE methodology:\n1. Train SAE: Loss = ||x - x_hat||² + λ ||z||₁\n2. Evaluate Feature Interpretability: Compare SAE features against raw neuron baselines.\n3. Activation Interventions: Clamp or ablate feature activations z_i to verify causal impact on language model token output probabilities!",
             "limitPairs": [
               {
-                "original": "Sparse dictionary features can be interpretable and intervention-relevant",
-                "simple": "In practice this means evidence supports: Sparse dictionary features can be interpretable and intervention-relevant"
+                "original": "That SAE features enable precise causal intervention steering of LM output probabilities",
+                "simple": "In practice this means evidence supports: That SAE features enable precise causal intervention steering of LM output probabilities"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Canonical uniqueness",
-                "simple": "Do not overclaim: Canonical uniqueness"
-              },
-              {
-                "original": "Perfect completeness",
-                "simple": "Do not overclaim: Perfect completeness"
+                "original": "Canonical uniqueness of dictionaries across random seeds",
+                "simple": "Do not overclaim: Canonical uniqueness of dictionaries across random seeds"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Pointwise SAE from this lineage is your primary baseline.",
-                "simple": "Action item: Pointwise SAE from this lineage is your primary baseline."
-              },
-              {
-                "original": "Replicate intervention-style evaluations.",
-                "simple": "Action item: Replicate intervention-style evaluations."
+                "original": "Pointwise SAEs from this paper are the core baseline for SetConCA comparisons.",
+                "simple": "Action item: Pointwise SAEs from this paper are the core baseline for SetConCA comparisons."
               }
             ]
           },
           "quiz": [
             {
-              "q": "SAE training typically minimises?",
+              "q": "How do Cunningham et al. verify causal feature importance?",
               "options": [
-                "Reconstruction + sparsity",
-                "Only CKA",
-                "Only InfoNCE",
-                "Only accuracy"
+                "By clamping/ablating feature activations during forward pass and measuring output probability changes",
+                "By plotting FVU",
+                "By computing CKA",
+                "By running PCA"
               ],
               "a": 0,
-              "explain": "Classic SAE objective."
+              "explain": "Activation interventions (clamping/ablating) verify direct causal impact on model outputs."
             }
           ]
         },
@@ -4991,9 +5104,9 @@ window.CURRICULUM_DATA = {
           "pages": 71,
           "pdfPath": "RAW/2605.29358v1.pdf",
           "teach": {
-            "whyWeRead": "Shows what happens when SAE dictionaries scale to frontier models — and what scale does not buy.",
-            "oneSentence": "Scales monosemantic feature extraction to Claude 3 Sonnet with very large dictionaries.",
-            "plainLanguage": "Scaling dictionaries extracts many fascinating features, including safety-relevant ones. But scale alone does not guarantee completeness, uniqueness, or a canonical decomposition.\n\nRead this to calibrate ambition: impressive features ≠ solved interpretability.",
+            "whyWeRead": "Shows what happens when SAE dictionaries are scaled to frontier models (Claude 3 Sonnet) — and what scale alone does not resolve.",
+            "oneSentence": "Scaling Monosemanticity extracts millions of interpretable features from Claude 3 Sonnet using massive sparse autoencoders.",
+            "plainLanguage": "Welcome to Templeton et al. (Anthropic 2024).\n\nAnthropic scaled SAEs to Claude 3 Sonnet, extracting millions of features including safety-relevant concepts ('Golden Gate Bridge', 'bias', 'jailbreaks', 'code bugs').\n\nCRITICAL TAKEAWAY: While scale produces fascinating features, scale ALONE does not solve feature absorption, splitting, or non-canonicality!",
             "keyIdeas": [
               {
                 "title": "Scale features & models",
@@ -5017,110 +5130,122 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Dictionary width",
-                "original": "Technical term: «Dictionary width» as used in this literature.",
-                "simple": "Number of learned features.",
-                "def": "Number of learned features."
+                "term": "Frontier SAE",
+                "original": "Technical term: «Frontier SAE» as used in this literature.",
+                "simple": "Massive dictionary sparse autoencoder trained on state-of-the-art language models.",
+                "def": "Massive dictionary sparse autoencoder trained on state-of-the-art language models."
               }
             ],
             "whatItShows": [
-              "SAE methods scale to large models with interesting features"
+              "That SAE methods scale to frontier LLMs and reveal safety-relevant feature representations"
             ],
             "whatItDoesNotShow": [
-              "Canonical units of analysis"
+              "That scaling solves structural dictionary failure modes"
             ],
             "setconcaUse": [
-              "Do not claim scale replaces careful multi-view evaluation."
+              "Do not rely on scale alone; focus on structural multi-view coordination in SetConCA."
             ],
             "masteryChecklist": [
-              "I can separate 'many cool features' from 'problem solved'."
+              "I can articulate what scaling SAEs achieves and what open limitations remain."
             ],
             "commonConfusions": [
               {
-                "wrong": "Bigger dictionary ⇒ true concepts.",
-                "right": "Bigger can also mean more splitting/noise features."
+                "wrong": "Bigger dictionary width eliminates all interpretability errors.",
+                "right": "Bigger dictionaries increase feature splitting and non-canonicality issues."
               }
             ],
             "quiz": [
               {
-                "q": "Scaling monosemanticity shows scale alone?",
+                "q": "Does scaling SAE dictionaries to frontier models solve feature non-canonicality?",
                 "options": [
-                  "Does not guarantee canonical decomposition",
-                  "Solves absorption",
-                  "Removes need for sparsity",
-                  "Replaces probes"
+                  "No, structural limitations remain regardless of scale",
+                  "Yes, scale solves everything",
+                  "Yes, L0 drops to 0",
+                  "Yes, PCA is eliminated"
                 ],
                 "a": 0,
-                "explain": "Limits remain."
+                "explain": "Structural limitations (non-canonicality, absorption) persist regardless of model scale."
               }
             ],
-            "originalIdea": "Scales monosemantic feature extraction to Claude 3 Sonnet with very large dictionaries.",
-            "simpleLesson": "Scaling dictionaries extracts many fascinating features, including safety-relevant ones. But scale alone does not guarantee completeness, uniqueness, or a canonical decomposition.\n\nRead this to calibrate ambition: impressive features ≠ solved interpretability.",
+            "originalIdea": "Scaling Monosemanticity extracts millions of interpretable features from Claude 3 Sonnet using massive sparse autoencoders.",
+            "simpleLesson": "Welcome to Templeton et al. (Anthropic 2024).\n\nAnthropic scaled SAEs to Claude 3 Sonnet, extracting millions of features including safety-relevant concepts ('Golden Gate Bridge', 'bias', 'jailbreaks', 'code bugs').\n\nCRITICAL TAKEAWAY: While scale produces fascinating features, scale ALONE does not solve feature absorption, splitting, or non-canonicality!",
             "limitPairs": [
               {
-                "original": "SAE methods scale to large models with interesting features",
-                "simple": "In practice this means evidence supports: SAE methods scale to large models with interesting features"
+                "original": "That SAE methods scale to frontier LLMs and reveal safety-relevant feature representations",
+                "simple": "In practice this means evidence supports: That SAE methods scale to frontier LLMs and reveal safety-relevant feature representations"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Canonical units of analysis",
-                "simple": "Do not overclaim: Canonical units of analysis"
+                "original": "That scaling solves structural dictionary failure modes",
+                "simple": "Do not overclaim: That scaling solves structural dictionary failure modes"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Do not claim scale replaces careful multi-view evaluation.",
-                "simple": "Action item: Do not claim scale replaces careful multi-view evaluation."
+                "original": "Do not rely on scale alone; focus on structural multi-view coordination in SetConCA.",
+                "simple": "Action item: Do not rely on scale alone; focus on structural multi-view coordination in SetConCA."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Scaling monosemanticity shows scale alone?",
+              "q": "Does scaling SAE dictionaries to frontier models solve feature non-canonicality?",
               "options": [
-                "Does not guarantee canonical decomposition",
-                "Solves absorption",
-                "Removes need for sparsity",
-                "Replaces probes"
+                "No, structural limitations remain regardless of scale",
+                "Yes, scale solves everything",
+                "Yes, L0 drops to 0",
+                "Yes, PCA is eliminated"
               ],
               "a": 0,
-              "explain": "Limits remain."
+              "explain": "Structural limitations (non-canonicality, absorption) persist regardless of model scale."
             }
           ]
         }
       ],
       "primer": {
         "title": "Mechanistic interpretability foundations",
-        "mission": "Explain residual streams, superposition, and why SAEs exist.",
-        "beforeYouStart": "Levels 1–2 and metrics from Level 6.",
-        "primer": "Transformers move information through a residual stream. Attention and MLP blocks read and write directions in that stream.\n\nToy Models of Superposition show that networks can pack more features than dimensions when features are sparse — at the cost of interference. Neurons become polysemantic. That is why reading individual neurons fails.\n\nSparse autoencoders try to recover the underlying feature directions as an overcomplete sparse dictionary — Approach 2 from the superposition paper.\n\nTowards Monosemanticity and Cunningham et al. apply this to language models. Scaling Monosemanticity shows scale helps but does not guarantee a unique canonical decomposition.",
+        "mission": "Understand the Transformer Residual Stream, the Toy Models of Superposition hypothesis, Polysemanticity, and why Sparse Autoencoders (SAEs) exist.",
+        "beforeYouStart": "Level 1–2 sparse dictionaries and Level 6 evaluation hygiene.",
+        "primer": "Welcome to Level 7. We now enter Mechanistic Interpretability — opening the black box of Transformer language models to understand their exact internal mechanisms.\n\n--- STEP 1: The Residual Stream — The Central Communication Bus ---\nIn a Transformer architecture (Elhage et al., 2021), think of the Residual Stream as a central conveyor belt (communication bus) running through the entire model from Layer 1 to Layer L.\n\nEvery Attention block and MLP block reads from the residual stream, performs computation, and WRITES ITS RESULT BACK by adding it to the residual stream:\nx_{l+1} = x_l + Attention(x_l) + MLP(x_l)\n\nBecause updates are added linearly, features written by early layers can travel directly to deep layers unimpeded!\n\n--- STEP 2: The Superposition Hypothesis (Elhage et al., Anthropic 2022) ---\nHere is the central paradox of neural networks:\nA model with d_model = 4096 dimensions can represent TENS OF THOUSANDS of distinct concepts. How is this mathematically possible?\n\nThe Superposition Hypothesis:\nWhen concepts are SPARSE (only active occasionally), a network can pack MORE features than dimensions by embedding features as ALMOST-ORTHOGONAL directions in space!\n\nThe Interference Cost:\nBecause the feature directions are not strictly 90° orthogonal, activating Feature A creates a small non-zero projection onto Feature B. We call this INTERFERENCE (crosstalk). When features are sparse, interference happens rarely enough that non-linearities (like ReLU) can wipe out the small interference noise!\n\n--- STEP 3: Polysemantic Neurons — Why Reading Single Neurons Fails ---\nBecause features are packed into almost-orthogonal directions in superposition, individual basis neurons in the network get aligned with COMBINATIONS of multiple features!\nA single neuron might fire for 'academic citation markers' AND 'photos of anime characters' AND 'Arabic verbs'. This is called a POLYSEMANTIC NEURON.\n\nReading individual neurons is a dead end. Concepts live along FEATURE DIRECTIONS, not along individual neuron axes!\n\n--- STEP 4: Enter Sparse Autoencoders (SAEs) — Finding an Overcomplete Basis ---\nIn 'Toy Models of Superposition' (2022), Anthropic listed 'Approach 2: Find an Overcomplete Basis after training'. This is EXACTLY what a Sparse Autoencoder (SAE) is!\n\nAn SAE takes superposed activations x from the residual stream, projects them into a high-dimensional overcomplete sparse dictionary z = TopK(W_enc x + b_enc), and reconstructs x_hat = W_dec z + b_dec.\n\nBy enforcing high overcompleteness (e.g. 16x width) and strict sparsity, the SAE unfolds superposed directions into clean, MONOSEMANTIC dictionary features!",
         "bigPictureDiagram": [
-          "many sparse features → packed into few dims (superposition) → polysemantic neurons",
-          "SAE: learn overcomplete sparse dictionary ≈ unfold features"
+          "Residual Stream (d_model dimensions) ──[Carries superposed features]──",
+          "Superposition: N sparse features (N > d_model) packed as almost-orthogonal vectors",
+          "Result on Basis Neurons: Polysemanticity (1 neuron = mashup of 3 unrelated concepts)",
+          "SAE Solution: Overcomplete Encoder → Sparse Bottleneck (z) → Unfolds monosemantic feature directions"
         ],
         "conceptsToMaster": [
           {
-            "name": "Superposition",
-            "simple": "More features than neurons via almost-orthogonal directions.",
-            "deeper": "Phase changes with sparsity/importance; geometric packing."
+            "name": "Residual Stream",
+            "simple": "The main vector pathway running through a Transformer that layers read from and write updates into via linear addition.",
+            "deeper": "x_{l+1} = x_l + f_l(x_l). Acts as a linear communication bus. Allows linear paths through the network where components write feature vectors directly to downstream layers."
           },
           {
-            "name": "Monosemantic vs polysemantic",
-            "simple": "One concept vs many unrelated concepts on one unit.",
-            "deeper": "SAE features aim for monosemanticity; not guaranteed."
+            "name": "Superposition",
+            "simple": "Packing more sparse features than available dimensions into a vector space by placing feature directions at slight non-orthogonal angles.",
+            "deeper": "Representing M features in d dimensions (M > d). Enabled by feature sparsity and non-linearities. Features form geometric polytopes (e.g. Thomson problem configurations) to minimize cross-feature interference."
+          },
+          {
+            "name": "Polysemanticity",
+            "simple": "When a single neuron lights up for multiple totally unrelated concepts because superposition packed those concepts together.",
+            "deeper": "Occurs when feature directions are not aligned with standard basis vectors. A neuron coordinate x_i = e_i^T (sum c_j v_j) receives projections from multiple concept directions v_j."
+          },
+          {
+            "name": "Monosemantic Feature",
+            "simple": "A feature direction that fires for ONE clear, consistent semantic concept across all contexts.",
+            "deeper": "A direction v in activation space corresponding to a single conceptual variable. SAEs attempt to isolate monosemantic directions by finding an overcomplete sparse basis."
           }
         ],
         "checkpoint": {
-          "goal": "Write notes linking superposition to your activation geometry.",
+          "goal": "Write a mechanistic interpretation breakdown linking superposition theory to residual stream activations.",
           "steps": [
-            "Estimate sparsity regime",
-            "List interference risks",
-            "State why a pointwise SAE is a baseline"
+            "Estimate the activation sparsity regime of a chosen layer.",
+            "Identify polysemantic neurons by inspecting top-activating token contexts.",
+            "State why a standard pointwise SAE acts as Approach 2 for unfolding superposition."
           ],
-          "successLooksLike": "You can justify SAEs without saying 'everyone uses them'."
+          "successLooksLike": "You can explain clearly why neuron-level interpretability fails under superposition and why SAE overcomplete dictionaries are required."
         },
-        "bridgeToNext": "Modern SAE architectures improve the sparsity–fidelity frontier."
+        "bridgeToNext": "Now that you know why SAEs are needed, Level 8 compares Modern SAE Architectures (TopK, Gated, JumpReLU, BatchTopK, Matryoshka) on fair Pareto frontiers."
       }
     },
     {
@@ -5147,9 +5272,9 @@ window.CURRICULUM_DATA = {
           "pages": 34,
           "pdfPath": "RAW/2406.04093v1.pdf",
           "teach": {
-            "whyWeRead": "Main modern reference for TopK SAEs, scaling, and matched evaluation frontiers.",
-            "oneSentence": "Scales and evaluates SAEs with TopK activations, emphasising fair comparisons at matched sparsity/fidelity.",
-            "plainLanguage": "TopK SAEs enforce exact sparsity without L1 shrinkage of active magnitudes. Gao et al. study how dictionary width, sparsity, and reconstruction trade off as models scale.\n\nKey methodological point: compare SAEs at similar L0 or similar FVU — not at each method's favourite hyperparameter.",
+            "whyWeRead": "TopK SAE is the modern gold standard architecture for sparse autoencoder research.",
+            "oneSentence": "Scaling and Evaluating Sparse Autoencoders establishes TopK SAEs, expansion factor scaling, and matched Pareto frontier comparisons.",
+            "plainLanguage": "Welcome to Gao et al. (OpenAI 2024).\n\nOpenAI introduced TopK SAEs:\nz = TopK( W_enc x + b_enc, k )\nLoss = ||x - W_dec z - b_dec||²\n\nBy keeping the exact top k activations without an L1 penalty, TopK SAEs completely eliminate L1 magnitude shrinkage, achieving a dramatically superior Reconstruction vs. Sparsity Pareto curve!",
             "keyIdeas": [
               {
                 "title": "TopK activation",
@@ -5178,96 +5303,84 @@ window.CURRICULUM_DATA = {
             ],
             "simplifiedMath": [
               {
-                "name": "TopK SAE",
-                "formula": "z=TopK(enc(x),k), x̂=dec(z)",
-                "original": "TopK SAE: z=TopK(enc(x),k), x̂=dec(z)",
-                "simple": "Hard sparsity then decode.",
-                "meaning": "Hard sparsity then decode."
+                "name": "TopK SAE Encoder",
+                "formula": "z = TopK( W_{enc} (x - b_{dec}) + b_{enc}, k )",
+                "original": "TopK SAE Encoder: z = TopK( W_{enc} (x - b_{dec}) + b_{enc}, k )",
+                "simple": "Keep top k pre-activations; set remaining entries to 0.",
+                "meaning": "Keep top k pre-activations; set remaining entries to 0."
               }
             ],
             "vocabulary": [
               {
-                "term": "Expansion factor",
-                "original": "Technical term: «Expansion factor» as used in this literature.",
-                "simple": "dictionary_width / d_model (roughly).",
-                "def": "dictionary_width / d_model (roughly)."
-              },
-              {
-                "term": "L0",
-                "original": "Technical term: «L0» as used in this literature.",
-                "simple": "Average number of active features.",
-                "def": "Average number of active features."
+                "term": "TopK SAE",
+                "original": "Technical term: «TopK SAE» as used in this literature.",
+                "simple": "Sparse autoencoder using hard TopK activation operator.",
+                "def": "Sparse autoencoder using hard TopK activation operator."
               }
             ],
             "whatItShows": [
-              "TopK scales; evaluation must be frontier-aware"
+              "That TopK SAEs beat L1 SAEs across reconstruction-sparsity Pareto frontiers"
             ],
             "whatItDoesNotShow": [
-              "That TopK solves absorption/non-canonicality"
+              "That TopK solves feature absorption or non-canonicality"
             ],
             "setconcaUse": [
-              "Default architecture family for baselines.",
-              "Always plot Pareto curves for variants."
+              "Default baseline architecture family for SetConCA evaluations."
             ],
             "masteryChecklist": [
-              "I can explain TopK vs L1.",
-              "I insist on matched sparsity/fidelity comparisons."
+              "I can explain why TopK beats L1 on Pareto curves."
             ],
             "commonConfusions": [
               {
-                "wrong": "Best paper numbers at any hyperparams are comparable.",
-                "right": "Compare on the same frontier point."
+                "wrong": "TopK uses an L1 penalty.",
+                "right": "TopK uses NO L1 penalty. Sparsity is enforced by hard TopK selection."
               }
             ],
             "quiz": [
               {
-                "q": "Fair SAE comparison needs?",
+                "q": "Why do TopK SAEs achieve better Pareto frontiers than L1 SAEs?",
                 "options": [
-                  "Matched sparsity or fidelity",
-                  "Only biggest width",
-                  "Only lowest loss anywhere",
-                  "Only CKA"
+                  "TopK eliminates L1 magnitude shrinkage on active features",
+                  "TopK uses more parameters",
+                  "TopK runs faster on CPU",
+                  "TopK uses CKA"
                 ],
                 "a": 0,
-                "explain": "Operating point matching."
+                "explain": "TopK eliminates L1 magnitude shrinkage on active feature values."
               }
             ],
-            "originalIdea": "Scales and evaluates SAEs with TopK activations, emphasising fair comparisons at matched sparsity/fidelity.",
-            "simpleLesson": "TopK SAEs enforce exact sparsity without L1 shrinkage of active magnitudes. Gao et al. study how dictionary width, sparsity, and reconstruction trade off as models scale.\n\nKey methodological point: compare SAEs at similar L0 or similar FVU — not at each method's favourite hyperparameter.",
+            "originalIdea": "Scaling and Evaluating Sparse Autoencoders establishes TopK SAEs, expansion factor scaling, and matched Pareto frontier comparisons.",
+            "simpleLesson": "Welcome to Gao et al. (OpenAI 2024).\n\nOpenAI introduced TopK SAEs:\nz = TopK( W_enc x + b_enc, k )\nLoss = ||x - W_dec z - b_dec||²\n\nBy keeping the exact top k activations without an L1 penalty, TopK SAEs completely eliminate L1 magnitude shrinkage, achieving a dramatically superior Reconstruction vs. Sparsity Pareto curve!",
             "limitPairs": [
               {
-                "original": "TopK scales; evaluation must be frontier-aware",
-                "simple": "In practice this means evidence supports: TopK scales; evaluation must be frontier-aware"
+                "original": "That TopK SAEs beat L1 SAEs across reconstruction-sparsity Pareto frontiers",
+                "simple": "In practice this means evidence supports: That TopK SAEs beat L1 SAEs across reconstruction-sparsity Pareto frontiers"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That TopK solves absorption/non-canonicality",
-                "simple": "Do not overclaim: That TopK solves absorption/non-canonicality"
+                "original": "That TopK solves feature absorption or non-canonicality",
+                "simple": "Do not overclaim: That TopK solves feature absorption or non-canonicality"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Default architecture family for baselines.",
-                "simple": "Action item: Default architecture family for baselines."
-              },
-              {
-                "original": "Always plot Pareto curves for variants.",
-                "simple": "Action item: Always plot Pareto curves for variants."
+                "original": "Default baseline architecture family for SetConCA evaluations.",
+                "simple": "Action item: Default baseline architecture family for SetConCA evaluations."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Fair SAE comparison needs?",
+              "q": "Why do TopK SAEs achieve better Pareto frontiers than L1 SAEs?",
               "options": [
-                "Matched sparsity or fidelity",
-                "Only biggest width",
-                "Only lowest loss anywhere",
-                "Only CKA"
+                "TopK eliminates L1 magnitude shrinkage on active features",
+                "TopK uses more parameters",
+                "TopK runs faster on CPU",
+                "TopK uses CKA"
               ],
               "a": 0,
-              "explain": "Operating point matching."
+              "explain": "TopK eliminates L1 magnitude shrinkage on active feature values."
             }
           ]
         },
@@ -5287,9 +5400,9 @@ window.CURRICULUM_DATA = {
           "pages": 37,
           "pdfPath": "RAW/2404.16014v2.pdf",
           "teach": {
-            "whyWeRead": "Fixes L1 shrinkage by separating gate (whether active) from magnitude.",
-            "oneSentence": "Gated SAEs improve the sparsity–fidelity Pareto by decoupling activation and magnitude.",
-            "plainLanguage": "L1 penalties encourage sparsity but also shrink the magnitude of active features (shrinkage), hurting reconstruction. Gated SAEs use a gate to decide if a feature is on, and a separate path for magnitude.\n\nResult: better tradeoffs on the Pareto frontier versus standard L1 SAEs.",
+            "whyWeRead": "Gated SAEs fix L1 shrinkage while maintaining full differentiability by separating gating from magnitude.",
+            "oneSentence": "Improving Dictionary Learning with Gated Sparse Autoencoders decouples activation gating from feature magnitude calculation.",
+            "plainLanguage": "Welcome to Rajamanoharan et al. (DeepMind 2024).\n\nGated SAEs split the encoder into two parallel paths:\n1. Gate Path: π = Heaviside( W_gate x + b_gate ) -> Binary on/off mask.\n2. Magnitude Path: m = ReLU( W_mag x + b_mag ) -> Unpenalized positive magnitude.\n3. Output: z = π ⊙ m\n\nThis fixes L1 magnitude shrinkage while remaining fully differentiable!",
             "keyIdeas": [
               {
                 "title": "Shrinkage problem",
@@ -5313,81 +5426,75 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Shrinkage",
-                "original": "Technical term: «Shrinkage» as used in this literature.",
-                "simple": "Underestimation of active feature magnitudes due to L1.",
-                "def": "Underestimation of active feature magnitudes due to L1."
-              },
-              {
                 "term": "Gated SAE",
                 "original": "Technical term: «Gated SAE» as used in this literature.",
-                "simple": "SAE with separate gating and magnitude pathways.",
-                "def": "SAE with separate gating and magnitude pathways."
+                "simple": "SAE architecture separating gating mask from feature magnitude calculation.",
+                "def": "SAE architecture separating gating mask from feature magnitude calculation."
               }
             ],
             "whatItShows": [
-              "Architectural fix for L1 shrinkage"
+              "That separating gating from magnitude eliminates L1 shrinkage cleanly"
             ],
             "whatItDoesNotShow": [
-              "Canonical features"
+              "That Gated SAEs resolve non-canonical dictionary unit issues"
             ],
             "setconcaUse": [
-              "Include Gated SAE in architecture bake-offs."
+              "Include Gated SAE in multi-architecture bake-offs."
             ],
             "masteryChecklist": [
-              "I can explain shrinkage and how gating helps."
+              "I can draw the Gated SAE dual-encoder diagram."
             ],
             "commonConfusions": [
               {
-                "wrong": "Gating is only for MoE routers.",
-                "right": "Here gating is inside the SAE feature activation."
+                "wrong": "Gated SAE is identical to TopK.",
+                "right": "TopK uses hard k selection. Gated SAE uses dual gating/magnitude pathways with L1 on the gate."
               }
             ],
             "quiz": [
               {
-                "q": "Gated SAEs mainly address?",
+                "q": "How do Gated SAEs eliminate magnitude shrinkage?",
                 "options": [
-                  "L1 magnitude shrinkage",
-                  "Tokenisation",
-                  "Dropout only",
-                  "CKA only"
+                  "By using separate neural pathways for gating decisions and magnitude calculations",
+                  "By setting k=1",
+                  "By removing decoders",
+                  "By running PCA"
                 ],
                 "a": 0,
-                "explain": "Separate gate/magnitude."
+                "explain": "Separates gating decisions from magnitude calculations so magnitudes are unpenalized."
               }
             ],
-            "originalIdea": "Gated SAEs improve the sparsity–fidelity Pareto by decoupling activation and magnitude.",
-            "simpleLesson": "L1 penalties encourage sparsity but also shrink the magnitude of active features (shrinkage), hurting reconstruction. Gated SAEs use a gate to decide if a feature is on, and a separate path for magnitude.\n\nResult: better tradeoffs on the Pareto frontier versus standard L1 SAEs.",
+            "originalIdea": "Improving Dictionary Learning with Gated Sparse Autoencoders decouples activation gating from feature magnitude calculation.",
+            "simpleLesson": "Welcome to Rajamanoharan et al. (DeepMind 2024).\n\nGated SAEs split the encoder into two parallel paths:\n1. Gate Path: π = Heaviside( W_gate x + b_gate ) -> Binary on/off mask.\n2. Magnitude Path: m = ReLU( W_mag x + b_mag ) -> Unpenalized positive magnitude.\n3. Output: z = π ⊙ m\n\nThis fixes L1 magnitude shrinkage while remaining fully differentiable!",
             "limitPairs": [
               {
-                "original": "Architectural fix for L1 shrinkage",
-                "simple": "In practice this means evidence supports: Architectural fix for L1 shrinkage"
+                "original": "That separating gating from magnitude eliminates L1 shrinkage cleanly",
+                "simple": "In practice this means evidence supports: That separating gating from magnitude eliminates L1 shrinkage cleanly"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Canonical features",
-                "simple": "Do not overclaim: Canonical features"
+                "original": "That Gated SAEs resolve non-canonical dictionary unit issues",
+                "simple": "Do not overclaim: That Gated SAEs resolve non-canonical dictionary unit issues"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Include Gated SAE in architecture bake-offs.",
-                "simple": "Action item: Include Gated SAE in architecture bake-offs."
+                "original": "Include Gated SAE in multi-architecture bake-offs.",
+                "simple": "Action item: Include Gated SAE in multi-architecture bake-offs."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Gated SAEs mainly address?",
+              "q": "How do Gated SAEs eliminate magnitude shrinkage?",
               "options": [
-                "L1 magnitude shrinkage",
-                "Tokenisation",
-                "Dropout only",
-                "CKA only"
+                "By using separate neural pathways for gating decisions and magnitude calculations",
+                "By setting k=1",
+                "By removing decoders",
+                "By running PCA"
               ],
               "a": 0,
-              "explain": "Separate gate/magnitude."
+              "explain": "Separates gating decisions from magnitude calculations so magnitudes are unpenalized."
             }
           ]
         },
@@ -5407,9 +5514,9 @@ window.CURRICULUM_DATA = {
           "pages": 26,
           "pdfPath": "RAW/2407.14435v3.pdf",
           "teach": {
-            "whyWeRead": "Learned thresholds and more direct L0-style sparsity — why plain L1 is no longer default.",
-            "oneSentence": "JumpReLU SAEs use a discontinuous thresholded activation to improve reconstruction fidelity under sparsity.",
-            "plainLanguage": "JumpReLU introduces a jump discontinuity / threshold: below threshold the feature is off; above it contributes. This approximates hard sparsity better than soft L1 and can improve fidelity at a given sparsity level.\n\nTogether with TopK and Gated, it shows the field moved past vanilla L1 SAEs.",
+            "whyWeRead": "JumpReLU uses learned thresholds for direct L0-style sparsity optimization.",
+            "oneSentence": "Jumping Ahead: Improving Reconstruction Fidelity with JumpReLU SAEs uses discontinuous thresholded activations.",
+            "plainLanguage": "Welcome to Rajamanoharan et al. (2024).\n\nJumpReLU applies a feature-specific threshold θ_i:\nz_i = x_i if x_i > θ_i else 0\n\nBecause below threshold θ_i the feature is strictly zero and above θ_i it retains its full value, JumpReLU approximates direct L0 optimization better than soft L1 penalties.",
             "keyIdeas": [
               {
                 "title": "Learned threshold",
@@ -5435,53 +5542,53 @@ window.CURRICULUM_DATA = {
               {
                 "term": "JumpReLU",
                 "original": "Technical term: «JumpReLU» as used in this literature.",
-                "simple": "ReLU-like activation with a jump/threshold for sparsity.",
-                "def": "ReLU-like activation with a jump/threshold for sparsity."
+                "simple": "Thresholded activation function jumping from 0 to value above threshold θ.",
+                "def": "Thresholded activation function jumping from 0 to value above threshold θ."
               }
             ],
             "whatItShows": [
-              "Thresholded activations help SAE frontiers"
+              "That thresholded JumpReLU activations improve SAE Pareto frontiers"
             ],
             "whatItDoesNotShow": [
-              "Unique correct features"
+              "Unique feature canonicality"
             ],
             "setconcaUse": [
               "Include JumpReLU in matched Pareto comparisons."
             ],
             "masteryChecklist": [
-              "I can place JumpReLU among TopK/Gated/L1."
+              "I can explain JumpReLU thresholding."
             ],
             "commonConfusions": [
               {
-                "wrong": "JumpReLU removes need for evaluation.",
-                "right": "Architecture ≠ interpretability proof."
+                "wrong": "JumpReLU threshold θ is fixed across all features.",
+                "right": "JumpReLU learns an independent threshold θ_i for each feature."
               }
             ],
             "quiz": [
               {
-                "q": "JumpReLU emphasises?",
+                "q": "What does JumpReLU use to determine feature firing?",
                 "options": [
-                  "Learned thresholds / L0-like sparsity",
-                  "Only CCA",
-                  "Only probes",
-                  "Only Deep Sets"
+                  "Learned per-feature threshold barriers θ_i",
+                  "Fixed TopK",
+                  "PCA variance",
+                  "CKA score"
                 ],
                 "a": 0,
-                "explain": "Thresholded activation."
+                "explain": "JumpReLU uses learned per-feature thresholds θ_i."
               }
             ],
-            "originalIdea": "JumpReLU SAEs use a discontinuous thresholded activation to improve reconstruction fidelity under sparsity.",
-            "simpleLesson": "JumpReLU introduces a jump discontinuity / threshold: below threshold the feature is off; above it contributes. This approximates hard sparsity better than soft L1 and can improve fidelity at a given sparsity level.\n\nTogether with TopK and Gated, it shows the field moved past vanilla L1 SAEs.",
+            "originalIdea": "Jumping Ahead: Improving Reconstruction Fidelity with JumpReLU SAEs uses discontinuous thresholded activations.",
+            "simpleLesson": "Welcome to Rajamanoharan et al. (2024).\n\nJumpReLU applies a feature-specific threshold θ_i:\nz_i = x_i if x_i > θ_i else 0\n\nBecause below threshold θ_i the feature is strictly zero and above θ_i it retains its full value, JumpReLU approximates direct L0 optimization better than soft L1 penalties.",
             "limitPairs": [
               {
-                "original": "Thresholded activations help SAE frontiers",
-                "simple": "In practice this means evidence supports: Thresholded activations help SAE frontiers"
+                "original": "That thresholded JumpReLU activations improve SAE Pareto frontiers",
+                "simple": "In practice this means evidence supports: That thresholded JumpReLU activations improve SAE Pareto frontiers"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Unique correct features",
-                "simple": "Do not overclaim: Unique correct features"
+                "original": "Unique feature canonicality",
+                "simple": "Do not overclaim: Unique feature canonicality"
               }
             ],
             "setconcaPairs": [
@@ -5493,15 +5600,15 @@ window.CURRICULUM_DATA = {
           },
           "quiz": [
             {
-              "q": "JumpReLU emphasises?",
+              "q": "What does JumpReLU use to determine feature firing?",
               "options": [
-                "Learned thresholds / L0-like sparsity",
-                "Only CCA",
-                "Only probes",
-                "Only Deep Sets"
+                "Learned per-feature threshold barriers θ_i",
+                "Fixed TopK",
+                "PCA variance",
+                "CKA score"
               ],
               "a": 0,
-              "explain": "Thresholded activation."
+              "explain": "JumpReLU uses learned per-feature thresholds θ_i."
             }
           ]
         },
@@ -5521,9 +5628,9 @@ window.CURRICULUM_DATA = {
           "pages": 6,
           "pdfPath": "RAW/2412.06410v1.pdf",
           "teach": {
-            "whyWeRead": "Relaxes per-token exact-k to a batch sparsity budget — flexible for heterogeneous activations.",
-            "oneSentence": "BatchTopK constrains total actives across a batch so hard tokens can use more features.",
-            "plainLanguage": "Exact TopK forces every token to use the same number of features. Some activations are simple; some are complex. BatchTopK shares a sparsity budget across the batch.\n\nThis can improve allocation efficiency while keeping an overall L0 target.",
+            "whyWeRead": "BatchTopK applies TopK across a whole minibatch, allowing variable active features per token.",
+            "oneSentence": "BatchTopK Sparse Autoencoders constrain total active features across an entire batch for flexible allocation.",
+            "plainLanguage": "Welcome to Bussmann & Leask (2024).\n\nStandard TopK forces EVERY token to activate exactly k features (e.g. k=32). But simple tokens ('the', '.') need only 5 features, while complex tokens ('quantum electrodynamics') need 60 features!\n\nBatchTopK applies TopK across all token activations in a MINIBATCH simultaneously! Complex tokens get more active features, simple tokens get fewer, improving overall allocation efficiency.",
             "keyIdeas": [
               {
                 "title": "Batch-level cardinality",
@@ -5549,73 +5656,73 @@ window.CURRICULUM_DATA = {
               {
                 "term": "BatchTopK",
                 "original": "Technical term: «BatchTopK» as used in this literature.",
-                "simple": "TopK applied with a batch-wide sparsity constraint.",
-                "def": "TopK applied with a batch-wide sparsity constraint."
+                "simple": "TopK selection applied across an entire minibatch rather than per-token.",
+                "def": "TopK selection applied across an entire minibatch rather than per-token."
               }
             ],
             "whatItShows": [
-              "Flexible sparsity allocation helps"
+              "That flexible per-token sparsity allocation improves reconstruction efficiency"
             ],
             "whatItDoesNotShow": [
-              "Solved absorption"
+              "Solved feature absorption"
             ],
             "setconcaUse": [
-              "Useful when views/tokens vary wildly in complexity."
+              "Useful when activation view sets vary wildly in token complexity."
             ],
             "masteryChecklist": [
-              "I can contrast per-token TopK vs BatchTopK."
+              "I can explain why BatchTopK beats fixed per-token TopK for heterogeneous tokens."
             ],
             "commonConfusions": [
               {
-                "wrong": "BatchTopK means no sparsity.",
-                "right": "It redistributes a fixed budget."
+                "wrong": "BatchTopK removes sparsity constraints.",
+                "right": "BatchTopK enforces the exact same total sparsity budget across the batch, but distributes it dynamically."
               }
             ],
             "quiz": [
               {
-                "q": "BatchTopK allows?",
+                "q": "Why is BatchTopK advantageous for language model tokens?",
                 "options": [
-                  "Variable actives per token under a batch budget",
-                  "Infinite actives",
-                  "No decoder",
-                  "Only PCA"
+                  "Allows complex tokens to use more features while simple tokens use fewer",
+                  "Eliminates decoders",
+                  "Runs offline",
+                  "Uses PCA"
                 ],
                 "a": 0,
-                "explain": "Shared budget."
+                "explain": "Dynamically allocates feature budgets based on token complexity across the minibatch."
               }
             ],
-            "originalIdea": "BatchTopK constrains total actives across a batch so hard tokens can use more features.",
-            "simpleLesson": "Exact TopK forces every token to use the same number of features. Some activations are simple; some are complex. BatchTopK shares a sparsity budget across the batch.\n\nThis can improve allocation efficiency while keeping an overall L0 target.",
+            "originalIdea": "BatchTopK Sparse Autoencoders constrain total active features across an entire batch for flexible allocation.",
+            "simpleLesson": "Welcome to Bussmann & Leask (2024).\n\nStandard TopK forces EVERY token to activate exactly k features (e.g. k=32). But simple tokens ('the', '.') need only 5 features, while complex tokens ('quantum electrodynamics') need 60 features!\n\nBatchTopK applies TopK across all token activations in a MINIBATCH simultaneously! Complex tokens get more active features, simple tokens get fewer, improving overall allocation efficiency.",
             "limitPairs": [
               {
-                "original": "Flexible sparsity allocation helps",
-                "simple": "In practice this means evidence supports: Flexible sparsity allocation helps"
+                "original": "That flexible per-token sparsity allocation improves reconstruction efficiency",
+                "simple": "In practice this means evidence supports: That flexible per-token sparsity allocation improves reconstruction efficiency"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Solved absorption",
-                "simple": "Do not overclaim: Solved absorption"
+                "original": "Solved feature absorption",
+                "simple": "Do not overclaim: Solved feature absorption"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Useful when views/tokens vary wildly in complexity.",
-                "simple": "Action item: Useful when views/tokens vary wildly in complexity."
+                "original": "Useful when activation view sets vary wildly in token complexity.",
+                "simple": "Action item: Useful when activation view sets vary wildly in token complexity."
               }
             ]
           },
           "quiz": [
             {
-              "q": "BatchTopK allows?",
+              "q": "Why is BatchTopK advantageous for language model tokens?",
               "options": [
-                "Variable actives per token under a batch budget",
-                "Infinite actives",
-                "No decoder",
-                "Only PCA"
+                "Allows complex tokens to use more features while simple tokens use fewer",
+                "Eliminates decoders",
+                "Runs offline",
+                "Uses PCA"
               ],
               "a": 0,
-              "explain": "Shared budget."
+              "explain": "Dynamically allocates feature budgets based on token complexity across the minibatch."
             }
           ]
         },
@@ -5636,9 +5743,9 @@ window.CURRICULUM_DATA = {
           "pages": 23,
           "pdfPath": "RAW/2503.17547v1.pdf",
           "teach": {
-            "whyWeRead": "Multi-level nested features — relevant to atomic vs high-level concepts.",
-            "oneSentence": "Matryoshka SAEs learn useful features at multiple sparsity/prefix levels within one dictionary.",
-            "plainLanguage": "Choosing dictionary size creates tension: small dictionaries merge concepts; large ones split. Matryoshka training encourages nested subsets of features to remain useful at multiple granularities.\n\nThis connects to questions about hierarchical concepts in SetConCA.",
+            "whyWeRead": "Matryoshka SAEs learn multi-granularity nested features within a single dictionary model.",
+            "oneSentence": "Learning Multi-Level Features with Matryoshka Sparse Autoencoders creates nested feature prefixes for coarse-to-fine concepts.",
+            "plainLanguage": "Welcome to Bussmann et al. (2025).\n\nNamed after Russian nesting dolls, Matryoshka SAEs train feature dictionaries so that NESTED PREFIXES of features (e.g. first 500, first 2,000, first 8,000) form valid, high-quality representations at different granularities!\n\nThis resolves the dictionary-size dilemma by capturing coarse high-level concepts and fine-grained sub-concepts inside one trained dictionary.",
             "keyIdeas": [
               {
                 "title": "Nested dictionaries",
@@ -5662,49 +5769,49 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Matryoshka representation",
-                "original": "Technical term: «Matryoshka representation» as used in this literature.",
-                "simple": "Nested multi-size useful prefixes of a representation.",
-                "def": "Nested multi-size useful prefixes of a representation."
+                "term": "Matryoshka SAE",
+                "original": "Technical term: «Matryoshka SAE» as used in this literature.",
+                "simple": "SAE trained with nested feature loss prefixes for multi-scale representations.",
+                "def": "SAE trained with nested feature loss prefixes for multi-scale representations."
               }
             ],
             "whatItShows": [
-              "One SAE can serve multiple sparsity levels"
+              "That nested multi-granularity feature dictionaries can be trained in a single model"
             ],
             "whatItDoesNotShow": [
               "True ontological hierarchy of language"
             ],
             "setconcaUse": [
-              "Inspiration for multi-granularity concept structure."
+              "Inspiration for multi-granularity concept hierarchy in SetConCA."
             ],
             "masteryChecklist": [
-              "I can explain the dictionary-size tension Matryoshka targets."
+              "I can explain how Matryoshka SAEs nest feature prefixes."
             ],
             "commonConfusions": [
               {
-                "wrong": "Nested training proves hierarchy is correct.",
-                "right": "It encourages multi-scale usefulness."
+                "wrong": "Matryoshka requires training separate SAE models for each size.",
+                "right": "Matryoshka trains a single SAE model with nested prefix loss terms."
               }
             ],
             "quiz": [
               {
-                "q": "Matryoshka SAEs aim for?",
+                "q": "What characterizes a Matryoshka SAE?",
                 "options": [
-                  "Useful multi-level / nested features",
-                  "Only one active feature ever",
-                  "Removing sparsity",
-                  "Only CKA"
+                  "Nested feature prefixes providing coarse-to-fine concept granularities in one model",
+                  "Linear CCA",
+                  "Single feature dictionary of size 1",
+                  "No encoder"
                 ],
                 "a": 0,
-                "explain": "Nested granularities."
+                "explain": "Nested feature prefixes provide multi-granularity representations in one model."
               }
             ],
-            "originalIdea": "Matryoshka SAEs learn useful features at multiple sparsity/prefix levels within one dictionary.",
-            "simpleLesson": "Choosing dictionary size creates tension: small dictionaries merge concepts; large ones split. Matryoshka training encourages nested subsets of features to remain useful at multiple granularities.\n\nThis connects to questions about hierarchical concepts in SetConCA.",
+            "originalIdea": "Learning Multi-Level Features with Matryoshka Sparse Autoencoders creates nested feature prefixes for coarse-to-fine concepts.",
+            "simpleLesson": "Welcome to Bussmann et al. (2025).\n\nNamed after Russian nesting dolls, Matryoshka SAEs train feature dictionaries so that NESTED PREFIXES of features (e.g. first 500, first 2,000, first 8,000) form valid, high-quality representations at different granularities!\n\nThis resolves the dictionary-size dilemma by capturing coarse high-level concepts and fine-grained sub-concepts inside one trained dictionary.",
             "limitPairs": [
               {
-                "original": "One SAE can serve multiple sparsity levels",
-                "simple": "In practice this means evidence supports: One SAE can serve multiple sparsity levels"
+                "original": "That nested multi-granularity feature dictionaries can be trained in a single model",
+                "simple": "In practice this means evidence supports: That nested multi-granularity feature dictionaries can be trained in a single model"
               }
             ],
             "nonClaimPairs": [
@@ -5715,60 +5822,72 @@ window.CURRICULUM_DATA = {
             ],
             "setconcaPairs": [
               {
-                "original": "Inspiration for multi-granularity concept structure.",
-                "simple": "Action item: Inspiration for multi-granularity concept structure."
+                "original": "Inspiration for multi-granularity concept hierarchy in SetConCA.",
+                "simple": "Action item: Inspiration for multi-granularity concept hierarchy in SetConCA."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Matryoshka SAEs aim for?",
+              "q": "What characterizes a Matryoshka SAE?",
               "options": [
-                "Useful multi-level / nested features",
-                "Only one active feature ever",
-                "Removing sparsity",
-                "Only CKA"
+                "Nested feature prefixes providing coarse-to-fine concept granularities in one model",
+                "Linear CCA",
+                "Single feature dictionary of size 1",
+                "No encoder"
               ],
               "a": 0,
-              "explain": "Nested granularities."
+              "explain": "Nested feature prefixes provide multi-granularity representations in one model."
             }
           ]
         }
       ],
       "primer": {
         "title": "Modern SAE architectures",
-        "mission": "Compare L1, TopK, Gated, JumpReLU, BatchTopK, Matryoshka on matched frontiers.",
+        "mission": "Compare modern SAE architectures: L1, TopK, Gated, JumpReLU, BatchTopK, and Matryoshka SAEs. Master fair evaluation on Pareto frontiers.",
         "beforeYouStart": "Level 7 SAE motivation.",
-        "primer": "Architecture changes how sparsity is enforced and how magnitudes behave.\n\nTopK (Gao et al.): exact sparsity, strong scaling study. Gated: separate whether a feature fires from how strongly — fights L1 shrinkage. JumpReLU: learned threshold, more direct L0-style objective. BatchTopK: sparsity budget across a batch, not fixed k per token. Matryoshka: nested multi-level features in one dictionary.\n\nNever compare architectures only at their favourite hyperparameters. Plot reconstruction–sparsity Pareto curves.",
+        "primer": "Welcome to Level 8. Once researchers realized Sparse Autoencoders could unpack superposed features, an architectural arms race began.\n\nDifferent architectures enforce sparsity differently and handle feature magnitudes differently. In this level, we compare the six major SAE architecture families.\n\n--- 1. L1 SAE (Bricken et al., 2023; Cunningham et al., 2023) ---\n• Encoder: z = ReLU(W_enc x + b_enc)\n• Loss: ||x - x_hat||² + λ ||z||₁\n• Pros: Simple, classic baseline.\n• Cons: Severe L1 magnitude shrinkage (under-estimates feature strength) and dead feature problems.\n\n--- 2. TopK SAE (Gao et al., OpenAI 2024) ---\n• Encoder: z = TopK(W_enc x + b_enc, k)\n• Loss: Pure reconstruction loss ||x - x_hat||²\n• Pros: Enforces exact sparsity k per token with ZERO magnitude shrinkage! Superior Pareto frontier.\n• Cons: Hard threshold can create optimization step-function challenges.\n\n--- 3. Gated SAE (Rajamanoharan et al., DeepMind 2024) ---\n• Mechanism: Separates the gating decision (is feature active?) from magnitude calculation.\n• Gate: π = Heaviside(W_gate x + b_gate)\n• Magnitude: m = ReLU(W_mag x + b_mag)\n• Output: z = π ⊙ m\n• Pros: Eliminates L1 shrinkage while remaining fully differentiable.\n\n--- 4. JumpReLU SAE (Rajamanoharan et al., 2024) ---\n• Encoder: z = x * H(x - θ) where H is Heaviside step and θ is a learned threshold per feature.\n• Pros: Direct L0-style optimization with learned feature-specific thresholds.\n\n--- 5. BatchTopK SAE (Bussmann & Leask, 2024) ---\n• Mechanism: Instead of fixing exactly k active features for EVERY token, BatchTopK enforces a global sparsity budget across an ENTIRE MINIBATCH.\n• Advantage: Difficult tokens (complex text) get to activate 50 features, while simple tokens (punctuation) activate only 5 features!\n\n--- 6. Matryoshka SAE (Bussmann et al., 2025) ---\n• Mechanism: Nested multi-level dictionaries. Features are ordered such that the first 500 features form a coarse dictionary, the first 2000 form a medium dictionary, and all 8000 form a fine-grained dictionary!\n• Advantage: Provides multi-granularity concept representations inside a single trained model.\n\nRULE OF FAIR COMPARISON — THE PARETO FRONTIER:\nNEVER compare two SAE architectures at arbitrary single hyperparameter points! Always plot the Reconstruction vs. Sparsity Pareto Curve (FVU vs. L0). Method A is superior to Method B ONLY if Method A's curve lies strictly below Method B's curve across matched operating points.",
         "bigPictureDiagram": [
-          "same data → family of SAEs → Pareto(FVU, L0) → pick at matched operating point"
+          "L1 SAE: ReLU pre-activations + L1 penalty (Shrinkage flaw)",
+          "TopK SAE: Keep top-k values, zero rest (Exact sparsity, no shrinkage)",
+          "Gated SAE: Separate Gate Pathway π ⊙ Magnitude Pathway m (Differentiable, no shrinkage)",
+          "JumpReLU: Learned feature threshold θ_i (Direct L0 proxy)",
+          "BatchTopK: TopK applied across full minibatch (Flexible token budgets)",
+          "Matryoshka: Nested feature prefixes [Coarse | Medium | Fine] (Multi-scale concepts)"
         ],
         "conceptsToMaster": [
           {
-            "name": "Expansion factor",
-            "simple": "dictionary width / activation dim.",
-            "deeper": "Wider dictionaries can reduce feature merging but cost compute."
+            "name": "TopK SAE",
+            "simple": "An SAE that keeps exactly the k largest feature activations per token and zeroes the rest, avoiding L1 magnitude shrinkage.",
+            "deeper": "z = TopK(W_enc(x - b_dec) + b_enc, k). Loss is pure MSE. Eliminates shrinkage because non-zero activations carry unpenalized encoder magnitudes."
           },
           {
-            "name": "Pareto frontier",
-            "simple": "Best reconstruction for each sparsity level.",
-            "deeper": "Fair comparison lives on this curve."
+            "name": "Gated SAE",
+            "simple": "An SAE that uses one neural path to decide IF a feature turns on, and a separate path to measure HOW STRONGLY it fires.",
+            "deeper": "Uses dual encoder pathways: gating net produces binary mask π via thresholding, magnitude net produces positive magnitude m. z = π ⊙ m. Resolves shrinkage while maintaining smooth gradient flow."
+          },
+          {
+            "name": "Expansion Factor",
+            "simple": "The ratio of dictionary width to activation dimension (e.g. 16x expansion = 65,536 features for a 4,096-dim model).",
+            "deeper": "Expansion ratio r = d_sae / d_model. Higher expansion reduces feature merging and absorption, but increases compute and memory footprint."
+          },
+          {
+            "name": "Pareto Frontier (FVU vs L0)",
+            "simple": "A graph plotting reconstruction error against sparsity. Fair comparisons compare architectures at the exact same sparsity level.",
+            "deeper": "Plots Fraction of Variance Unexplained (FVU) on y-axis against L0 (average active features) on x-axis. Evaluates architectural efficiency across all operational regimes."
           }
         ],
         "checkpoint": {
-          "goal": "Train six SAE variants under matched budgets.",
+          "goal": "Train L1, TopK, and Gated SAE variants on activation data; plot their FVU vs L0 Pareto curves.",
           "steps": [
-            "L1",
-            "TopK",
-            "Gated",
-            "JumpReLU",
-            "BatchTopK",
-            "Matryoshka",
-            "plot Pareto"
+            "Sweep L1 penalty λ to generate L1 Pareto curve.",
+            "Sweep TopK parameter k to generate TopK Pareto curve.",
+            "Plot both curves on the same FVU vs L0 axes.",
+            "Verify at matched L0 = 20 which architecture achieves lower FVU."
           ],
-          "successLooksLike": "You refuse single-hyperparameter bake-offs."
+          "successLooksLike": "You can demonstrate on a clean Pareto graph why TopK and Gated SAEs outperform vanilla L1 SAEs."
         },
-        "bridgeToNext": "Evaluation must catch absorption, non-canonical decompositions, and flaky benchmarks."
+        "bridgeToNext": "Now that you know modern architectures, Level 9 explores SAE Evaluation & Failure Modes: Feature Absorption, Feature Splitting, and Non-Canonical Units."
       }
     },
     {
@@ -5793,9 +5912,9 @@ window.CURRICULUM_DATA = {
           "pages": 51,
           "pdfPath": "RAW/2405.08366v3.pdf",
           "teach": {
-            "whyWeRead": "Shows reconstruction/sparsity proxies are insufficient for interpretability and control claims.",
-            "oneSentence": "Argues for evaluations tied to task-relevant approximation, control, and interpretation.",
-            "plainLanguage": "A nice FVU and L0 do not mean features support the interventions or interpretations you care about. This paper pushes evaluations that test whether SAE features help approximate and control model behaviour on tasks.\n\nInternalise: proxy metrics are necessary hygiene, not the scientific endpoint.",
+            "whyWeRead": "Demonstrates that reconstruction and sparsity proxy metrics are insufficient to prove interpretability or control.",
+            "oneSentence": "Towards Principled Evaluations of Sparse Autoencoders argues for task-relevant control and intervention evaluations.",
+            "plainLanguage": "Welcome to Makelov et al. (2024).\n\nThis paper warns the field: low FVU and low L0 are NECESSARY HYGIENE, BUT NOT SUFFICIENT PROOF of interpretability!\n\nA dictionary can achieve great FVU while completely failing downstream intervention, steering, or task-control tests. Always evaluate claim-aligned downstream tasks.",
             "keyIdeas": [
               {
                 "title": "Proxy insufficiency",
@@ -5819,75 +5938,75 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Proxy metric",
-                "original": "Technical term: «Proxy metric» as used in this literature.",
-                "simple": "Easy measure that may not track the true goal.",
-                "def": "Easy measure that may not track the true goal."
+                "term": "Proxy Metric",
+                "original": "Technical term: «Proxy Metric» as used in this literature.",
+                "simple": "An easy-to-compute metric (like FVU or L0) that may not track true research goals.",
+                "def": "An easy-to-compute metric (like FVU or L0) that may not track true research goals."
               }
             ],
             "whatItShows": [
-              "Need claim-aligned evaluations"
+              "That SAE research must evaluate downstream task performance beyond proxy metrics"
             ],
             "whatItDoesNotShow": [
-              "A single universal SAE score"
+              "A single universal metric for all interpretability claims"
             ],
             "setconcaUse": [
-              "Write claims first, then pick metrics that could falsify them."
+              "Design SetConCA evaluation around claim-aligned task performance, not just FVU."
             ],
             "masteryChecklist": [
-              "I refuse FVU-only papers as sufficient."
+              "I refuse papers that claim success based on FVU alone."
             ],
             "commonConfusions": [
               {
-                "wrong": "Best FVU SAE is best interpretable SAE.",
-                "right": "Not necessarily."
+                "wrong": "The SAE with lowest FVU is automatically the most interpretable.",
+                "right": "Lowest FVU only means best variance reconstruction; it can still suffer from feature absorption and non-canonicality."
               }
             ],
             "quiz": [
               {
-                "q": "Principled evaluations emphasise?",
+                "q": "Why are FVU and L0 called 'proxy metrics'?",
                 "options": [
-                  "Task-relevant control/interpretation not just proxies",
-                  "Only lower L0",
-                  "Only wider dictionaries",
-                  "Only faster training"
+                  "They measure hygiene but do not guarantee downstream feature interpretability or control",
+                  "They are inaccurate",
+                  "They require GPUs",
+                  "They are non-linear"
                 ],
                 "a": 0,
-                "explain": "Claim-aligned tests."
+                "explain": "Proxy metrics measure hygiene but do not guarantee downstream task control or interpretability."
               }
             ],
-            "originalIdea": "Argues for evaluations tied to task-relevant approximation, control, and interpretation.",
-            "simpleLesson": "A nice FVU and L0 do not mean features support the interventions or interpretations you care about. This paper pushes evaluations that test whether SAE features help approximate and control model behaviour on tasks.\n\nInternalise: proxy metrics are necessary hygiene, not the scientific endpoint.",
+            "originalIdea": "Towards Principled Evaluations of Sparse Autoencoders argues for task-relevant control and intervention evaluations.",
+            "simpleLesson": "Welcome to Makelov et al. (2024).\n\nThis paper warns the field: low FVU and low L0 are NECESSARY HYGIENE, BUT NOT SUFFICIENT PROOF of interpretability!\n\nA dictionary can achieve great FVU while completely failing downstream intervention, steering, or task-control tests. Always evaluate claim-aligned downstream tasks.",
             "limitPairs": [
               {
-                "original": "Need claim-aligned evaluations",
-                "simple": "In practice this means evidence supports: Need claim-aligned evaluations"
+                "original": "That SAE research must evaluate downstream task performance beyond proxy metrics",
+                "simple": "In practice this means evidence supports: That SAE research must evaluate downstream task performance beyond proxy metrics"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "A single universal SAE score",
-                "simple": "Do not overclaim: A single universal SAE score"
+                "original": "A single universal metric for all interpretability claims",
+                "simple": "Do not overclaim: A single universal metric for all interpretability claims"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Write claims first, then pick metrics that could falsify them.",
-                "simple": "Action item: Write claims first, then pick metrics that could falsify them."
+                "original": "Design SetConCA evaluation around claim-aligned task performance, not just FVU.",
+                "simple": "Action item: Design SetConCA evaluation around claim-aligned task performance, not just FVU."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Principled evaluations emphasise?",
+              "q": "Why are FVU and L0 called 'proxy metrics'?",
               "options": [
-                "Task-relevant control/interpretation not just proxies",
-                "Only lower L0",
-                "Only wider dictionaries",
-                "Only faster training"
+                "They measure hygiene but do not guarantee downstream feature interpretability or control",
+                "They are inaccurate",
+                "They require GPUs",
+                "They are non-linear"
               ],
               "a": 0,
-              "explain": "Claim-aligned tests."
+              "explain": "Proxy metrics measure hygiene but do not guarantee downstream task control or interpretability."
             }
           ]
         },
@@ -5907,9 +6026,9 @@ window.CURRICULUM_DATA = {
           "pages": 31,
           "pdfPath": "RAW/2409.14507v6.pdf",
           "teach": {
-            "whyWeRead": "Defines feature splitting and absorption — core SAE failure modes.",
-            "oneSentence": "Studies how SAE features split concepts across latents or absorb related concepts into one latent.",
-            "plainLanguage": "Splitting: one concept distributed across several features. Absorption: one feature captures several related concepts (often hierarchical or correlated).\n\nBoth break the naive hope that each latent is one atomic concept. Any SetConCA claim about concept recovery must measure these.",
+            "whyWeRead": "Defines Feature Splitting and Feature Absorption — two core empirical failure modes of SAEs.",
+            "oneSentence": "Studying Feature Splitting and Absorption in Sparse Autoencoders details how concepts fragment or get swallowed by latents.",
+            "plainLanguage": "Welcome to Chanin et al. (2024).\n\nThis paper details two fundamental structural flaws of SAEs:\n\n1. Feature Splitting: A single concept fragments into dozens of sub-features as dictionary size grows.\n2. Feature Absorption: A broad feature 'swallows' or absorbs related specific sub-concepts when dictionary width or sparsity is constrained.\n\nBoth failure modes break the naive hope that '1 SAE Latent = 1 Ground-Truth Atomic Concept'.",
             "keyIdeas": [
               {
                 "title": "Feature splitting",
@@ -5933,81 +6052,81 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Absorption",
-                "original": "Technical term: «Absorption» as used in this literature.",
-                "simple": "One feature eating multiple related concepts.",
-                "def": "One feature eating multiple related concepts."
+                "term": "Feature Absorption",
+                "original": "Technical term: «Feature Absorption» as used in this literature.",
+                "simple": "A failure mode where one SAE feature absorbs multiple related sub-concepts.",
+                "def": "A failure mode where one SAE feature absorbs multiple related sub-concepts."
               },
               {
-                "term": "Splitting",
-                "original": "Technical term: «Splitting» as used in this literature.",
-                "simple": "One concept spread over multiple features.",
-                "def": "One concept spread over multiple features."
+                "term": "Feature Splitting",
+                "original": "Technical term: «Feature Splitting» as used in this literature.",
+                "simple": "A failure mode where one concept splits across many feature latents.",
+                "def": "A failure mode where one concept splits across many feature latents."
               }
             ],
             "whatItShows": [
-              "Systematic failure modes of SAE feature = concept"
+              "That SAE latents systematically absorb or split concepts depending on dictionary capacity"
             ],
             "whatItDoesNotShow": [
-              "That multi-view automatically fixes them"
+              "That single-view SAEs can automatically resolve absorption"
             ],
             "setconcaUse": [
-              "Primary failure modes to beat with multi-view supervision — if you can demonstrate it."
+              "Target Feature Absorption as a primary failure mode to beat using multi-view set supervision in SetConCA."
             ],
             "masteryChecklist": [
-              "I can define splitting vs absorption with examples."
+              "I can define Splitting and Absorption with concrete examples."
             ],
             "commonConfusions": [
               {
-                "wrong": "More sparsity prevents absorption always.",
-                "right": "Correlated concepts can still merge, especially in narrow dictionaries."
+                "wrong": "Absorption only happens in bad code implementation.",
+                "right": "Absorption is a structural property of sparse dictionary optimization under capacity constraints."
               }
             ],
             "quiz": [
               {
-                "q": "Absorption means?",
+                "q": "What occurs during Feature Absorption?",
                 "options": [
-                  "One feature captures several related concepts",
-                  "No features fire",
-                  "Only PCA",
-                  "Only CKA"
+                  "A single dominant feature swallows related specific sub-concepts",
+                  "A feature deletes itself",
+                  "FVU drops to 0",
+                  "PCA rank increases"
                 ],
                 "a": 0,
-                "explain": "Merged concepts."
+                "explain": "Feature Absorption occurs when one feature swallows related specific sub-concepts."
               }
             ],
-            "originalIdea": "Studies how SAE features split concepts across latents or absorb related concepts into one latent.",
-            "simpleLesson": "Splitting: one concept distributed across several features. Absorption: one feature captures several related concepts (often hierarchical or correlated).\n\nBoth break the naive hope that each latent is one atomic concept. Any SetConCA claim about concept recovery must measure these.",
+            "originalIdea": "Studying Feature Splitting and Absorption in Sparse Autoencoders details how concepts fragment or get swallowed by latents.",
+            "simpleLesson": "Welcome to Chanin et al. (2024).\n\nThis paper details two fundamental structural flaws of SAEs:\n\n1. Feature Splitting: A single concept fragments into dozens of sub-features as dictionary size grows.\n2. Feature Absorption: A broad feature 'swallows' or absorbs related specific sub-concepts when dictionary width or sparsity is constrained.\n\nBoth failure modes break the naive hope that '1 SAE Latent = 1 Ground-Truth Atomic Concept'.",
             "limitPairs": [
               {
-                "original": "Systematic failure modes of SAE feature = concept",
-                "simple": "In practice this means evidence supports: Systematic failure modes of SAE feature = concept"
+                "original": "That SAE latents systematically absorb or split concepts depending on dictionary capacity",
+                "simple": "In practice this means evidence supports: That SAE latents systematically absorb or split concepts depending on dictionary capacity"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That multi-view automatically fixes them",
-                "simple": "Do not overclaim: That multi-view automatically fixes them"
+                "original": "That single-view SAEs can automatically resolve absorption",
+                "simple": "Do not overclaim: That single-view SAEs can automatically resolve absorption"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Primary failure modes to beat with multi-view supervision — if you can demonstrate it.",
-                "simple": "Action item: Primary failure modes to beat with multi-view supervision — if you can demonstrate it."
+                "original": "Target Feature Absorption as a primary failure mode to beat using multi-view set supervision in SetConCA.",
+                "simple": "Action item: Target Feature Absorption as a primary failure mode to beat using multi-view set supervision in SetConCA."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Absorption means?",
+              "q": "What occurs during Feature Absorption?",
               "options": [
-                "One feature captures several related concepts",
-                "No features fire",
-                "Only PCA",
-                "Only CKA"
+                "A single dominant feature swallows related specific sub-concepts",
+                "A feature deletes itself",
+                "FVU drops to 0",
+                "PCA rank increases"
               ],
               "a": 0,
-              "explain": "Merged concepts."
+              "explain": "Feature Absorption occurs when one feature swallows related specific sub-concepts."
             }
           ]
         },
@@ -6027,9 +6146,9 @@ window.CURRICULUM_DATA = {
           "pages": 23,
           "pdfPath": "RAW/2502.04878v1.pdf",
           "teach": {
-            "whyWeRead": "Critical narrative paper: SAEs need not find unique units of analysis.",
-            "oneSentence": "Argues different SAEs can yield different decompositions while all looking reasonable; studies stitching and higher-level structure.",
-            "plainLanguage": "If two SAEs both reconstruct well and look interpretable but disagree on features, there is no single canonical sparse basis. This undermines 'we found the true features' rhetoric.\n\nStitching analyses and higher-level structure become important. For SetConCA: aim for stability and causal usefulness under stated assumptions — not metaphysical uniqueness.",
+            "whyWeRead": "Critical narrative paper proving SAEs do not find unique, canonical units of analysis.",
+            "oneSentence": "Sparse Autoencoders Do Not Find Canonical Units of Analysis demonstrates that different random seeds yield non-identical feature dictionaries of equal quality.",
+            "plainLanguage": "Welcome to Leask et al. (2025).\n\nIf you train two SAEs (Seed A and Seed B) on the exact same layer with identical hyperparameters, do they discover the same features?\n\nNO! Leask et al. proved that Seed A and Seed B discover DIFFERENT, non-identical feature dictionaries despite achieving identical reconstruction and sparsity!\n\nCONCLUSION: There is NO single 'canonical' sparse basis in activation space. Claims that 'we discovered the true fundamental features' are scientifically false.",
             "keyIdeas": [
               {
                 "title": "Non-uniqueness",
@@ -6053,87 +6172,75 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Canonical decomposition",
-                "original": "Technical term: «Canonical decomposition» as used in this literature.",
-                "simple": "A unique privileged feature basis — often unavailable.",
-                "def": "A unique privileged feature basis — often unavailable."
-              },
-              {
-                "term": "Stitching",
-                "original": "Technical term: «Stitching» as used in this literature.",
-                "simple": "Mapping/aligning features between dictionaries.",
-                "def": "Mapping/aligning features between dictionaries."
+                "term": "Canonical Basis",
+                "original": "Technical term: «Canonical Basis» as used in this literature.",
+                "simple": "A unique, privileged feature decomposition — proven to be absent in standard SAEs.",
+                "def": "A unique, privileged feature decomposition — proven to be absent in standard SAEs."
               }
             ],
             "whatItShows": [
-              "Reasonable SAEs need not agree"
+              "That standard SAEs do not find unique canonical feature bases across random seeds"
             ],
             "whatItDoesNotShow": [
-              "That interpretability is impossible"
+              "That interpretability research is useless"
             ],
             "setconcaUse": [
-              "Frame contributions as stability/completeness/causal utility under assumptions.",
-              "Cross-seed and cross-architecture agreement tests."
+              "Test whether multi-view set supervision in SetConCA increases cross-seed dictionary canonicality (stitching agreement)."
             ],
             "masteryChecklist": [
-              "I can explain non-canonical decompositions.",
-              "I avoid 'the true features' claims."
+              "I can explain why seed-variance tests disprove dictionary uniqueness."
             ],
             "commonConfusions": [
               {
-                "wrong": "Disagreement means SAEs are useless.",
-                "right": "Means uniqueness fails; usefulness can remain."
+                "wrong": "Different seeds finding different features means SAEs failed completely.",
+                "right": "It means uniqueness fails; dictionaries are frame representations rather than unique canonical bases."
               }
             ],
             "quiz": [
               {
-                "q": "Non-canonical means?",
+                "q": "What did Leask et al. prove regarding SAE feature dictionaries?",
                 "options": [
-                  "Different good SAEs can disagree on features",
-                  "SAEs never reconstruct",
-                  "Probes always fail",
-                  "CCA is impossible"
+                  "Different random seeds yield different non-identical feature dictionaries of equal quality",
+                  "All seeds find identical features",
+                  "SAEs cannot be trained",
+                  "PCA is unique"
                 ],
                 "a": 0,
-                "explain": "No unique units."
+                "explain": "Proved different random seeds produce non-identical feature dictionaries of equal quality."
               }
             ],
-            "originalIdea": "Argues different SAEs can yield different decompositions while all looking reasonable; studies stitching and higher-level structure.",
-            "simpleLesson": "If two SAEs both reconstruct well and look interpretable but disagree on features, there is no single canonical sparse basis. This undermines 'we found the true features' rhetoric.\n\nStitching analyses and higher-level structure become important. For SetConCA: aim for stability and causal usefulness under stated assumptions — not metaphysical uniqueness.",
+            "originalIdea": "Sparse Autoencoders Do Not Find Canonical Units of Analysis demonstrates that different random seeds yield non-identical feature dictionaries of equal quality.",
+            "simpleLesson": "Welcome to Leask et al. (2025).\n\nIf you train two SAEs (Seed A and Seed B) on the exact same layer with identical hyperparameters, do they discover the same features?\n\nNO! Leask et al. proved that Seed A and Seed B discover DIFFERENT, non-identical feature dictionaries despite achieving identical reconstruction and sparsity!\n\nCONCLUSION: There is NO single 'canonical' sparse basis in activation space. Claims that 'we discovered the true fundamental features' are scientifically false.",
             "limitPairs": [
               {
-                "original": "Reasonable SAEs need not agree",
-                "simple": "In practice this means evidence supports: Reasonable SAEs need not agree"
+                "original": "That standard SAEs do not find unique canonical feature bases across random seeds",
+                "simple": "In practice this means evidence supports: That standard SAEs do not find unique canonical feature bases across random seeds"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That interpretability is impossible",
-                "simple": "Do not overclaim: That interpretability is impossible"
+                "original": "That interpretability research is useless",
+                "simple": "Do not overclaim: That interpretability research is useless"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Frame contributions as stability/completeness/causal utility under assumptions.",
-                "simple": "Action item: Frame contributions as stability/completeness/causal utility under assumptions."
-              },
-              {
-                "original": "Cross-seed and cross-architecture agreement tests.",
-                "simple": "Action item: Cross-seed and cross-architecture agreement tests."
+                "original": "Test whether multi-view set supervision in SetConCA increases cross-seed dictionary canonicality (stitching agreement).",
+                "simple": "Action item: Test whether multi-view set supervision in SetConCA increases cross-seed dictionary canonicality (stitching agreement)."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Non-canonical means?",
+              "q": "What did Leask et al. prove regarding SAE feature dictionaries?",
               "options": [
-                "Different good SAEs can disagree on features",
-                "SAEs never reconstruct",
-                "Probes always fail",
-                "CCA is impossible"
+                "Different random seeds yield different non-identical feature dictionaries of equal quality",
+                "All seeds find identical features",
+                "SAEs cannot be trained",
+                "PCA is unique"
               ],
               "a": 0,
-              "explain": "No unique units."
+              "explain": "Proved different random seeds produce non-identical feature dictionaries of equal quality."
             }
           ]
         },
@@ -6154,9 +6261,9 @@ window.CURRICULUM_DATA = {
           "pages": 42,
           "pdfPath": "RAW/2503.09532v4.pdf",
           "teach": {
-            "whyWeRead": "Standard multi-family benchmark suite you should know and partially replicate.",
-            "oneSentence": "A comprehensive benchmark covering detection, probing, steering, reconstruction, and more for SAEs.",
-            "plainLanguage": "SAEBench gathers multiple evaluation families so progress is not judged by one proxy. Feature detection, sparse probing, steering/interventions, and reconstruction/sparsity all appear.\n\nProxy metrics do not always predict downstream usefulness — another reason for a suite.",
+            "whyWeRead": "Standard multi-family benchmark suite for evaluating sparse autoencoders.",
+            "oneSentence": "SAEBench provides a standardized multi-family benchmark covering reconstruction, sparsity, probing, steering, and absorption.",
+            "plainLanguage": "Welcome to Karvonen et al. (2025).\n\nSAEBench provides a unified benchmark suite evaluating SAEs across 5 core families:\n1. Reconstruction & Loss Recovery\n2. Sparsity & L0 Efficiency\n3. Feature Interpretability & Monosemanticity\n4. Sparse Probing (SCR)\n5. Steering & Causal Interventions",
             "keyIdeas": [
               {
                 "title": "Multiple families",
@@ -6188,73 +6295,73 @@ window.CURRICULUM_DATA = {
               {
                 "term": "SAEBench",
                 "original": "Technical term: «SAEBench» as used in this literature.",
-                "simple": "Benchmark suite for sparse autoencoders.",
-                "def": "Benchmark suite for sparse autoencoders."
+                "simple": "Standardized evaluation benchmark suite for sparse autoencoders.",
+                "def": "Standardized evaluation benchmark suite for sparse autoencoders."
               }
             ],
             "whatItShows": [
-              "A practical evaluation menu for SAE methods"
+              "A standardized menu of evaluation families for fair SAE comparison"
             ],
             "whatItDoesNotShow": [
-              "That every metric is perfectly reliable (see next paper)"
+              "That winning one metric guarantees overall superiority"
             ],
             "setconcaUse": [
-              "Adopt a subset of SAEBench families in your protocol."
+              "Adopt SAEBench evaluation protocols to benchmark SetConCA against standard SAEs."
             ],
             "masteryChecklist": [
-              "I can name several SAEBench evaluation families."
+              "I can name the 5 evaluation families in SAEBench."
             ],
             "commonConfusions": [
               {
-                "wrong": "Winning one SAEBench metric wins interpretability.",
-                "right": "Look across families."
+                "wrong": "Evaluating on one SAEBench metric is enough.",
+                "right": "Evaluations must report results across all 5 families."
               }
             ],
             "quiz": [
               {
-                "q": "SAEBench's point is?",
+                "q": "How many evaluation families does SAEBench cover?",
                 "options": [
-                  "Multiple evaluation families",
-                  "Only FVU",
-                  "Only width",
-                  "Only speed"
+                  "5 core families (reconstruction, sparsity, probing, steering, interpretability)",
+                  "1 metric only",
+                  "100 metrics",
+                  "0 metrics"
                 ],
                 "a": 0,
-                "explain": "Broad suite."
+                "explain": "SAEBench covers 5 core evaluation families."
               }
             ],
-            "originalIdea": "A comprehensive benchmark covering detection, probing, steering, reconstruction, and more for SAEs.",
-            "simpleLesson": "SAEBench gathers multiple evaluation families so progress is not judged by one proxy. Feature detection, sparse probing, steering/interventions, and reconstruction/sparsity all appear.\n\nProxy metrics do not always predict downstream usefulness — another reason for a suite.",
+            "originalIdea": "SAEBench provides a standardized multi-family benchmark covering reconstruction, sparsity, probing, steering, and absorption.",
+            "simpleLesson": "Welcome to Karvonen et al. (2025).\n\nSAEBench provides a unified benchmark suite evaluating SAEs across 5 core families:\n1. Reconstruction & Loss Recovery\n2. Sparsity & L0 Efficiency\n3. Feature Interpretability & Monosemanticity\n4. Sparse Probing (SCR)\n5. Steering & Causal Interventions",
             "limitPairs": [
               {
-                "original": "A practical evaluation menu for SAE methods",
-                "simple": "In practice this means evidence supports: A practical evaluation menu for SAE methods"
+                "original": "A standardized menu of evaluation families for fair SAE comparison",
+                "simple": "In practice this means evidence supports: A standardized menu of evaluation families for fair SAE comparison"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That every metric is perfectly reliable (see next paper)",
-                "simple": "Do not overclaim: That every metric is perfectly reliable (see next paper)"
+                "original": "That winning one metric guarantees overall superiority",
+                "simple": "Do not overclaim: That winning one metric guarantees overall superiority"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Adopt a subset of SAEBench families in your protocol.",
-                "simple": "Action item: Adopt a subset of SAEBench families in your protocol."
+                "original": "Adopt SAEBench evaluation protocols to benchmark SetConCA against standard SAEs.",
+                "simple": "Action item: Adopt SAEBench evaluation protocols to benchmark SetConCA against standard SAEs."
               }
             ]
           },
           "quiz": [
             {
-              "q": "SAEBench's point is?",
+              "q": "How many evaluation families does SAEBench cover?",
               "options": [
-                "Multiple evaluation families",
-                "Only FVU",
-                "Only width",
-                "Only speed"
+                "5 core families (reconstruction, sparsity, probing, steering, interpretability)",
+                "1 metric only",
+                "100 metrics",
+                "0 metrics"
               ],
               "a": 0,
-              "explain": "Broad suite."
+              "explain": "SAEBench covers 5 core evaluation families."
             }
           ]
         },
@@ -6274,9 +6381,9 @@ window.CURRICULUM_DATA = {
           "pages": 32,
           "pdfPath": "RAW/2605.18229v1.pdf",
           "teach": {
-            "whyWeRead": "Audits SAEBench-style metrics — read after SAEBench to calibrate trust.",
-            "oneSentence": "Finds some SAE evaluation signals are less reliable than assumed (noise, weak ground-truth correlation).",
-            "plainLanguage": "Even standard benchmarks can be noisy across reseeds or poorly correlated with ground truth in synthetic settings. This paper audits metric reliability so you do not overfit a flaky leaderboard.\n\nPractice: report uncertainty, multiple seeds, and treat weak metrics as weak evidence.",
+            "whyWeRead": "Audits SAEBench reliability, warning against noise and metric overfitting.",
+            "oneSentence": "Are Sparse Autoencoder Benchmarks Reliable? audits metric stability and ground-truth correlation.",
+            "plainLanguage": "Welcome to Chanin (2026). Read this AFTER SAEBench to calibrate your trust!\n\nChanin audited SAEBench metrics on synthetic ground-truth models, discovering that several popular metrics suffer from high seed noise and weak ground-truth correlation.\n\nPRACTICE: Always report multi-seed error bars and treat benchmark scores with calibrated scientific skepticism.",
             "keyIdeas": [
               {
                 "title": "Reseed noise",
@@ -6300,76 +6407,75 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Metric reliability",
-                "original": "Technical term: «Metric reliability» as used in this literature.",
-                "simple": "Stability and validity of an evaluation score.",
-                "def": "Stability and validity of an evaluation score."
+                "term": "Metric Reliability",
+                "original": "Technical term: «Metric Reliability» as used in this literature.",
+                "simple": "Degree to which an evaluation score accurately tracks true underlying capability without seed noise.",
+                "def": "Degree to which an evaluation score accurately tracks true underlying capability without seed noise."
               }
             ],
             "whatItShows": [
-              "Some popular SAE metrics are fragile"
+              "That some SAE benchmark metrics are noisy and require multi-seed validation"
             ],
             "whatItDoesNotShow": [
-              "That evaluation is hopeless"
+              "That benchmarking should be abandoned"
             ],
             "setconcaUse": [
-              "Multi-seed reporting; avoid single-run leaderboard chasing."
+              "Report multi-seed mean and standard deviation for all SetConCA evaluation scores."
             ],
             "masteryChecklist": [
-              "I read SAEBench before this and know why order matters.",
-              "I report uncertainty."
+              "I report multi-seed confidence intervals on all benchmark figures."
             ],
             "commonConfusions": [
               {
-                "wrong": "Benchmarks are ground truth.",
-                "right": "They are instruments with error bars."
+                "wrong": "Single-run benchmark scores are reliable.",
+                "right": "Single-run scores suffer from random seed noise. Multi-seed reporting is required."
               }
             ],
             "quiz": [
               {
-                "q": "Read this paper?",
+                "q": "What does Chanin (2026) mandate for reliable SAE benchmark reporting?",
                 "options": [
-                  "After SAEBench",
-                  "Before learning PCA",
-                  "Instead of all evals",
-                  "Never"
+                  "Multi-seed reporting with mean and error bars",
+                  "Single-run reporting",
+                  "Using only FVU",
+                  "Ignoring benchmarks"
                 ],
                 "a": 0,
-                "explain": "Calibrate after knowing the suite."
+                "explain": "Mandates multi-seed reporting with error bars to account for seed noise."
               }
             ],
-            "originalIdea": "Finds some SAE evaluation signals are less reliable than assumed (noise, weak ground-truth correlation).",
-            "simpleLesson": "Even standard benchmarks can be noisy across reseeds or poorly correlated with ground truth in synthetic settings. This paper audits metric reliability so you do not overfit a flaky leaderboard.\n\nPractice: report uncertainty, multiple seeds, and treat weak metrics as weak evidence.",
+            "originalIdea": "Are Sparse Autoencoder Benchmarks Reliable? audits metric stability and ground-truth correlation.",
+            "simpleLesson": "Welcome to Chanin (2026). Read this AFTER SAEBench to calibrate your trust!\n\nChanin audited SAEBench metrics on synthetic ground-truth models, discovering that several popular metrics suffer from high seed noise and weak ground-truth correlation.\n\nPRACTICE: Always report multi-seed error bars and treat benchmark scores with calibrated scientific skepticism.",
             "limitPairs": [
               {
-                "original": "Some popular SAE metrics are fragile",
-                "simple": "In practice this means evidence supports: Some popular SAE metrics are fragile"
+                "original": "That some SAE benchmark metrics are noisy and require multi-seed validation",
+                "simple": "In practice this means evidence supports: That some SAE benchmark metrics are noisy and require multi-seed validation"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That evaluation is hopeless",
-                "simple": "Do not overclaim: That evaluation is hopeless"
+                "original": "That benchmarking should be abandoned",
+                "simple": "Do not overclaim: That benchmarking should be abandoned"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Multi-seed reporting; avoid single-run leaderboard chasing.",
-                "simple": "Action item: Multi-seed reporting; avoid single-run leaderboard chasing."
+                "original": "Report multi-seed mean and standard deviation for all SetConCA evaluation scores.",
+                "simple": "Action item: Report multi-seed mean and standard deviation for all SetConCA evaluation scores."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Read this paper?",
+              "q": "What does Chanin (2026) mandate for reliable SAE benchmark reporting?",
               "options": [
-                "After SAEBench",
-                "Before learning PCA",
-                "Instead of all evals",
-                "Never"
+                "Multi-seed reporting with mean and error bars",
+                "Single-run reporting",
+                "Using only FVU",
+                "Ignoring benchmarks"
               ],
               "a": 0,
-              "explain": "Calibrate after knowing the suite."
+              "explain": "Mandates multi-seed reporting with error bars to account for seed noise."
             }
           ]
         },
@@ -6388,9 +6494,9 @@ window.CURRICULUM_DATA = {
           "pages": 21,
           "pdfPath": "RAW/2505.11756v2.pdf",
           "teach": {
-            "whyWeRead": "Optional: correlated features break narrow SAEs — motivates width and multi-view disambiguation.",
-            "oneSentence": "Shows correlated features cause problems for narrow sparse autoencoders (feature hedging).",
-            "plainLanguage": "When concepts co-occur, a narrow dictionary may hedge by merging or misallocating features. Width and better supervision can help.\n\nConnects to absorption and to why multi-view signal might disambiguate correlated concepts.",
+            "whyWeRead": "Optional: shows how correlated features break narrow SAEs, motivating dictionary expansion and multi-view supervision.",
+            "oneSentence": "Feature Hedging: Correlated Features Break Narrow Sparse Autoencoders demonstrates degenerate feature merging under concept co-occurrence.",
+            "plainLanguage": "Welcome to Chanin et al. (2025).\n\nWhen concepts frequently co-occur (high correlation), narrow SAE dictionaries hedge by merging concepts into degenerate combination features.\n\nSetConCA Connection: Multi-view set supervision provides the extra cross-context signal needed to disentangle correlated concepts.",
             "keyIdeas": [
               {
                 "title": "Correlation stress test",
@@ -6408,75 +6514,75 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Feature hedging",
-                "original": "Technical term: «Feature hedging» as used in this literature.",
-                "simple": "Degenerate solutions under correlated features in narrow SAEs.",
-                "def": "Degenerate solutions under correlated features in narrow SAEs."
+                "term": "Feature Hedging",
+                "original": "Technical term: «Feature Hedging» as used in this literature.",
+                "simple": "Degenerate feature merging caused by concept co-occurrence in narrow dictionaries.",
+                "def": "Degenerate feature merging caused by concept co-occurrence in narrow dictionaries."
               }
             ],
             "whatItShows": [
-              "Correlated features specifically break narrow SAEs"
+              "That correlated features specifically break narrow SAE dictionaries"
             ],
             "whatItDoesNotShow": [
-              "Full fix via multi-view without experiments"
+              "That sparsity alone fixes correlation hedging"
             ],
             "setconcaUse": [
-              "Motivation for multi-view disambiguation experiments."
+              "Motivation for multi-view concept disambiguation in SetConCA."
             ],
             "masteryChecklist": [
-              "I can link correlation → merging/hedging."
+              "I can explain how concept correlation causes feature hedging."
             ],
             "commonConfusions": [
               {
-                "wrong": "Sparsity alone separates correlated concepts.",
-                "right": "Correlation can still force merges."
+                "wrong": "High sparsity prevents feature hedging.",
+                "right": "Correlated features cause hedging even at high sparsity unless dictionary width or multi-view supervision is added."
               }
             ],
             "quiz": [
               {
-                "q": "Narrow SAEs struggle especially with?",
+                "q": "What causes Feature Hedging in narrow SAEs?",
                 "options": [
-                  "Correlated features",
-                  "Unit batch size only",
-                  "CPU only",
-                  "PNG images only"
+                  "High correlation / co-occurrence between concepts",
+                  "Zero learning rate",
+                  "PCA failure",
+                  "Single token input"
                 ],
                 "a": 0,
-                "explain": "Correlation stress."
+                "explain": "High correlation / co-occurrence between concepts causes feature hedging."
               }
             ],
-            "originalIdea": "Shows correlated features cause problems for narrow sparse autoencoders (feature hedging).",
-            "simpleLesson": "When concepts co-occur, a narrow dictionary may hedge by merging or misallocating features. Width and better supervision can help.\n\nConnects to absorption and to why multi-view signal might disambiguate correlated concepts.",
+            "originalIdea": "Feature Hedging: Correlated Features Break Narrow Sparse Autoencoders demonstrates degenerate feature merging under concept co-occurrence.",
+            "simpleLesson": "Welcome to Chanin et al. (2025).\n\nWhen concepts frequently co-occur (high correlation), narrow SAE dictionaries hedge by merging concepts into degenerate combination features.\n\nSetConCA Connection: Multi-view set supervision provides the extra cross-context signal needed to disentangle correlated concepts.",
             "limitPairs": [
               {
-                "original": "Correlated features specifically break narrow SAEs",
-                "simple": "In practice this means evidence supports: Correlated features specifically break narrow SAEs"
+                "original": "That correlated features specifically break narrow SAE dictionaries",
+                "simple": "In practice this means evidence supports: That correlated features specifically break narrow SAE dictionaries"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Full fix via multi-view without experiments",
-                "simple": "Do not overclaim: Full fix via multi-view without experiments"
+                "original": "That sparsity alone fixes correlation hedging",
+                "simple": "Do not overclaim: That sparsity alone fixes correlation hedging"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Motivation for multi-view disambiguation experiments.",
-                "simple": "Action item: Motivation for multi-view disambiguation experiments."
+                "original": "Motivation for multi-view concept disambiguation in SetConCA.",
+                "simple": "Action item: Motivation for multi-view concept disambiguation in SetConCA."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Narrow SAEs struggle especially with?",
+              "q": "What causes Feature Hedging in narrow SAEs?",
               "options": [
-                "Correlated features",
-                "Unit batch size only",
-                "CPU only",
-                "PNG images only"
+                "High correlation / co-occurrence between concepts",
+                "Zero learning rate",
+                "PCA failure",
+                "Single token input"
               ],
               "a": 0,
-              "explain": "Correlation stress."
+              "explain": "High correlation / co-occurrence between concepts causes feature hedging."
             }
           ]
         },
@@ -6495,9 +6601,9 @@ window.CURRICULUM_DATA = {
           "pages": 27,
           "pdfPath": "RAW/2605.09887v1.pdf",
           "teach": {
-            "whyWeRead": "Optional: intrinsic geometry of activations predicts SAE scaling limits by layer.",
-            "oneSentence": "Links manifold structure of activations to layerwise SAE scaling laws — a geometric wall.",
-            "plainLanguage": "Not all layers are equally easy for SAEs. Intrinsic geometric structure can bound how dictionaries scale. Useful when choosing layers/sites for SetConCA views.",
+            "whyWeRead": "Optional: intrinsic activation geometry predicts layerwise SAE scaling limits.",
+            "oneSentence": "The Geometric Wall: Manifold Structure Predicts Layerwise SAE Scaling Laws links activation intrinsic dimension to dictionary scaling bounds.",
+            "plainLanguage": "Welcome to Zaher et al. (2026).\n\nNot all transformer layers are equally easy to unpack! Early layers have high intrinsic geometric dimension, while middle/late layers collapse into lower-dimensional manifolds.\n\nThe Geometric Wall shows that intrinsic layer geometry places hard bounds on SAE scaling laws.",
             "keyIdeas": [
               {
                 "title": "Layerwise difficulty",
@@ -6515,110 +6621,123 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Geometric wall",
-                "original": "Technical term: «Geometric wall» as used in this literature.",
-                "simple": "Geometry-imposed limit on SAE scaling.",
-                "def": "Geometry-imposed limit on SAE scaling."
+                "term": "Geometric Wall",
+                "original": "Technical term: «Geometric Wall» as used in this literature.",
+                "simple": "Geometry-imposed limit on layerwise SAE dictionary scaling.",
+                "def": "Geometry-imposed limit on layerwise SAE dictionary scaling."
               }
             ],
             "whatItShows": [
-              "Activation geometry predicts SAE scaling behaviour"
+              "That intrinsic activation geometry bounds layerwise SAE scaling laws"
             ],
             "whatItDoesNotShow": [
-              "Exact SetConCA architecture"
+              "How to design multi-view set losses"
             ],
             "setconcaUse": [
-              "Choose view sites with geometry in mind."
+              "Select layer sites for SetConCA views with intrinsic manifold geometry in mind."
             ],
             "masteryChecklist": [
-              "I know layer choice is geometric, not arbitrary."
+              "I know layer choice is governed by intrinsic geometric dimension."
             ],
             "commonConfusions": [
               {
-                "wrong": "All layers need the same SAE width.",
-                "right": "Geometry differs by layer."
+                "wrong": "All layers scale identically with SAE width.",
+                "right": "Scaling limits vary by layer depending on intrinsic activation manifold geometry."
               }
             ],
             "quiz": [
               {
-                "q": "Geometric wall relates to?",
+                "q": "What predicts layerwise SAE scaling limits in Zaher et al. (2026)?",
                 "options": [
-                  "Manifold structure limiting SAE scaling",
-                  "Only HTTP hosting",
-                  "Only PDF fonts",
-                  "Only dropout"
+                  "Intrinsic activation manifold geometry",
+                  "Token count only",
+                  "GPU VRAM",
+                  "PDF size"
                 ],
                 "a": 0,
-                "explain": "Geometry → scaling."
+                "explain": "Intrinsic activation manifold geometry predicts layerwise scaling limits."
               }
             ],
-            "originalIdea": "Links manifold structure of activations to layerwise SAE scaling laws — a geometric wall.",
-            "simpleLesson": "Not all layers are equally easy for SAEs. Intrinsic geometric structure can bound how dictionaries scale. Useful when choosing layers/sites for SetConCA views.",
+            "originalIdea": "The Geometric Wall: Manifold Structure Predicts Layerwise SAE Scaling Laws links activation intrinsic dimension to dictionary scaling bounds.",
+            "simpleLesson": "Welcome to Zaher et al. (2026).\n\nNot all transformer layers are equally easy to unpack! Early layers have high intrinsic geometric dimension, while middle/late layers collapse into lower-dimensional manifolds.\n\nThe Geometric Wall shows that intrinsic layer geometry places hard bounds on SAE scaling laws.",
             "limitPairs": [
               {
-                "original": "Activation geometry predicts SAE scaling behaviour",
-                "simple": "In practice this means evidence supports: Activation geometry predicts SAE scaling behaviour"
+                "original": "That intrinsic activation geometry bounds layerwise SAE scaling laws",
+                "simple": "In practice this means evidence supports: That intrinsic activation geometry bounds layerwise SAE scaling laws"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "Exact SetConCA architecture",
-                "simple": "Do not overclaim: Exact SetConCA architecture"
+                "original": "How to design multi-view set losses",
+                "simple": "Do not overclaim: How to design multi-view set losses"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Choose view sites with geometry in mind.",
-                "simple": "Action item: Choose view sites with geometry in mind."
+                "original": "Select layer sites for SetConCA views with intrinsic manifold geometry in mind.",
+                "simple": "Action item: Select layer sites for SetConCA views with intrinsic manifold geometry in mind."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Geometric wall relates to?",
+              "q": "What predicts layerwise SAE scaling limits in Zaher et al. (2026)?",
               "options": [
-                "Manifold structure limiting SAE scaling",
-                "Only HTTP hosting",
-                "Only PDF fonts",
-                "Only dropout"
+                "Intrinsic activation manifold geometry",
+                "Token count only",
+                "GPU VRAM",
+                "PDF size"
               ],
               "a": 0,
-              "explain": "Geometry → scaling."
+              "explain": "Intrinsic activation manifold geometry predicts layerwise scaling limits."
             }
           ]
         }
       ],
       "primer": {
         "title": "SAE evaluation and failure modes",
-        "mission": "Design an honest evaluation protocol before proposing new methods.",
-        "beforeYouStart": "Levels 6–8.",
-        "primer": "Reconstruction and sparsity are necessary but not sufficient.\n\nFeature splitting: one concept spreads across many SAE features. Feature absorption: one feature swallows related concepts. Non-canonical: different SAEs can all look good while finding different decompositions.\n\nSAEBench provides multiple evaluation families. Are SAE Benchmarks Reliable? warns that some signals are noisy — read it after SAEBench, not before.\n\nA strong SetConCA paper needs complementary tests, not one leaderboard score.",
+        "mission": "Master SAE failure modes (Absorption, Splitting, Non-canonicality) and understand the SAEBench evaluation suite.",
+        "beforeYouStart": "Levels 6–8 evaluation metrics and architectures.",
+        "primer": "Welcome to Level 9. Having built modern SAEs, we now confront their deepest empirical failure modes.\n\nA common naive belief is: 'One SAE feature = One true atomic concept in the world.' Level 9 proves why this assumption is flawed.\n\n--- FAILURE MODE 1: Feature Splitting (Chanin et al., 2024) ---\nWhat is Feature Splitting?\nAs you increase dictionary width (e.g. from 4x to 32x expansion), a single broad concept (e.g. 'Medical text') SPLITS into dozens of hyper-specific sub-features ('Pediatric medicine', 'Medical insurance claims', 'Surgical procedures').\n\nThe Problem: Feature splitting means concepts exist at multiple granularities simultaneously, making it hard to define what an 'atomic' feature is.\n\n--- FAILURE MODE 2: Feature Absorption (Chanin et al., 2024) ---\nWhat is Feature Absorption?\nFeature Absorption is the inverse of splitting: a single dominant SAE feature 'swallows' or absorbs related specific sub-concepts!\nExample: Instead of having separate features for 'Golden Retriever' and 'Poodle', a single 'Dog' feature activates for both, absorbing the specific identity.\n\nWhy it happens: Narrow dictionaries or high sparsity penalties force the model to merge correlated concepts into single shared latents.\n\n--- FAILURE MODE 3: Non-Canonical Units (Leask et al., 2025) ---\nSuppose you train two SAEs (SAE A and SAE B) on the EXACT SAME model layer with identical hyperparameters, but using different random seeds.\n\nBoth SAE A and SAE B achieve identical low reconstruction error (FVU = 0.03) and identical sparsity (L0 = 25).\nDo SAE A and SAE B discover the same features?\n\nNO! Leask et al. proved that SAE A and SAE B discover DIFFERENT feature bases! There is no single 'canonical' sparse basis in activation space. Multiple distinct dictionary decompositions achieve equal quality.\n\n--- THE SAEBENCH SUITE (Karvonen et al., 2025) & METRIC RELIABILITY ---\nTo evaluate SAEs rigorously, Karvonen et al. introduced SAEBench, covering five evaluation families:\n1. Reconstruction & Fidelity: FVU, CE loss recovery.\n2. Sparsity & Efficiency: L0, L1, dead feature rate.\n3. Feature Interpretability: Automated explanations, monosemanticity scores.\n4. Downstream Probing: Sparse probing performance on target concepts.\n5. Steering & Interventions: Causal effect of feature clamping on output behavior.\n\nAuditing Reliability (Chanin, 2026):\nAlways report seed variance! Single-run leaderboard scores are unreliable due to random initialization noise.",
         "bigPictureDiagram": [
-          "proxy metrics ≠ downstream usefulness",
-          "splitting / absorption / seed instability / non-canonical"
+          "Ideal Assumption: 1 SAE Feature = 1 Atomic Ground-Truth Concept",
+          "Reality Failure 1 (Splitting): Concept 'Dog' splits into 50 hyper-specific sub-features as width expands",
+          "Reality Failure 2 (Absorption): Feature 'Animal' absorbs 'Dog', 'Cat', and 'Horse' into 1 latent",
+          "Reality Failure 3 (Non-Canonical): Seed A and Seed B find completely different valid feature dictionaries",
+          "SAEBench Solution: Evaluate across 5 families (Reconstruction, Sparsity, Interpretation, Probing, Steering)"
         ],
         "conceptsToMaster": [
           {
-            "name": "Absorption / splitting",
-            "simple": "Wrong granularity of features.",
-            "deeper": "Challenges 'one latent = one atomic concept'."
+            "name": "Feature Splitting",
+            "simple": "When a broad concept breaks into multiple narrower sub-features as dictionary size grows.",
+            "deeper": "As dictionary width d_sae increases, coarse feature directions decompose into finer sub-directions. Illustrates that feature granularity is a function of dictionary capacity."
           },
           {
-            "name": "Canonical units",
-            "simple": "Unique true decomposition.",
-            "deeper": "Evidence suggests SAEs do not find unique units of analysis."
+            "name": "Feature Absorption",
+            "simple": "When one high-level feature swallows up specific sub-concepts because the dictionary is too small or too sparse.",
+            "deeper": "Occurs when a parent feature vector v_parent absorbs child feature vectors v_child, firing whenever any child concept is present. Reduces feature specificity."
+          },
+          {
+            "name": "Non-Canonical Units",
+            "simple": "The discovery that different random seeds yield different interpretable dictionaries of equal quality, proving there is no single 'true' feature basis.",
+            "deeper": "Proves non-uniqueness of sparse dictionary solutions. Multiple overcomplete frame representations span activation space with equivalent L0 and MSE, challenging naive realism in interpretability."
+          },
+          {
+            "name": "SAEBench",
+            "simple": "A standardized benchmark suite evaluating SAEs across reconstruction, sparsity, probing, steering, and interpretability.",
+            "deeper": "Comprehensive evaluation framework combining loss recovery, L0 efficiency, SCR (sparse probing accuracy), feature absorption metrics, and intervention causal effects."
           }
         ],
         "checkpoint": {
-          "goal": "Write your evaluation protocol.",
+          "goal": "Design a complete SAE evaluation protocol incorporating SAEBench families and document metric non-claims.",
           "steps": [
-            "List metrics",
-            "For each: supports / does not establish",
-            "Add seed + stitching checks"
+            "List evaluation metrics across 5 families.",
+            "For each metric, write down explicitly what it proves and what it CANNOT establish.",
+            "Incorporate seed-variance checks for non-canonicality testing."
           ],
-          "successLooksLike": "Protocol rejects claims based on FVU alone."
+          "successLooksLike": "You can produce an evaluation protocol that rejects any research claim based on FVU or single-seed results alone."
         },
-        "bridgeToNext": "Level 10 papers sit next to SetConCA."
+        "bridgeToNext": "With all foundations built, Level 10 reaches the SetConCA Research Frontier — combining multi-view set coordination with sparse dictionaries."
       }
     },
     {
@@ -6645,9 +6764,9 @@ window.CURRICULUM_DATA = {
           "pages": 29,
           "pdfPath": "RAW/2511.05541v2.pdf",
           "teach": {
-            "whyWeRead": "Closest empirical ancestor: coordinates SAE codes across related activations (adjacent tokens).",
-            "oneSentence": "Adds temporal/contrastive coordination between adjacent-token SAE representations for interpretability.",
-            "plainLanguage": "Temporal SAEs use the sequential structure of language: nearby tokens provide related pairs for coordinating sparse codes. Study carefully what counts as a related pair, where the contrastive term applies, and how sparsity interacts with consistency.\n\nSetConCA generalises: replace 'adjacent tokens' with 'multiple views of the same semantic object'. Ablate whether gains are semantic consistency or mere local similarity.",
+            "whyWeRead": "Closest empirical ancestor to SetConCA: coordinates SAE codes across adjacent-token activation pairs.",
+            "oneSentence": "Temporal Sparse Autoencoders adds contrastive temporal coordination between adjacent token activations to improve feature consistency.",
+            "plainLanguage": "Welcome to Bhalla et al. (2025).\n\n--- THE TEMPORAL SAE BREAKTHROUGH ---\nStandard SAEs treat every token activation in complete isolation. But language has temporal structure: adjacent tokens (t and t+1) share semantic context!\n\nTemporal SAEs add a CONTRASTIVE LOSS between sparse codes of adjacent tokens:\nLoss = Reconstruction + λ_sparse * Sparsity + λ_temp * Contrastive_Loss(z_t, z_{t+1})\n\nResult: Coordinates feature activations over time, improving temporal consistency.\n\n--- THE SETCONCA GENERALIZATION ---\nTemporal SAEs coordinate adjacent tokens in time. SetConCA generalizes this idea from temporal pairs to MULTI-VIEW SETS of the exact same semantic object across different context prompts, paraphrases, and layers!",
             "keyIdeas": [
               {
                 "title": "Related pairs from sequence",
@@ -6679,79 +6798,73 @@ window.CURRICULUM_DATA = {
               {
                 "term": "Temporal SAE",
                 "original": "Technical term: «Temporal SAE» as used in this literature.",
-                "simple": "SAE trained with temporal coordination between token activations.",
-                "def": "SAE trained with temporal coordination between token activations."
+                "simple": "SAE trained with contrastive coordination between adjacent token activations.",
+                "def": "SAE trained with contrastive coordination between adjacent token activations."
               }
             ],
             "whatItShows": [
-              "Extra structure across related activations can help SAE interpretability goals"
+              "That coordinating sparse codes across related activation pairs improves feature consistency"
             ],
             "whatItDoesNotShow": [
-              "That multi-view sets automatically inherit all gains"
+              "How to coordinate unordered sets of multi-view activations"
             ],
             "setconcaUse": [
-              "Direct template: change pair definition from time to multi-view sets.",
-              "Replicate their ablation philosophy."
+              "Direct template for SetConCA: replace adjacent temporal pairs with multi-view concept sets."
             ],
             "masteryChecklist": [
-              "I can state how SetConCA generalises Temporal SAE.",
-              "I know which ablations isolate semantic vs local similarity."
+              "I can explain how SetConCA generalizes Temporal SAEs."
             ],
             "commonConfusions": [
               {
-                "wrong": "Temporal SAE already is SetConCA.",
-                "right": "SetConCA generalises the related-pair notion to multi-view sets."
+                "wrong": "Temporal SAEs work on unordered set inputs.",
+                "right": "Temporal SAEs require sequential adjacent tokens. SetConCA uses set aggregators for unordered multi-view sets."
               }
             ],
             "quiz": [
               {
-                "q": "SetConCA generalises Temporal SAE by using?",
+                "q": "How does SetConCA generalize Temporal SAEs?",
                 "options": [
-                  "Multi-view semantic objects instead of only adjacent tokens",
-                  "Only PCA",
-                  "Only deeper MLPs",
-                  "Removing sparsity"
+                  "Generalizes adjacent temporal pairs to multi-view semantic sets",
+                  "Removes contrastive loss",
+                  "Uses linear PCA",
+                  "Deletes decoders"
                 ],
                 "a": 0,
-                "explain": "Same idea, broader positives."
+                "explain": "Generalizes temporal adjacent pairs to multi-view semantic concept sets."
               }
             ],
-            "originalIdea": "Adds temporal/contrastive coordination between adjacent-token SAE representations for interpretability.",
-            "simpleLesson": "Temporal SAEs use the sequential structure of language: nearby tokens provide related pairs for coordinating sparse codes. Study carefully what counts as a related pair, where the contrastive term applies, and how sparsity interacts with consistency.\n\nSetConCA generalises: replace 'adjacent tokens' with 'multiple views of the same semantic object'. Ablate whether gains are semantic consistency or mere local similarity.",
+            "originalIdea": "Temporal Sparse Autoencoders adds contrastive temporal coordination between adjacent token activations to improve feature consistency.",
+            "simpleLesson": "Welcome to Bhalla et al. (2025).\n\n--- THE TEMPORAL SAE BREAKTHROUGH ---\nStandard SAEs treat every token activation in complete isolation. But language has temporal structure: adjacent tokens (t and t+1) share semantic context!\n\nTemporal SAEs add a CONTRASTIVE LOSS between sparse codes of adjacent tokens:\nLoss = Reconstruction + λ_sparse * Sparsity + λ_temp * Contrastive_Loss(z_t, z_{t+1})\n\nResult: Coordinates feature activations over time, improving temporal consistency.\n\n--- THE SETCONCA GENERALIZATION ---\nTemporal SAEs coordinate adjacent tokens in time. SetConCA generalizes this idea from temporal pairs to MULTI-VIEW SETS of the exact same semantic object across different context prompts, paraphrases, and layers!",
             "limitPairs": [
               {
-                "original": "Extra structure across related activations can help SAE interpretability goals",
-                "simple": "In practice this means evidence supports: Extra structure across related activations can help SAE interpretability goals"
+                "original": "That coordinating sparse codes across related activation pairs improves feature consistency",
+                "simple": "In practice this means evidence supports: That coordinating sparse codes across related activation pairs improves feature consistency"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That multi-view sets automatically inherit all gains",
-                "simple": "Do not overclaim: That multi-view sets automatically inherit all gains"
+                "original": "How to coordinate unordered sets of multi-view activations",
+                "simple": "Do not overclaim: How to coordinate unordered sets of multi-view activations"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Direct template: change pair definition from time to multi-view sets.",
-                "simple": "Action item: Direct template: change pair definition from time to multi-view sets."
-              },
-              {
-                "original": "Replicate their ablation philosophy.",
-                "simple": "Action item: Replicate their ablation philosophy."
+                "original": "Direct template for SetConCA: replace adjacent temporal pairs with multi-view concept sets.",
+                "simple": "Action item: Direct template for SetConCA: replace adjacent temporal pairs with multi-view concept sets."
               }
             ]
           },
           "quiz": [
             {
-              "q": "SetConCA generalises Temporal SAE by using?",
+              "q": "How does SetConCA generalize Temporal SAEs?",
               "options": [
-                "Multi-view semantic objects instead of only adjacent tokens",
-                "Only PCA",
-                "Only deeper MLPs",
-                "Removing sparsity"
+                "Generalizes adjacent temporal pairs to multi-view semantic sets",
+                "Removes contrastive loss",
+                "Uses linear PCA",
+                "Deletes decoders"
               ],
               "a": 0,
-              "explain": "Same idea, broader positives."
+              "explain": "Generalizes temporal adjacent pairs to multi-view semantic concept sets."
             }
           ]
         },
@@ -6772,9 +6885,9 @@ window.CURRICULUM_DATA = {
           "pages": 36,
           "pdfPath": "RAW/2601.20420v2.pdf",
           "teach": {
-            "whyWeRead": "Alternative concept extraction via linear unmixing and identifiability — competitor/complement to SAEs.",
-            "oneSentence": "Concept Component Analysis extracts concepts via a principled linear mixture / unmixing approach.",
-            "plainLanguage": "ConCA posits a generative process where activations are mixtures of concept components, then recovers components under assumptions (closer to ICA than to pure reconstruction dictionaries).\n\nFocus on: assumed generative process, log-posterior representation, identifiability, and how component recovery differs from learning a sparse reconstruction dictionary.\n\nFor SetConCA positioning: you may combine sparse dictionaries with multi-view constraints while acknowledging ConCA's unmixing story.",
+            "whyWeRead": "Concept Component Analysis (ConCA) is a direct generative unmixing rival/complement to dictionary learning.",
+            "oneSentence": "Concept Component Analysis (ConCA) derives a generative linear unmixing model for concept components with identifiability proofs.",
+            "plainLanguage": "Welcome to Liu et al. (2026).\n\n--- THE CONCA FRAMEWORK ---\nConCA approaches interpretability from an ICA/generative perspective:\nx = Σ c_i v_i + noise\n\nConCA computes representations under log-posterior assumptions, offering formal identifiability proofs showing when concept components can be recovered uniquely.",
             "keyIdeas": [
               {
                 "title": "Generative mixture story",
@@ -6806,85 +6919,73 @@ window.CURRICULUM_DATA = {
               {
                 "term": "ConCA",
                 "original": "Technical term: «ConCA» as used in this literature.",
-                "simple": "Concept Component Analysis.",
-                "def": "Concept Component Analysis."
-              },
-              {
-                "term": "Linear unmixing",
-                "original": "Technical term: «Linear unmixing» as used in this literature.",
-                "simple": "Recovering sources from linear mixtures.",
-                "def": "Recovering sources from linear mixtures."
+                "simple": "Concept Component Analysis; generative unmixing model for concept discovery.",
+                "def": "Concept Component Analysis; generative unmixing model for concept discovery."
               }
             ],
             "whatItShows": [
-              "A principled alternative framing for concept extraction"
+              "That concept components can be identified theoretically under generative unmixing assumptions"
             ],
             "whatItDoesNotShow": [
-              "That SAEs are obsolete"
+              "Standard overcomplete TopK SAE training"
             ],
             "setconcaUse": [
-              "Cite as alternative generative story.",
-              "Compare assumptions explicitly in related work."
+              "Direct theoretical competitor/complement to SetConCA sparse dictionary learning."
             ],
             "masteryChecklist": [
-              "I can contrast ConCA unmixing vs SAE reconstruction dictionaries.",
-              "I can state why identifiability assumptions matter."
+              "I can contrast ConCA generative unmixing with SAE dictionary learning."
             ],
             "commonConfusions": [
               {
-                "wrong": "ConCA and SAE are the same method.",
-                "right": "Different generative/objective stories."
+                "wrong": "ConCA is just a standard L1 SAE.",
+                "right": "ConCA is a generative unmixing model with posterior representation, closer to ICA than standard SAEs."
               }
             ],
             "quiz": [
               {
-                "q": "ConCA is closest to?",
+                "q": "What theoretical framework does ConCA use?",
                 "options": [
-                  "ICA-style unmixing of concept components",
-                  "Mean pooling only",
-                  "SimCLR only",
-                  "BatchNorm only"
+                  "Generative linear unmixing with posterior representation",
+                  "SimCLR augmentation",
+                  "Deep Sets pooling",
+                  "Gram matrix CKA"
                 ],
                 "a": 0,
-                "explain": "Unmixing story."
+                "explain": "ConCA uses a generative linear unmixing framework with log-posterior representation."
               }
             ],
-            "originalIdea": "Concept Component Analysis extracts concepts via a principled linear mixture / unmixing approach.",
-            "simpleLesson": "ConCA posits a generative process where activations are mixtures of concept components, then recovers components under assumptions (closer to ICA than to pure reconstruction dictionaries).\n\nFocus on: assumed generative process, log-posterior representation, identifiability, and how component recovery differs from learning a sparse reconstruction dictionary.\n\nFor SetConCA positioning: you may combine sparse dictionaries with multi-view constraints while acknowledging ConCA's unmixing story.",
+            "originalIdea": "Concept Component Analysis (ConCA) derives a generative linear unmixing model for concept components with identifiability proofs.",
+            "simpleLesson": "Welcome to Liu et al. (2026).\n\n--- THE CONCA FRAMEWORK ---\nConCA approaches interpretability from an ICA/generative perspective:\nx = Σ c_i v_i + noise\n\nConCA computes representations under log-posterior assumptions, offering formal identifiability proofs showing when concept components can be recovered uniquely.",
             "limitPairs": [
               {
-                "original": "A principled alternative framing for concept extraction",
-                "simple": "In practice this means evidence supports: A principled alternative framing for concept extraction"
+                "original": "That concept components can be identified theoretically under generative unmixing assumptions",
+                "simple": "In practice this means evidence supports: That concept components can be identified theoretically under generative unmixing assumptions"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That SAEs are obsolete",
-                "simple": "Do not overclaim: That SAEs are obsolete"
+                "original": "Standard overcomplete TopK SAE training",
+                "simple": "Do not overclaim: Standard overcomplete TopK SAE training"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Cite as alternative generative story.",
-                "simple": "Action item: Cite as alternative generative story."
-              },
-              {
-                "original": "Compare assumptions explicitly in related work.",
-                "simple": "Action item: Compare assumptions explicitly in related work."
+                "original": "Direct theoretical competitor/complement to SetConCA sparse dictionary learning.",
+                "simple": "Action item: Direct theoretical competitor/complement to SetConCA sparse dictionary learning."
               }
             ]
           },
           "quiz": [
             {
-              "q": "ConCA is closest to?",
+              "q": "What theoretical framework does ConCA use?",
               "options": [
-                "ICA-style unmixing of concept components",
-                "Mean pooling only",
-                "SimCLR only",
-                "BatchNorm only"
+                "Generative linear unmixing with posterior representation",
+                "SimCLR augmentation",
+                "Deep Sets pooling",
+                "Gram matrix CKA"
               ],
               "a": 0,
-              "explain": "Unmixing story."
+              "explain": "ConCA uses a generative linear unmixing framework with log-posterior representation."
             }
           ]
         },
@@ -6905,9 +7006,9 @@ window.CURRICULUM_DATA = {
           "pages": 32,
           "pdfPath": "RAW/2311.04056v2.pdf",
           "teach": {
-            "whyWeRead": "Theory for when multiple partial views identify latent factors — foundations for multi-view claims.",
-            "oneSentence": "Studies multi-view causal representation learning under partial observability and identifiability conditions.",
-            "plainLanguage": "Single views may only partially observe latent factors. Multiple views can make identification possible under explicit assumptions.\n\nThis is the theoretical backbone when you ask not only 'did retrieval improve?' but 'did we recover the shared concept factors?' Use it to write assumptions and kill criteria for SetConCA.",
+            "whyWeRead": "Provides mathematical proofs for multi-view latent factor identifiability under partial observability.",
+            "oneSentence": "Multi-View Causal Representation Learning with Partial Observability proves when latent factors can be identified from multiple partial views.",
+            "plainLanguage": "Welcome to Yao et al. (2023).\n\nYao et al. provide theoretical identifiability proofs showing that when a single view is partial/incomplete, observing MULTIPLE PARTIAL VIEWS permits exact identification of underlying latent causal factors!\n\nSETCONCA THEORETICAL FOUNDATION:\nThis paper provides the mathematical proof that multi-view set supervision fundamentally resolves single-view identifiability bottlenecks!",
             "keyIdeas": [
               {
                 "title": "Partial observability",
@@ -6937,123 +7038,117 @@ window.CURRICULUM_DATA = {
             "simplifiedMath": [],
             "vocabulary": [
               {
-                "term": "Partial observability",
-                "original": "Technical term: «Partial observability» as used in this literature.",
-                "simple": "Not all latents are seen in every view.",
-                "def": "Not all latents are seen in every view."
-              },
-              {
-                "term": "Identifiability conditions",
-                "original": "Technical term: «Identifiability conditions» as used in this literature.",
-                "simple": "Assumptions that make recovery unique (up to allowed transforms).",
-                "def": "Assumptions that make recovery unique (up to allowed transforms)."
+                "term": "Partial Observability",
+                "original": "Technical term: «Partial Observability» as used in this literature.",
+                "simple": "When a single view observes only a subset of latent causal variables.",
+                "def": "When a single view observes only a subset of latent causal variables."
               }
             ],
             "whatItShows": [
-              "When multi-view helps identify latents"
+              "Mathematical proof that multi-view observations enable latent factor identifiability"
             ],
             "whatItDoesNotShow": [
-              "That any multi-view SAE loss identifies concepts"
+              "Practical SAE PyTorch implementation code"
             ],
             "setconcaUse": [
-              "Write explicit assumptions next to every strong claim.",
-              "Design experiments that could falsify identifiability-style hypotheses."
+              "Cite as the theoretical foundation for why multi-view set supervision enables concept recovery in SetConCA."
             ],
             "masteryChecklist": [
-              "I can explain partial observability.",
-              "I refuse assumption-free 'we recovered concepts' claims."
+              "I can explain why single views are partially observable and how multi-view resolves it."
             ],
             "commonConfusions": [
               {
-                "wrong": "More views always identify everything.",
-                "right": "Only under suitable assumptions and view structure."
+                "wrong": "Single views provide full latent identifiability.",
+                "right": "Single views suffer from partial observability. Multi-view observations are required for identifiability."
               }
             ],
             "quiz": [
               {
-                "q": "Multi-view helps identification especially when?",
+                "q": "What does Yao et al. (2023) prove regarding multi-view observations?",
                 "options": [
-                  "Each view is partially observing latents",
-                  "Views are identical noise",
-                  "There is no sparsity ever",
-                  "Probes are banned"
+                  "Multiple partial views permit exact latent causal factor identification",
+                  "Multi-view causes collapse",
+                  "Single views are sufficient",
+                  "PCA is non-linear"
                 ],
                 "a": 0,
-                "explain": "Partial observability + assumptions."
+                "explain": "Proves multiple partial views permit exact latent causal factor identification."
               }
             ],
-            "originalIdea": "Studies multi-view causal representation learning under partial observability and identifiability conditions.",
-            "simpleLesson": "Single views may only partially observe latent factors. Multiple views can make identification possible under explicit assumptions.\n\nThis is the theoretical backbone when you ask not only 'did retrieval improve?' but 'did we recover the shared concept factors?' Use it to write assumptions and kill criteria for SetConCA.",
+            "originalIdea": "Multi-View Causal Representation Learning with Partial Observability proves when latent factors can be identified from multiple partial views.",
+            "simpleLesson": "Welcome to Yao et al. (2023).\n\nYao et al. provide theoretical identifiability proofs showing that when a single view is partial/incomplete, observing MULTIPLE PARTIAL VIEWS permits exact identification of underlying latent causal factors!\n\nSETCONCA THEORETICAL FOUNDATION:\nThis paper provides the mathematical proof that multi-view set supervision fundamentally resolves single-view identifiability bottlenecks!",
             "limitPairs": [
               {
-                "original": "When multi-view helps identify latents",
-                "simple": "In practice this means evidence supports: When multi-view helps identify latents"
+                "original": "Mathematical proof that multi-view observations enable latent factor identifiability",
+                "simple": "In practice this means evidence supports: Mathematical proof that multi-view observations enable latent factor identifiability"
               }
             ],
             "nonClaimPairs": [
               {
-                "original": "That any multi-view SAE loss identifies concepts",
-                "simple": "Do not overclaim: That any multi-view SAE loss identifies concepts"
+                "original": "Practical SAE PyTorch implementation code",
+                "simple": "Do not overclaim: Practical SAE PyTorch implementation code"
               }
             ],
             "setconcaPairs": [
               {
-                "original": "Write explicit assumptions next to every strong claim.",
-                "simple": "Action item: Write explicit assumptions next to every strong claim."
-              },
-              {
-                "original": "Design experiments that could falsify identifiability-style hypotheses.",
-                "simple": "Action item: Design experiments that could falsify identifiability-style hypotheses."
+                "original": "Cite as the theoretical foundation for why multi-view set supervision enables concept recovery in SetConCA.",
+                "simple": "Action item: Cite as the theoretical foundation for why multi-view set supervision enables concept recovery in SetConCA."
               }
             ]
           },
           "quiz": [
             {
-              "q": "Multi-view helps identification especially when?",
+              "q": "What does Yao et al. (2023) prove regarding multi-view observations?",
               "options": [
-                "Each view is partially observing latents",
-                "Views are identical noise",
-                "There is no sparsity ever",
-                "Probes are banned"
+                "Multiple partial views permit exact latent causal factor identification",
+                "Multi-view causes collapse",
+                "Single views are sufficient",
+                "PCA is non-linear"
               ],
               "a": 0,
-              "explain": "Partial observability + assumptions."
+              "explain": "Proves multiple partial views permit exact latent causal factor identification."
             }
           ]
         }
       ],
       "primer": {
-        "title": "Papers closest to SetConCA",
-        "mission": "State research hypotheses that connect multi-view sets to sparse dictionaries.",
-        "beforeYouStart": "Entire curriculum.",
-        "primer": "Temporal Sparse Autoencoders coordinate adjacent-token activations with contrastive structure. SetConCA generalises that idea from temporal neighbours to multiple views of the same semantic object.\n\nConcept Component Analysis offers a different generative story: linear unmixing of concept components with identifiability assumptions — closer to ICA than to reconstruction dictionaries.\n\nMulti-View Causal Representation Learning asks when multiple partial views identify latent factors.\n\nYour central question is not merely 'does multi-view help retrieval?' It is:\n\nUnder what assumptions does multi-view supervision cause a sparse dictionary to recover more stable, complete, specific, or causally useful concepts than a pointwise SAE?\n\nThat question decides your experiments.",
+        "title": "Papers closest to SetConCA research",
+        "mission": "Master Temporal SAEs, Concept Component Analysis (ConCA), and Multi-View Causal Identifiability. Formulate actionable research hypotheses for SetConCA.",
+        "beforeYouStart": "All previous Levels (1–9).",
+        "primer": "Welcome to Level 10 — the capstone level of your mastery path. Here we study the three papers closest to SetConCA and state our core research hypotheses.\n\n--- STEP 1: Temporal Sparse Autoencoders (Bhalla et al., 2025) ---\nWhat did Temporal SAEs do?\nStandard SAEs treat every token activation in isolation. But language has natural sequential structure: adjacent tokens (token t and token t+1) often share semantic context!\n\nTemporal SAEs add a CONTRASTIVE REGULARIZATION loss between the sparse codes of adjacent tokens:\nLoss = Reconstruction + λ_sparse * Sparsity + λ_temp * Contrastive_Loss(z_t, z_{t+1})\n\nResult: Coordinates feature activations over time, improving feature consistency.\n\nTHE SETCONCA GENERALIZATION:\nTemporal SAEs coordinate adjacent tokens in time. SetConCA generalizes this idea from temporal pairs to MULTI-VIEW SETS of the exact same semantic object across different contexts, prompts, or layers!\n\n--- STEP 2: Concept Component Analysis / ConCA (Liu et al., 2026) ---\nConCA proposes a generative linear unmixing model for concepts (closer in spirit to Level 1 ICA than standard autoencoders):\nx = Σ c_i v_i + noise\n\nConCA derives identifiability conditions under log-posterior representation assumptions, offering a principled theoretical rival/complement to dictionary learning.\n\n--- STEP 3: Multi-View Causal Representation Learning (Yao et al., 2023) ---\nYao et al. provide mathematical identifiability proofs showing WHEN multi-view observations permit exact latent factor recovery under partial observability.\n\nTHE CENTRAL RESEARCH QUESTION OF SETCONCA:\nUnder what mathematical assumptions does multi-view set supervision cause a sparse dictionary to recover more stable, complete, specific, or causally useful concepts than a pointwise SAE?\n\nYOUR THREE SETCONCA HYPOTHESES TO TEST:\n1. Multi-View Set Coordination reduces Feature Absorption by disambiguating co-occurring concepts across views.\n2. Contrastive Set Losses increase cross-seed Feature Canonicality (dictionary stitching agreement).\n3. Set-aggregated concept codes achieve higher Probe Selectivity and Steering Causality than single-token SAE latents.",
         "bigPictureDiagram": [
-          "Temporal SAE: adjacent tokens as pairs",
-          "SetConCA: multi-view set of same concept + sparse dict + contrastive coord",
-          "ConCA: unmixing components | MV-causal: identifiability theory"
+          "Temporal SAE (Bhalla '25): Coordinates adjacent tokens in time z_t ↔ z_{t+1}",
+          "SetConCA (Your Project): Coordinates MULTI-VIEW SETS of same concept {x_v1, x_v2, x_v3} ──[Set Aggregator]──→ Sparse Code z",
+          "ConCA (Liu '26): Generative linear unmixing with identifiability proofs (ICA-lineage)",
+          "MV-Causal (Yao '23): Formal proofs of latent recovery from partial multi-view observations"
         ],
         "conceptsToMaster": [
           {
-            "name": "Related pair definition",
-            "simple": "What counts as the same object across views.",
-            "deeper": "Ablate this — local similarity ≠ semantic consistency."
+            "name": "Multi-View Set Coordination",
+            "simple": "Using multiple views of the same concept as a positive set to train sparse autoencoder feature dictionaries.",
+            "deeper": "Extending single-view SAE objectives by adding set-based contrastive loss L_set(Z_views) = InfoNCE(Set_Pool(Z_pos), Set_Pool(Z_neg)). Enforces representational consistency across semantic view transformations."
           },
           {
-            "name": "Identifiability",
-            "simple": "When latents can be recovered uniquely (up to allowed transforms).",
-            "deeper": "Needs assumptions; multi-view can help when single views are partial."
+            "name": "Identifiability under Partial Observability",
+            "simple": "Mathematical proof showing when latent concept variables can be uniquely recovered if you observe multiple partial views.",
+            "deeper": "Proves that under non-Gaussianity and multi-view conditional independence assumptions, the latent factor vector z is identifiable up to component-wise invertible transformations."
+          },
+          {
+            "name": "SetConCA Core Thesis",
+            "simple": "Combining sparse dictionaries + multi-view alignment + set aggregators + contrastive coordination yields cleaner concepts than pointwise SAEs.",
+            "deeper": "Hypothesizes that multi-view set supervision resolves non-canonicality and feature absorption by enforcing latent invariance across view transforms while maintaining overcomplete dictionary sparsity."
           }
         ],
         "checkpoint": {
-          "goal": "Write three SetConCA hypotheses.",
+          "goal": "Write three formal research hypotheses for SetConCA naming Level 6 metrics and Level 9 failure modes.",
           "steps": [
-            "One assumption to challenge",
-            "One reproduction",
-            "One extension beyond Temporal SAE / ConCA"
+            "Hypothesis 1: Target a specific failure mode (Absorption or Splitting).",
+            "Hypothesis 2: Target dictionary stability across seeds (Canonicality / CKA).",
+            "Hypothesis 3: Target causal intervention performance (Steering / Probing Selectivity)."
           ],
-          "successLooksLike": "Hypotheses name metrics from Level 6 and failure modes from Level 9."
+          "successLooksLike": "You can state three precise, falsifiable experimental hypotheses ready for implementation and testing."
         },
-        "bridgeToNext": "You are ready to design SetConCA experiments without treating papers as oracles."
+        "bridgeToNext": "Congratulations! You have completed the entire SetConCA Mastery Curriculum. You are ready to build, execute, and publish SetConCA research."
       }
     }
   ],

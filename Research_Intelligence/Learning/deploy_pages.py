@@ -43,7 +43,7 @@ def main() -> None:
     # GitHub Pages needs this file when not using Actions
     (DOCS / ".nojekyll").touch()
 
-    print(f"\nDone → {DOCS}")
+    print(f"\nDone -> {DOCS}")
     print("Next: push to GitHub and enable Pages (see DEPLOY.md)")
 
 

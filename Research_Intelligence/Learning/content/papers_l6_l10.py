@@ -13,843 +13,829 @@ PAPERS = {
         "whyWeRead": "Tool to compare neural subspaces across layers/models when coordinates differ.",
         "oneSentence": "SVCCA combines SVD dimensionality reduction with CCA to compare representations invariantly to affine transforms.",
         "plainLanguage": (
-            "Two networks can encode the same information with different neuron coordinates. "
-            "Coordinate-wise comparison fails. SVCCA first reduces each representation with SVD, then runs CCA to measure shared subspace structure.\n\n"
-            "High SVCCA means similar subspaces — not that individual features match."
+            "Welcome to the SVCCA Masterclass. Let's understand why Raghu et al. (NIPS 2017) created SVCCA.\n\n"
+            "Suppose you have Model A and Model B. Both process the same inputs, but Model A has 4096 neurons while Model B has 2048 neurons. You cannot match Neuron #5 of Model A to Neuron #5 of Model B.\n\n"
+            "--- HOW SVCCA WORKS ---\n"
+            "1. Take activations matrix X from Model A and Y from Model B.\n"
+            "2. Step 1 (SVD Truncation): Run Singular Value Decomposition (SVD) on X and Y to keep only top principal components that explain 99% of variance, throwing away low-variance noise.\n"
+            "3. Step 2 (CCA Alignment): Perform CCA on the truncated subspaces to compute canonical correlations!\n\n"
+            "What SVCCA proves: SVCCA measures SUBSPACE OVERLAP between models. High SVCCA score means the models represent similar subspace geometries.\n"
+            "What SVCCA DOES NOT prove: SVCCA does NOT prove individual neurons or feature dictionaries are identical."
         ),
         "keyIdeas": [
-            _idea("Subspace comparison", "Compare spaces, not neuron indices."),
-            _idea("SVD then CCA", "Denoise/reduce, then measure canonical correlations."),
-            _idea("Affine invariance motivation", "Allow different bases."),
+            _idea("SVD Noise Reduction", "Truncates low-variance directions using SVD before running CCA to remove representational noise."),
+            _idea("Affine-Invariant Subspace Comparison", "Compares subspace overlap across different network widths and layer coordinates."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
             {"term": "SVCCA", "def": "Singular Vector Canonical Correlation Analysis."},
-            {"term": "Subspace similarity", "def": "Overlap of representational spaces ignoring basis choice."},
+            {"term": "Subspace Similarity", "def": "Degree of overlap between representational subspaces ignoring basis choice."},
         ],
-        "whatItShows": ["Representations can be similar as subspaces across training/layers"],
-        "whatItDoesNotShow": ["Same individual concepts", "Causal mechanisms"],
+        "whatItShows": ["That neural representations can be compared across architectures and layers using subspace correlation"],
+        "whatItDoesNotShow": ["That individual features or concepts match one-to-one"],
         "setconcaUse": [
-            "Compare SetConCA codes vs pointwise SAE with SVCCA/CKA.",
-            "Never equate high SVCCA with identical features.",
+            "Use SVCCA as a subspace similarity baseline when comparing SetConCA feature spaces against pointwise SAEs.",
         ],
         "masteryChecklist": [
-            "I know what SVCCA compares.",
-            "I know what it does not prove.",
+            "I can explain the two steps of SVCCA (SVD truncation then CCA).",
         ],
         "commonConfusions": [
-            {"wrong": "SVCCA = feature matching.", "right": "It is subspace correlation, not one-to-one features."},
+            {"wrong": "High SVCCA means features match one-to-one.", "right": "SVCCA measures subspace overlap, not feature-level alignment."},
         ],
         "quiz": [
-            _q("SVCCA primarily measures?", ["Subspace similarity via CCA after SVD", "Monosemanticity", "L0 sparsity", "Steering effect"], 0, "Subspace tool."),
+            _q("What does SVCCA perform before running CCA?", ["SVD truncation to keep high-variance components and remove noise", "TopK sparsity", "Linear probing", "L1 loss"], 0, "SVCCA runs SVD truncation first to reduce noise before computing canonical correlations."),
         ],
     },
     "cka": {
-        "whyWeRead": "Most practical representation similarity metric for your comparisons.",
-        "oneSentence": "CKA compares representations using Gram matrices; linear and kernel variants; invariant to orthogonal transforms.",
+        "whyWeRead": "CKA is the standard representation similarity metric used in modern deep learning research to compare model layers and architectures.",
+        "oneSentence": "Centered Kernel Alignment (CKA) measures representation similarity using Gram matrices, invariant to orthogonal transformations.",
         "plainLanguage": (
-            "CKA asks: do two representation matrices induce similar similarity structures across examples? "
-            "It uses Gram matrices (pairwise relationships among examples) rather than trying to match neuron i to neuron j.\n\n"
-            "Linear CKA is common and fast. Kernel CKA can capture more structure. "
-            "Orthogonal transforms do not change CKA — good, because bases are arbitrary.\n\n"
-            "High CKA ≠ same concepts. It means similar geometry of examples."
+            "Welcome to the CKA Masterclass (Kornblith et al., ICML 2019).\n\n"
+            "--- WHY PREVIOUS METRICS FAILED ---\n"
+            "Linear regression probes overfit high dimensions. CCA is unstable when feature dimension > sample size. SVCCA requires arbitrary SVD cutoff hyperparameter tuning.\n\n"
+            "--- HOW CKA WORKS ---\n"
+            "CKA asks: do two representations induce SIMILAR EXAMPLE-TO-EXAMPLE SIMILARITY STRUCTURES?\n\n"
+            "1. Compute N × N Gram Matrix K = X Xᵀ for Model A (where K_ij is cosine similarity between example i and example j in Model A).\n"
+            "2. Compute N × N Gram Matrix L = Y Yᵀ for Model B (pairwise similarity of examples in Model B).\n"
+            "3. CKA computes the normalized Hilbert-Schmidt Independence Criterion (HSIC) between centered matrices K and L.\n\n"
+            "Formula: CKA(K, L) = HSIC(K, L) / sqrt( HSIC(K,K) * HSIC(L,L) )\n\n"
+            "PROPERTIES:\n"
+            "• Invariant to orthogonal rotation and isotropic scaling.\n"
+            "• Robust to high dimensions and sample sizes.\n"
+            "• High CKA means two models structure example similarities similarly."
         ),
         "keyIdeas": [
-            _idea("Gram matrix view", "Compare example–example similarity patterns."),
-            _idea("Orthogonal invariance", "Rotating features doesn't change CKA."),
-            _idea("Linear vs kernel CKA", "Kernel can be more expressive."),
-            _idea("Coordinate matching is misleading", "Do not require neuron alignment."),
+            _idea("Gram Matrix Pairwise Comparison", "Compares example-to-example similarity matrices K = XXᵀ and L = YYᵀ across models."),
+            _idea("Orthogonal Invariance", "Invariant to arbitrary rotation of activation spaces."),
+            _idea("Linear vs Kernel CKA", "Linear CKA uses dot products; Kernel CKA (RBF) captures non-linear similarity structure."),
         ],
         "simplifiedMath": [
-            {"name": "CKA idea", "formula": "CKA(X,Y) ∝ HSIC(X,Y)/√(HSIC(X,X)HSIC(Y,Y))", "meaning": "Normalised similarity of centered Gram structures."},
+            {"name": "Linear CKA Formula", "formula": "CKA(X,Y) = ||Yᵀ X||_F² / ( ||Xᵀ X||_F ||Yᵀ Y||_F )", "meaning": "Normalized Frobenius norm of cross-covariance matrix between activation matrices X and Y."},
         ],
         "vocabulary": [
-            {"term": "CKA", "def": "Centered Kernel Alignment — representation similarity."},
-            {"term": "Gram matrix", "def": "Matrix of pairwise similarities among examples."},
+            {"term": "CKA", "def": "Centered Kernel Alignment."},
+            {"term": "Gram Matrix", "def": "An N × N matrix storing pairwise inner products between N example representations."},
         ],
-        "whatItShows": ["When two nets organise examples similarly"],
-        "whatItDoesNotShow": ["Identical concepts", "Causal sharing"],
+        "whatItShows": ["When two neural network layers or models organize example geometry similarly"],
+        "whatItDoesNotShow": ["That individual dictionary features or concepts are identical"],
         "setconcaUse": [
-            "Primary similarity metric across methods/seeds.",
-            "Pair with probes and interventions.",
+            "Primary metric for measuring overall representational similarity across training seeds and architectures.",
         ],
         "masteryChecklist": [
-            "I can explain CKA without saying 'neuron matching'.",
-            "I can state its non-claims.",
+            "I can explain Gram matrices and why CKA uses them.",
+            "I can state CKA's invariance properties.",
         ],
         "commonConfusions": [
-            {"wrong": "CKA high means same SAE features.", "right": "Means similar example geometry."},
+            {"wrong": "High CKA = identical SAE features.", "right": "High CKA means similar example geometry, not identical individual features."},
         ],
         "quiz": [
-            _q("CKA is invariant to?", ["Orthogonal transforms", "Arbitrary nonlinear warps always", "Relabeling classes only", "Changing the dataset freely"], 0, "Orthogonal invariance is key."),
+            _q("CKA is invariant to which transformation?", ["Orthogonal rotations and isotropic scaling", "Non-linear warps", "Arbitrary token deletion", "L0 changes"], 0, "CKA is invariant to orthogonal rotation and isotropic scaling."),
         ],
     },
     "probe-control": {
-        "whyWeRead": "Stops you from overclaiming when a probe 'finds' a property in a representation.",
-        "oneSentence": "Introduces control tasks and selectivity so probe accuracy is not mistaken for linguistic structure in the representation.",
+        "whyWeRead": "Introduces Control Tasks and Selectivity to prevent mistaking probe capacity for representational structure.",
+        "oneSentence": "Designing and Interpreting Probes with Control Tasks demonstrates that high probe accuracy alone does not prove representation structure.",
         "plainLanguage": (
-            "A probe is a supervised model predicting a property from frozen representations. "
-            "High accuracy can mean (1) the property is organised in the representation, (2) the probe memorised, or (3) the property is easy for the probe architecture.\n\n"
-            "Control tasks assign random outputs with similar structure. Selectivity compares real-task accuracy vs control-task accuracy. "
-            "High selectivity suggests the representation — not just the probe — carries the property accessibly."
+            "Welcome to Hewitt & Liang (EMNLP 2019). This paper exposed a major scientific vulnerability in NLP probing research.\n\n"
+            "--- THE PROBE FALLACY ---\n"
+            "Researchers used to train linear probes on model activations to predict part-of-speech tags. When the probe achieved 97% accuracy, they concluded: 'Layer 8 represents part-of-speech structure!'\n\n"
+            "Hewitt & Liang proved this is flawed: high-capacity probes can MEMORIZE random target labels even when representations contain NO linguistic structure!\n\n"
+            "--- THE CONTROL TASK SOLUTION ---\n"
+            "Construct a Control Task: assign random, arbitrary pseudo-labels to input words (matched in output distribution to real tags).\n"
+            "1. Train probe on Real Task -> Real Accuracy.\n"
+            "2. Train probe on Control Task -> Control Accuracy.\n"
+            "3. Selectivity = Real Accuracy - Control Accuracy.\n\n"
+            "High Selectivity proves the representation ITSELF carries accessible structure for the task, ruling out probe memorization!"
         ),
         "keyIdeas": [
-            _idea("Probe pitfalls", "Accuracy ≠ structure."),
-            _idea("Control tasks", "Randomised targets with matched complexity."),
-            _idea("Selectivity", "Real vs control performance gap."),
+            _idea("Probe Capacity vs Representational Content", "High probe accuracy can reflect probe memorization rather than representation quality."),
+            _idea("Control Tasks", "Randomized target tasks matched in cardinality and marginal distribution to real tasks."),
+            _idea("Probe Selectivity Metric", "Selectivity = Real Task Accuracy - Control Task Accuracy. Measures genuine representation structure."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Probe", "def": "Supervised decoder trained on frozen representations."},
-            {"term": "Selectivity", "def": "Difference between linguistic-task and control-task probe performance."},
+            {"term": "Probe", "def": "A supervised classifier trained on frozen representations to evaluate property extractability."},
+            {"term": "Selectivity", "def": "Real Task Accuracy minus Control Task Accuracy; measures true representation structure."},
         ],
-        "whatItShows": ["How to interpret probes more carefully"],
-        "whatItDoesNotShow": ["Causal use of the property by the network"],
+        "whatItShows": ["How to measure whether a representation genuinely structures a property using control tasks"],
+        "whatItDoesNotShow": ["That the model causally uses the probed property during generation"],
         "setconcaUse": [
-            "Any claim 'concepts are decodable from SetConCA codes' needs controls.",
+            "Every probing claim in SetConCA must report Selectivity using control tasks.",
         ],
         "masteryChecklist": [
-            "I can define selectivity.",
-            "I refuse probe accuracy alone as proof.",
+            "I can define Selectivity and explain why control tasks are mandatory.",
         ],
         "commonConfusions": [
-            {"wrong": "Probe accuracy proves the model uses the feature.", "right": "It proves extractability under the probe class."},
+            {"wrong": "High probe accuracy proves the model uses the feature.", "right": "High probe accuracy only proves extractability by that probe. Selectivity is needed to rule out memorization."},
         ],
         "quiz": [
-            _q("Control tasks help detect?", ["Probe memorisation / easy decoding", "GPU temperature", "PDF size", "BatchNorm"], 0, "Selectivity vs controls."),
+            _q("What does Probe Selectivity measure?", ["Real Task Accuracy minus Control Task Accuracy", "Total L0 count", "CKA score", "FVU"], 0, "Selectivity = Real Task Accuracy - Control Task Accuracy."),
         ],
     },
     "mdl-probe": {
-        "whyWeRead": "Distinguishes 'information exists' from 'information is efficiently organised'.",
-        "oneSentence": "MDL probing measures how much description length is needed to learn a property from a representation.",
+        "whyWeRead": "MDL Probing measures information accessibility and organization effort using minimum description length.",
+        "oneSentence": "Information-Theoretic Probing with Minimum Description Length measures how easily a property is extracted from a representation.",
         "plainLanguage": (
-            "Even if a probe can eventually reach high accuracy, the property might be buried and hard to extract. "
-            "Minimum Description Length probing asks how efficiently the probe can learn — shorter description length means more accessible organisation.\n\n"
-            "High accuracy + high description length: information exists but is messy. "
-            "High accuracy + low description length: information is neatly organised."
+            "Welcome to Voita & Titov (EMNLP 2020). MDL Probing evaluates HOW EFFICIENTLY a probe learns a task from representations.\n\n"
+            "Even if two representations both achieve 90% probe accuracy, one representation might require only 100 bits of description length for the probe to learn, while the other requires 5,000 bits!\n\n"
+            "• Short Description Length = Information is neatly, accessibly organized.\n"
+            "• Long Description Length = Information is buried and complex."
         ),
         "keyIdeas": [
-            _idea("Existence vs accessibility", "Decodable ≠ easily organised."),
-            _idea("MDL principle", "Prefer short codes for the labelling rule given the representation."),
-            _idea("Complement to accuracy", "Report both."),
+            _idea("Accessibility vs Extractability", "High probe accuracy proves extractability; short description length proves accessible organization."),
+            _idea("Prequential Code Length", "Measures total code length in bits required to transmit labels online given representations."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "MDL probing", "def": "Probe evaluation via minimum description length / online coding."},
+            {"term": "MDL Probing", "def": "Evaluating representations by the description length (bits) required for a probe to learn a task."},
         ],
-        "whatItShows": ["Organisation efficiency of information in representations"],
-        "whatItDoesNotShow": ["Causal necessity"],
+        "whatItShows": ["That description length measures how neatly information is organized in representations"],
+        "whatItDoesNotShow": ["Causal intervention effects"],
         "setconcaUse": [
-            "If SetConCA claims better concept organisation, MDL is a fitting metric.",
+            "Use MDL description length when evaluating concept organization in SetConCA codes.",
         ],
         "masteryChecklist": [
-            "I can contrast accuracy vs description length.",
+            "I can explain why description length provides deeper insight than probe accuracy alone.",
         ],
         "commonConfusions": [
-            {"wrong": "Same accuracy means same representation quality.", "right": "Learning effort/MDL can differ."},
+            {"wrong": "Same probe accuracy means identical representation quality.", "right": "Probes can require vast differences in description length to achieve the same accuracy."},
         ],
         "quiz": [
-            _q("Low description length suggests?", ["Property is organised accessibly", "Model is smaller only", "No information", "Infinite sparsity"], 0, "Accessible organisation."),
+            _q("What does a short MDL description length indicate?", ["The property is accessibly and neatly organized in the representation", "The model has zero parameters", "High L0 sparsity", "Low CKA"], 0, "Short description length means the probe learned the property easily from accessible structure."),
         ],
     },
     "transformer-circuits": {
-        "whyWeRead": "Gives the residual-stream / circuit vocabulary for where SAE features live.",
-        "oneSentence": "A framework treating transformers as circuits on a residual stream with attention as QK/OV operations.",
+        "whyWeRead": "Gives the foundational residual stream and circuit vocabulary for Mechanistic Interpretability.",
+        "oneSentence": "A Mathematical Framework for Transformer Circuits treats transformers as circuits operating on a central residual stream.",
         "plainLanguage": (
-            "Think of the residual stream as a shared communication bus. Each layer reads from it and writes updates back. "
-            "Attention heads can be factored into QK circuits (where to attend) and OV circuits (what to write).\n\n"
-            "Mechanistic interpretability studies these paths, not only input–output correlations. "
-            "SAE features are often analysed as directions in residual-stream activations."
+            "Welcome to Elhage et al. (Anthropic 2021).\n\n"
+            "--- THE RESIDUAL STREAM BUS ---\n"
+            "Think of the Transformer residual stream as a central conveyor belt running through all layers. Attention heads and MLP layers read from the stream and write updates back linearly:\n"
+            "x_{l+1} = x_l + Attention(x_l) + MLP(x_l)\n\n"
+            "--- QK AND OV CIRCUITS ---\n"
+            "Attention heads factor into two independent operations:\n"
+            "1. QK Circuit (Query-Key): Determines WHERE to attend (computes attention pattern A = Softmax(xᵀ W_Qᵀ W_K x)).\n"
+            "2. OV Circuit (Output-Value): Determines WHAT information to move (computes output W_O W_V x).\n\n"
+            "SAE features live as directions in this residual stream!"
         ),
         "keyIdeas": [
-            _idea("Residual stream", "Running embedding that blocks read/write."),
-            _idea("QK circuit", "Computes attention patterns."),
-            _idea("OV circuit", "Moves values into the stream."),
-            _idea("Paths / circuits", "Compositional routes of information."),
-            _idea("Mechanistic vs correlational", "Intervention-based understanding."),
+            _idea("Residual Stream Bus", "Linear pathway where transformer layers read inputs and additively write outputs."),
+            _idea("QK Circuit Factorization", "Query-Key matrix product determines attention patterns."),
+            _idea("OV Circuit Factorization", "Output-Value matrix product determines what feature content is written to the stream."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Residual stream", "def": "The main residual pathway carrying activations through the transformer."},
-            {"term": "Circuit", "def": "A subgraph of model components implementing a behaviour."},
+            {"term": "Residual Stream", "def": "The main linear activation pathway running through a Transformer model."},
+            {"term": "Circuit", "def": "A computational subgraph of attention heads and MLP neurons implementing a specific behavior."},
         ],
-        "whatItShows": ["A productive language for analysing transformer internals"],
-        "whatItDoesNotShow": ["Automatic discovery of all circuits"],
+        "whatItShows": ["How Transformer layers interact via linear residual stream updates and factored attention circuits"],
+        "whatItDoesNotShow": ["Automated feature dictionary extraction"],
         "setconcaUse": [
-            "Specify which residual sites your views come from.",
-            "Plan interventions on SAE directions in the stream.",
+            "Specify exact residual stream layer sites for multi-view activation extraction in SetConCA.",
         ],
         "masteryChecklist": [
-            "I can explain residual stream, QK, OV in one minute.",
+            "I can explain residual stream linear addition.",
+            "I can contrast QK circuits (where to attend) with OV circuits (what to write).",
         ],
         "commonConfusions": [
-            {"wrong": "Neurons alone are the right unit always.", "right": "Directions/circuits in the stream often matter more."},
+            {"wrong": "Layers replace the residual stream at each step.", "right": "Layers add updates to the residual stream; the main stream vector persists through the model."},
         ],
         "quiz": [
-            _q("OV circuits mainly handle?", ["What information is written", "Only tokenisation", "Only dropout", "Only FVU"], 0, "OV moves values."),
+            _q("What does the OV circuit in a Transformer attention head determine?", ["WHAT information is written to the residual stream", "WHERE attention focuses", "Sparsity L0", "PCA rank"], 0, "OV circuit determines what value content is moved to the residual stream."),
         ],
     },
     "superposition": {
-        "whyWeRead": "Conceptual foundation for why SAEs exist — more features than dimensions.",
-        "oneSentence": "Toy ReLU models demonstrate superposition, phase changes, geometric feature packing, and why polysemantic neurons appear.",
+        "whyWeRead": "The foundational Anthropic paper establishing why SAEs exist — explaining superposition, polysemanticity, and geometric feature packing.",
+        "oneSentence": "Toy Models of Superposition demonstrates how networks pack more sparse features than dimensions via almost-orthogonal directions.",
         "plainLanguage": (
-            "When features are sparse, a network can store more features than it has dimensions by packing them into almost-orthogonal directions. "
-            "Interference is the cost; nonlinearities can filter small interference.\n\n"
-            "Whether a feature is ignored, superposed, or given a dedicated dimension depends on sparsity and importance — often as a phase change. "
-            "Features form geometric arrangements (antipodal pairs, triangles, pentagons…).\n\n"
-            "SAEs are the practical response: find an overcomplete sparse dictionary that unfolds superposed features. "
-            "This paper literally lists that as Approach 2."
+            "Welcome to Anthropic's Toy Models of Superposition (Elhage et al., 2022).\n\n"
+            "--- THE PARADOX OF NEURAL REPRESENTATIONS ---\n"
+            "A model with 4,096 activation dimensions can represent TENS OF THOUSANDS of distinct concepts. How?\n\n"
+            "--- THE SUPERPOSITION HYPOTHESIS ---\n"
+            "When features are SPARSE (active rarely), a network can pack M features into d dimensions (M > d) by embedding features as ALMOST-ORTHOGONAL directions!\n\n"
+            "The Interference Cost:\n"
+            "Because features are not strictly 90° orthogonal, activating Feature A causes small non-zero interference (crosstalk) on Feature B. When features are sparse, interference happens rarely, and non-linearities (ReLU) wipe out small interference noise.\n\n"
+            "--- POLYSEMANTIC NEURONS ---\n"
+            "Because packed feature directions do not line up with standard neuron basis axes, single neurons become POLYSEMANTIC — activating for multiple unrelated concepts!\n\n"
+            "--- THREE WAYS OUT -> SPARSITY DICTIONARIES (SAES) ---\n"
+            "Anthropic listed three ways to resolve superposition:\n"
+            "1. Train models without superposition (costly).\n"
+            "2. Find an Overcomplete Basis after training (SAEs / Dictionary Learning).\n"
+            "3. Hybrid approaches."
         ),
         "keyIdeas": [
-            _idea("Superposition hypothesis", "More features than neurons via almost-orthogonal directions."),
-            _idea("Polysemantic neurons", "One neuron responds to unrelated features."),
-            _idea("Feature benefit vs interference", "Two competing forces."),
-            _idea("Phase changes", "Sharp transitions between strategies."),
-            _idea("Feature dimensionality D_i", "Fraction of a dimension a feature gets."),
-            _idea("Computation in superposition", "Even abs() circuits can run while packed."),
-            _idea("Three ways out", "No superposition / overcomplete basis (SAEs) / hybrid."),
+            _idea("Superposition Hypothesis", "Networks represent more sparse features than dimensions using almost-orthogonal directions."),
+            _idea("Polysemanticity", "Neuron axes activate for combinations of unrelated superposed features."),
+            _idea("Feature Dimensionality D_i", "Fraction of a dimension owned by feature i after accounting for interference: D_i = ||W_i||² / Σ_j (Ŵ_i·W_j)²."),
+            _idea("Phase Transitions", "Features transition sharply between unrepresented (D_i=0), superposed (0<D_i<1), and dedicated (D_i=1) as sparsity increases."),
+            _idea("SAE Motivation (Approach 2)", "SAEs find an overcomplete sparse basis to unfold superposed feature directions."),
         ],
         "simplifiedMath": [
-            {"name": "Feature dimensionality", "formula": "D_i = ||W_i||² / Σ_j (Ŵ_i·W_j)²", "meaning": "How much of its dimension a feature owns after interference."},
-            {"name": "Linear vs ReLU toy", "formula": "x' = WᵀWx vs ReLU(WᵀWx+b)", "meaning": "ReLU enables superposition solutions linear models lack."},
+            {"name": "Feature Dimensionality Formula", "formula": "D_i = \\frac{||W_i||^2}{\\sum_j (\\hat{W}_i \\cdot W_j)^2}", "meaning": "Measures effective dimensionality fraction owned by feature i after interference from all other features j."},
         ],
         "vocabulary": [
-            {"term": "Superposition", "def": "Representing more features than dimensions with interference."},
-            {"term": "Polysemantic", "def": "Unit activates for multiple unrelated concepts."},
-            {"term": "Privileged basis", "def": "Architecture makes neuron axes special (e.g. after nonlinearity)."},
+            {"term": "Superposition", "def": "Representing M > d sparse features in d dimensions using almost-orthogonal vectors."},
+            {"term": "Polysemanticity", "def": "A single neuron activating for multiple unrelated concepts due to superposition."},
+            {"term": "Privileged Basis", "def": "A coordinate basis made special by architectural non-linearities (e.g. ReLU)."},
         ],
-        "whatItShows": ["Superposition occurs in natural toy setups", "Phase structure and geometry", "Link to adversarial vulnerability"],
-        "whatItDoesNotShow": ["Exact feature geometry of large LMs", "That SAEs uniquely recover ground truth"],
+        "whatItShows": ["That superposition occurs naturally in ReLU networks under feature sparsity", "That SAE dictionary learning is the mathematical solution to unfolding superposition"],
+        "whatItDoesNotShow": ["That standard SAEs uniquely recover canonical ground-truth features"],
         "setconcaUse": [
-            "Justify SAEs as Approach 2.",
-            "Expect phase-sensitive behaviour when adding multi-view terms.",
-            "Track interference/correlation between concept views.",
+            "Use Superposition Theory as the fundamental justification for why SAE dictionaries are required.",
         ],
         "masteryChecklist": [
-            "I can explain superposition to a beginner.",
-            "I can name the three ways out.",
-            "I know D=1/2 means antipodal packing.",
+            "I can explain superposition, interference, and polysemanticity to a beginner.",
+            "I can list the three ways out and identify SAEs as Approach 2.",
         ],
         "commonConfusions": [
-            {"wrong": "More parameters always removes superposition.", "right": "Depends on sparsity/importance; may persist at scale."},
-            {"wrong": "SAEs are Approach 1.", "right": "SAEs are overcomplete basis finding (Approach 2)."},
+            {"wrong": "Superposition happens because networks don't have enough parameters.", "right": "Superposition happens because feature sparsity enables efficient high-dimensional packing even in large models."},
         ],
         "quiz": [
-            _q("Superposition stores?", ["More features than dimensions", "Fewer features always", "Only labels", "Only PCA comps"], 0, "Packed almost-orthogonal features."),
-            _q("SAEs correspond to which way out?", ["Overcomplete basis after the fact", "Delete all MLP layers", "Only adversarial training", "Ignore sparsity"], 0, "Approach 2."),
-            _q("Linear toy models superpose like ReLU toys?", ["No — ReLU enables it", "Yes always", "Only with CKA", "Only with probes"], 0, "Nonlinearity matters."),
+            _q("Superposition allows a network to represent?", ["More sparse features than activation dimensions", "Fewer features", "Only orthogonal features", "Only linear PCA"], 0, "Superposition packs more sparse features than dimensions into activation space."),
+            _q("Sparse Autoencoders represent which 'way out' of superposition?", ["Approach 2: Finding an overcomplete basis after training", "Deleting MLP layers", "Increasing learning rate", "Using PCA"], 0, "SAEs are Approach 2: finding an overcomplete sparse basis."),
         ],
     },
     "monosemanticity": {
-        "whyWeRead": "Landmark application of dictionary learning to LM activations — features vs neurons.",
-        "oneSentence": "Shows sparse dictionary learning can extract more monosemantic features than neurons in a small LM.",
+        "whyWeRead": "First large-scale application of sparse dictionary learning to extract monosemantic features from a language model.",
+        "oneSentence": "Towards Monosemanticity demonstrates that sparse autoencoders extract interpretable, monosemantic feature directions from language model activations.",
         "plainLanguage": (
-            "Towards Monosemanticity trains sparse autoencoders on transformer activations and studies the resulting features. "
-            "Many features look more monosemantic than neurons. Dictionary width and sparsity trade off against reconstruction.\n\n"
-            "They discuss feature splitting and residual polysemanticity. "
-            "Interpretation mixes manual and automated methods. "
-            "This sets cultural expectations for SAE research: show features, interventions, and limitations."
+            "Welcome to Bricken et al. (Anthropic 2023).\n\n"
+            "Anthropic applied sparse autoencoders to a 1-layer language model. They showed that SAE dictionary features are significantly more MONOSEMANTIC than raw model neurons!\n\n"
+            "Features activated for specific, consistent concepts (e.g. 'DNA sequences', 'legal terms', 'Hebrew text'). They also demonstrated feature splitting and feature interventions."
         ),
         "keyIdeas": [
-            _idea("Features vs neurons", "Directions can be cleaner units than basis neurons."),
-            _idea("Dictionary learning on activations", "SAE as dictionary."),
-            _idea("Interpretability evidence", "Examples, activation histograms, interventions."),
-            _idea("Splitting / leftover polysemanticity", "Not perfect decomposition."),
+            _idea("Monosemantic Features vs Polysemantic Neurons", "SAE features isolate pure concepts far better than individual neurons."),
+            _idea("Dictionary Scaling", "Increasing dictionary width improves feature purity but increases feature splitting."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Dictionary learning", "def": "Learning sparse codes over an overcomplete basis."},
-            {"term": "Feature splitting", "def": "One concept spread across multiple dictionary features."},
+            {"term": "Monosemanticity", "def": "The degree to which a feature or neuron responds to a single, consistent concept."},
         ],
-        "whatItShows": ["SAE features can be highly interpretable relative to neurons in studied settings"],
-        "whatItDoesNotShow": ["Completeness or uniqueness of the dictionary"],
+        "whatItShows": ["That sparse dictionary learning extracts highly interpretable monosemantic feature directions from LM activations"],
+        "whatItDoesNotShow": ["That learned dictionaries are complete or canonically unique"],
         "setconcaUse": [
-            "Adopt their qualitative+intervention reporting style.",
-            "Expect splitting as a failure mode to measure.",
+            "Adopt their qualitative feature presentation and intervention protocols in SetConCA.",
         ],
         "masteryChecklist": [
-            "I can explain why features beat neurons under superposition.",
-            "I can list limitations they emphasise.",
+            "I can explain why SAE features are more monosemantic than neurons.",
         ],
         "commonConfusions": [
-            {"wrong": "Monosemanticity paper proves SAEs solve interpretability.", "right": "It shows promising decomposition with remaining issues."},
+            {"wrong": "Towards Monosemanticity proved all SAE features are 100% pure.", "right": "It showed strong monosemanticity improvement while documenting feature splitting and leftover polysemanticity."},
         ],
         "quiz": [
-            _q("Main empirical claim?", ["SAE features can be more monosemantic than neurons", "PCA is enough", "Attention is unused", "Probes replace SAEs"], 0, "Dictionary features vs neurons."),
+            _q("What did Towards Monosemanticity demonstrate?", ["SAE dictionary features are significantly more monosemantic than raw model neurons", "Neurons are pure", "PCA replaces SAEs", "Probes fail"], 0, "Showed SAE features are much more monosemantic than raw model neurons."),
         ],
     },
     "cunningham-sae": {
-        "whyWeRead": "Central academic SAE paper — architecture, objectives, interventions, comparisons.",
-        "oneSentence": "Trains SAEs on LM activations showing sparse features are more interpretable and useful for interventions than alternatives.",
+        "whyWeRead": "Central academic SAE paper establishing sparse autoencoder architectures, reconstruction/sparsity objectives, and intervention methodology.",
+        "oneSentence": "Sparse Autoencoders Find Highly Interpretable Features in Language Models presents academic SAE training, evaluation, and activation interventions.",
         "plainLanguage": (
-            "This paper presents sparse autoencoders that reconstruct activations under a sparsity penalty, then evaluates feature interpretability and causal usefulness via interventions.\n\n"
-            "Comparisons against neurons and other decompositions matter. "
-            "Take the methodology: reconstruction+sparsity training, qualitative interpretation, and activation interventions."
+            "Welcome to Cunningham et al. (2023).\n\n"
+            "Published concurrently with Anthropic's work, Cunningham et al. established academic SAE methodology:\n"
+            "1. Train SAE: Loss = ||x - x_hat||² + λ ||z||₁\n"
+            "2. Evaluate Feature Interpretability: Compare SAE features against raw neuron baselines.\n"
+            "3. Activation Interventions: Clamp or ablate feature activations z_i to verify causal impact on language model token output probabilities!"
         ),
         "keyIdeas": [
-            _idea("SAE objective", "Reconstruct activations + sparsity."),
-            _idea("Feature interpretation", "Human/automated descriptions of when features fire."),
-            _idea("Interventions", "Clamp/ablate features to test effects."),
-            _idea("Baselines", "Neurons and other decompositions."),
+            _idea("Standard SAE Training Objective", "Reconstruction MSE plus L1 sparsity penalty."),
+            _idea("Causal Interventions", "Clamping feature activations z_i to verify direct causal control over model generation."),
         ],
         "simplifiedMath": [
-            {"name": "Typical SAE loss", "formula": "‖x−x̂‖² + λ Sparsity(z)", "meaning": "Fidelity plus sparse codes z=enc(x), x̂=dec(z)."},
+            {"name": "Standard SAE Loss", "formula": "L = ||x - x̂||² + λ ||z||₁", "meaning": "MSE reconstruction loss plus L1 sparsity penalty on hidden codes z."},
         ],
         "vocabulary": [
-            {"term": "SAE", "def": "Sparse autoencoder on model activations."},
-            {"term": "Activation intervention", "def": "Edit feature activations to test causal effects."},
+            {"term": "Activation Intervention", "def": "Modifying feature activations during forward pass to measure causal downstream effect."},
         ],
-        "whatItShows": ["Sparse dictionary features can be interpretable and intervention-relevant"],
-        "whatItDoesNotShow": ["Canonical uniqueness", "Perfect completeness"],
+        "whatItShows": ["That SAE features enable precise causal intervention steering of LM output probabilities"],
+        "whatItDoesNotShow": ["Canonical uniqueness of dictionaries across random seeds"],
         "setconcaUse": [
-            "Pointwise SAE from this lineage is your primary baseline.",
-            "Replicate intervention-style evaluations.",
+            "Pointwise SAEs from this paper are the core baseline for SetConCA comparisons.",
         ],
         "masteryChecklist": [
-            "I can write the SAE loss in words.",
-            "I know why interventions matter beyond FVU.",
+            "I can write the classic SAE loss and describe activation intervention evaluation.",
         ],
         "commonConfusions": [
-            {"wrong": "Interpretable examples prove the dictionary is complete.", "right": "Examples are existence proofs, not completeness."},
+            {"wrong": "Interpretable activation text alone proves causal utility.", "right": "Causal interventions (clamping/ablation) are required to verify true model impact."},
         ],
         "quiz": [
-            _q("SAE training typically minimises?", ["Reconstruction + sparsity", "Only CKA", "Only InfoNCE", "Only accuracy"], 0, "Classic SAE objective."),
+            _q("How do Cunningham et al. verify causal feature importance?", ["By clamping/ablating feature activations during forward pass and measuring output probability changes", "By plotting FVU", "By computing CKA", "By running PCA"], 0, "Activation interventions (clamping/ablating) verify direct causal impact on model outputs."),
         ],
     },
     "scaling-mono": {
-        "whyWeRead": "Shows what happens when SAE dictionaries scale to frontier models — and what scale does not buy.",
-        "oneSentence": "Scales monosemantic feature extraction to Claude 3 Sonnet with very large dictionaries.",
+        "whyWeRead": "Shows what happens when SAE dictionaries are scaled to frontier models (Claude 3 Sonnet) — and what scale alone does not resolve.",
+        "oneSentence": "Scaling Monosemanticity extracts millions of interpretable features from Claude 3 Sonnet using massive sparse autoencoders.",
         "plainLanguage": (
-            "Scaling dictionaries extracts many fascinating features, including safety-relevant ones. "
-            "But scale alone does not guarantee completeness, uniqueness, or a canonical decomposition.\n\n"
-            "Read this to calibrate ambition: impressive features ≠ solved interpretability."
+            "Welcome to Templeton et al. (Anthropic 2024).\n\n"
+            "Anthropic scaled SAEs to Claude 3 Sonnet, extracting millions of features including safety-relevant concepts ('Golden Gate Bridge', 'bias', 'jailbreaks', 'code bugs').\n\n"
+            "CRITICAL TAKEAWAY: While scale produces fascinating features, scale ALONE does not solve feature absorption, splitting, or non-canonicality!"
         ),
         "keyIdeas": [
-            _idea("Scale features & models", "Large dictionaries on large LMs."),
-            _idea("Rich feature zoo", "Many interpretable features appear."),
-            _idea("Limits remain", "Completeness/uniqueness unresolved."),
+            _idea("Frontier Scale SAEs", "Scales dictionary learning to multi-billion parameter frontier language models."),
+            _idea("Safety-Relevant Features", "Discovers high-level abstract safety, refusal, and concept features."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Dictionary width", "def": "Number of learned features."},
+            {"term": "Frontier SAE", "def": "Massive dictionary sparse autoencoder trained on state-of-the-art language models."},
         ],
-        "whatItShows": ["SAE methods scale to large models with interesting features"],
-        "whatItDoesNotShow": ["Canonical units of analysis"],
+        "whatItShows": ["That SAE methods scale to frontier LLMs and reveal safety-relevant feature representations"],
+        "whatItDoesNotShow": ["That scaling solves structural dictionary failure modes"],
         "setconcaUse": [
-            "Do not claim scale replaces careful multi-view evaluation.",
+            "Do not rely on scale alone; focus on structural multi-view coordination in SetConCA.",
         ],
         "masteryChecklist": [
-            "I can separate 'many cool features' from 'problem solved'.",
+            "I can articulate what scaling SAEs achieves and what open limitations remain.",
         ],
         "commonConfusions": [
-            {"wrong": "Bigger dictionary ⇒ true concepts.", "right": "Bigger can also mean more splitting/noise features."},
+            {"wrong": "Bigger dictionary width eliminates all interpretability errors.", "right": "Bigger dictionaries increase feature splitting and non-canonicality issues."},
         ],
         "quiz": [
-            _q("Scaling monosemanticity shows scale alone?", ["Does not guarantee canonical decomposition", "Solves absorption", "Removes need for sparsity", "Replaces probes"], 0, "Limits remain."),
+            _q("Does scaling SAE dictionaries to frontier models solve feature non-canonicality?", ["No, structural limitations remain regardless of scale", "Yes, scale solves everything", "Yes, L0 drops to 0", "Yes, PCA is eliminated"], 0, "Structural limitations (non-canonicality, absorption) persist regardless of model scale."),
         ],
     },
     "topk-sae": {
-        "whyWeRead": "Main modern reference for TopK SAEs, scaling, and matched evaluation frontiers.",
-        "oneSentence": "Scales and evaluates SAEs with TopK activations, emphasising fair comparisons at matched sparsity/fidelity.",
+        "whyWeRead": "TopK SAE is the modern gold standard architecture for sparse autoencoder research.",
+        "oneSentence": "Scaling and Evaluating Sparse Autoencoders establishes TopK SAEs, expansion factor scaling, and matched Pareto frontier comparisons.",
         "plainLanguage": (
-            "TopK SAEs enforce exact sparsity without L1 shrinkage of active magnitudes. "
-            "Gao et al. study how dictionary width, sparsity, and reconstruction trade off as models scale.\n\n"
-            "Key methodological point: compare SAEs at similar L0 or similar FVU — not at each method's favourite hyperparameter."
+            "Welcome to Gao et al. (OpenAI 2024).\n\n"
+            "OpenAI introduced TopK SAEs:\n"
+            "z = TopK( W_enc x + b_enc, k )\n"
+            "Loss = ||x - W_dec z - b_dec||²\n\n"
+            "By keeping the exact top k activations without an L1 penalty, TopK SAEs completely eliminate L1 magnitude shrinkage, achieving a dramatically superior Reconstruction vs. Sparsity Pareto curve!"
         ),
         "keyIdeas": [
-            _idea("TopK activation", "Exact k actives per token (or site)."),
-            _idea("Expansion / width", "Dictionary size relative to activation dim."),
-            _idea("Reconstruction–sparsity frontier", "Pareto thinking."),
-            _idea("Matched comparisons", "Fair operating points."),
+            _idea("TopK Hard Sparsity", "Keeps exact top k activations per token, eliminating magnitude shrinkage."),
+            _idea("Matched Pareto Comparison", "Insists that SAE architectures must be compared at matched L0 or matched FVU operating points."),
         ],
         "simplifiedMath": [
-            {"name": "TopK SAE", "formula": "z=TopK(enc(x),k), x̂=dec(z)", "meaning": "Hard sparsity then decode."},
+            {"name": "TopK SAE Encoder", "formula": "z = TopK( W_{enc} (x - b_{dec}) + b_{enc}, k )", "meaning": "Keep top k pre-activations; set remaining entries to 0."},
         ],
         "vocabulary": [
-            {"term": "Expansion factor", "def": "dictionary_width / d_model (roughly)."},
-            {"term": "L0", "def": "Average number of active features."},
+            {"term": "TopK SAE", "def": "Sparse autoencoder using hard TopK activation operator."},
         ],
-        "whatItShows": ["TopK scales; evaluation must be frontier-aware"],
-        "whatItDoesNotShow": ["That TopK solves absorption/non-canonicality"],
+        "whatItShows": ["That TopK SAEs beat L1 SAEs across reconstruction-sparsity Pareto frontiers"],
+        "whatItDoesNotShow": ["That TopK solves feature absorption or non-canonicality"],
         "setconcaUse": [
-            "Default architecture family for baselines.",
-            "Always plot Pareto curves for variants.",
+            "Default baseline architecture family for SetConCA evaluations.",
         ],
         "masteryChecklist": [
-            "I can explain TopK vs L1.",
-            "I insist on matched sparsity/fidelity comparisons.",
+            "I can explain why TopK beats L1 on Pareto curves.",
         ],
         "commonConfusions": [
-            {"wrong": "Best paper numbers at any hyperparams are comparable.", "right": "Compare on the same frontier point."},
+            {"wrong": "TopK uses an L1 penalty.", "right": "TopK uses NO L1 penalty. Sparsity is enforced by hard TopK selection."},
         ],
         "quiz": [
-            _q("Fair SAE comparison needs?", ["Matched sparsity or fidelity", "Only biggest width", "Only lowest loss anywhere", "Only CKA"], 0, "Operating point matching."),
+            _q("Why do TopK SAEs achieve better Pareto frontiers than L1 SAEs?", ["TopK eliminates L1 magnitude shrinkage on active features", "TopK uses more parameters", "TopK runs faster on CPU", "TopK uses CKA"], 0, "TopK eliminates L1 magnitude shrinkage on active feature values."),
         ],
     },
     "gated-sae": {
-        "whyWeRead": "Fixes L1 shrinkage by separating gate (whether active) from magnitude.",
-        "oneSentence": "Gated SAEs improve the sparsity–fidelity Pareto by decoupling activation and magnitude.",
+        "whyWeRead": "Gated SAEs fix L1 shrinkage while maintaining full differentiability by separating gating from magnitude.",
+        "oneSentence": "Improving Dictionary Learning with Gated Sparse Autoencoders decouples activation gating from feature magnitude calculation.",
         "plainLanguage": (
-            "L1 penalties encourage sparsity but also shrink the magnitude of active features (shrinkage), hurting reconstruction. "
-            "Gated SAEs use a gate to decide if a feature is on, and a separate path for magnitude.\n\n"
-            "Result: better tradeoffs on the Pareto frontier versus standard L1 SAEs."
+            "Welcome to Rajamanoharan et al. (DeepMind 2024).\n\n"
+            "Gated SAEs split the encoder into two parallel paths:\n"
+            "1. Gate Path: π = Heaviside( W_gate x + b_gate ) -> Binary on/off mask.\n"
+            "2. Magnitude Path: m = ReLU( W_mag x + b_mag ) -> Unpenalized positive magnitude.\n"
+            "3. Output: z = π ⊙ m\n\n"
+            "This fixes L1 magnitude shrinkage while remaining fully differentiable!"
         ),
         "keyIdeas": [
-            _idea("Shrinkage problem", "L1 reduces active magnitudes."),
-            _idea("Gate vs magnitude", "Two roles separated."),
-            _idea("Pareto improvement", "Better recon at given sparsity."),
+            _idea("Gating vs Magnitude Separation", "Decouples feature firing decision from feature strength calculation."),
+            _idea("Shrinkage Elimination", "Allows active features to maintain unpenalized magnitudes."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Shrinkage", "def": "Underestimation of active feature magnitudes due to L1."},
-            {"term": "Gated SAE", "def": "SAE with separate gating and magnitude pathways."},
+            {"term": "Gated SAE", "def": "SAE architecture separating gating mask from feature magnitude calculation."},
         ],
-        "whatItShows": ["Architectural fix for L1 shrinkage"],
-        "whatItDoesNotShow": ["Canonical features"],
+        "whatItShows": ["That separating gating from magnitude eliminates L1 shrinkage cleanly"],
+        "whatItDoesNotShow": ["That Gated SAEs resolve non-canonical dictionary unit issues"],
         "setconcaUse": [
-            "Include Gated SAE in architecture bake-offs.",
+            "Include Gated SAE in multi-architecture bake-offs.",
         ],
         "masteryChecklist": [
-            "I can explain shrinkage and how gating helps.",
+            "I can draw the Gated SAE dual-encoder diagram.",
         ],
         "commonConfusions": [
-            {"wrong": "Gating is only for MoE routers.", "right": "Here gating is inside the SAE feature activation."},
+            {"wrong": "Gated SAE is identical to TopK.", "right": "TopK uses hard k selection. Gated SAE uses dual gating/magnitude pathways with L1 on the gate."},
         ],
         "quiz": [
-            _q("Gated SAEs mainly address?", ["L1 magnitude shrinkage", "Tokenisation", "Dropout only", "CKA only"], 0, "Separate gate/magnitude."),
+            _q("How do Gated SAEs eliminate magnitude shrinkage?", ["By using separate neural pathways for gating decisions and magnitude calculations", "By setting k=1", "By removing decoders", "By running PCA"], 0, "Separates gating decisions from magnitude calculations so magnitudes are unpenalized."),
         ],
     },
     "jumprelu": {
-        "whyWeRead": "Learned thresholds and more direct L0-style sparsity — why plain L1 is no longer default.",
-        "oneSentence": "JumpReLU SAEs use a discontinuous thresholded activation to improve reconstruction fidelity under sparsity.",
+        "whyWeRead": "JumpReLU uses learned thresholds for direct L0-style sparsity optimization.",
+        "oneSentence": "Jumping Ahead: Improving Reconstruction Fidelity with JumpReLU SAEs uses discontinuous thresholded activations.",
         "plainLanguage": (
-            "JumpReLU introduces a jump discontinuity / threshold: below threshold the feature is off; above it contributes. "
-            "This approximates hard sparsity better than soft L1 and can improve fidelity at a given sparsity level.\n\n"
-            "Together with TopK and Gated, it shows the field moved past vanilla L1 SAEs."
+            "Welcome to Rajamanoharan et al. (2024).\n\n"
+            "JumpReLU applies a feature-specific threshold θ_i:\n"
+            "z_i = x_i if x_i > θ_i else 0\n\n"
+            "Because below threshold θ_i the feature is strictly zero and above θ_i it retains its full value, JumpReLU approximates direct L0 optimization better than soft L1 penalties."
         ),
         "keyIdeas": [
-            _idea("Learned threshold", "Feature-specific activation barrier."),
-            _idea("L0-style goal", "Penalise count of actives more directly."),
-            _idea("Fidelity gains", "Better recon–sparsity tradeoffs reported."),
+            _idea("Learned Feature Thresholds", "Each feature learns an explicit activation barrier threshold θ_i."),
+            _idea("Direct L0 Approximation", "Avoids magnitude shrinkage while learning per-feature firing barriers."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "JumpReLU", "def": "ReLU-like activation with a jump/threshold for sparsity."},
+            {"term": "JumpReLU", "def": "Thresholded activation function jumping from 0 to value above threshold θ."},
         ],
-        "whatItShows": ["Thresholded activations help SAE frontiers"],
-        "whatItDoesNotShow": ["Unique correct features"],
+        "whatItShows": ["That thresholded JumpReLU activations improve SAE Pareto frontiers"],
+        "whatItDoesNotShow": ["Unique feature canonicality"],
         "setconcaUse": [
             "Include JumpReLU in matched Pareto comparisons.",
         ],
         "masteryChecklist": [
-            "I can place JumpReLU among TopK/Gated/L1.",
+            "I can explain JumpReLU thresholding.",
         ],
         "commonConfusions": [
-            {"wrong": "JumpReLU removes need for evaluation.", "right": "Architecture ≠ interpretability proof."},
+            {"wrong": "JumpReLU threshold θ is fixed across all features.", "right": "JumpReLU learns an independent threshold θ_i for each feature."},
         ],
         "quiz": [
-            _q("JumpReLU emphasises?", ["Learned thresholds / L0-like sparsity", "Only CCA", "Only probes", "Only Deep Sets"], 0, "Thresholded activation."),
+            _q("What does JumpReLU use to determine feature firing?", ["Learned per-feature threshold barriers θ_i", "Fixed TopK", "PCA variance", "CKA score"], 0, "JumpReLU uses learned per-feature thresholds θ_i."),
         ],
     },
     "batchtopk": {
-        "whyWeRead": "Relaxes per-token exact-k to a batch sparsity budget — flexible for heterogeneous activations.",
-        "oneSentence": "BatchTopK constrains total actives across a batch so hard tokens can use more features.",
+        "whyWeRead": "BatchTopK applies TopK across a whole minibatch, allowing variable active features per token.",
+        "oneSentence": "BatchTopK Sparse Autoencoders constrain total active features across an entire batch for flexible allocation.",
         "plainLanguage": (
-            "Exact TopK forces every token to use the same number of features. "
-            "Some activations are simple; some are complex. BatchTopK shares a sparsity budget across the batch.\n\n"
-            "This can improve allocation efficiency while keeping an overall L0 target."
+            "Welcome to Bussmann & Leask (2024).\n\n"
+            "Standard TopK forces EVERY token to activate exactly k features (e.g. k=32). But simple tokens ('the', '.') need only 5 features, while complex tokens ('quantum electrodynamics') need 60 features!\n\n"
+            "BatchTopK applies TopK across all token activations in a MINIBATCH simultaneously! Complex tokens get more active features, simple tokens get fewer, improving overall allocation efficiency."
         ),
         "keyIdeas": [
-            _idea("Batch-level cardinality", "Sparsity across many tokens."),
-            _idea("Heterogeneous difficulty", "Hard examples get more features."),
-            _idea("Still TopK family", "Hard selection, not L1."),
+            _idea("Minibatch-Level Sparsity Budget", "Allocates feature sparsity dynamically based on token complexity."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "BatchTopK", "def": "TopK applied with a batch-wide sparsity constraint."},
+            {"term": "BatchTopK", "def": "TopK selection applied across an entire minibatch rather than per-token."},
         ],
-        "whatItShows": ["Flexible sparsity allocation helps"],
-        "whatItDoesNotShow": ["Solved absorption"],
+        "whatItShows": ["That flexible per-token sparsity allocation improves reconstruction efficiency"],
+        "whatItDoesNotShow": ["Solved feature absorption"],
         "setconcaUse": [
-            "Useful when views/tokens vary wildly in complexity.",
+            "Useful when activation view sets vary wildly in token complexity.",
         ],
         "masteryChecklist": [
-            "I can contrast per-token TopK vs BatchTopK.",
+            "I can explain why BatchTopK beats fixed per-token TopK for heterogeneous tokens.",
         ],
         "commonConfusions": [
-            {"wrong": "BatchTopK means no sparsity.", "right": "It redistributes a fixed budget."},
+            {"wrong": "BatchTopK removes sparsity constraints.", "right": "BatchTopK enforces the exact same total sparsity budget across the batch, but distributes it dynamically."},
         ],
         "quiz": [
-            _q("BatchTopK allows?", ["Variable actives per token under a batch budget", "Infinite actives", "No decoder", "Only PCA"], 0, "Shared budget."),
+            _q("Why is BatchTopK advantageous for language model tokens?", ["Allows complex tokens to use more features while simple tokens use fewer", "Eliminates decoders", "Runs offline", "Uses PCA"], 0, "Dynamically allocates feature budgets based on token complexity across the minibatch."),
         ],
     },
     "matryoshka": {
-        "whyWeRead": "Multi-level nested features — relevant to atomic vs high-level concepts.",
-        "oneSentence": "Matryoshka SAEs learn useful features at multiple sparsity/prefix levels within one dictionary.",
+        "whyWeRead": "Matryoshka SAEs learn multi-granularity nested features within a single dictionary model.",
+        "oneSentence": "Learning Multi-Level Features with Matryoshka Sparse Autoencoders creates nested feature prefixes for coarse-to-fine concepts.",
         "plainLanguage": (
-            "Choosing dictionary size creates tension: small dictionaries merge concepts; large ones split. "
-            "Matryoshka training encourages nested subsets of features to remain useful at multiple granularities.\n\n"
-            "This connects to questions about hierarchical concepts in SetConCA."
+            "Welcome to Bussmann et al. (2025).\n\n"
+            "Named after Russian nesting dolls, Matryoshka SAEs train feature dictionaries so that NESTED PREFIXES of features (e.g. first 500, first 2,000, first 8,000) form valid, high-quality representations at different granularities!\n\n"
+            "This resolves the dictionary-size dilemma by capturing coarse high-level concepts and fine-grained sub-concepts inside one trained dictionary."
         ),
         "keyIdeas": [
-            _idea("Nested dictionaries", "Prefixes of features remain meaningful."),
-            _idea("Multi-granularity", "Coarse and fine features together."),
-            _idea("Dictionary-size tension", "Motivates nested training."),
+            _idea("Nested Feature Dictionaries", "Feature prefixes satisfy reconstruction at multiple capacity levels simultaneously."),
+            _idea("Multi-Granularity Concepts", "Coarse features appear in early indices; fine sub-features appear in later indices."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Matryoshka representation", "def": "Nested multi-size useful prefixes of a representation."},
+            {"term": "Matryoshka SAE", "def": "SAE trained with nested feature loss prefixes for multi-scale representations."},
         ],
-        "whatItShows": ["One SAE can serve multiple sparsity levels"],
+        "whatItShows": ["That nested multi-granularity feature dictionaries can be trained in a single model"],
         "whatItDoesNotShow": ["True ontological hierarchy of language"],
         "setconcaUse": [
-            "Inspiration for multi-granularity concept structure.",
+            "Inspiration for multi-granularity concept hierarchy in SetConCA.",
         ],
         "masteryChecklist": [
-            "I can explain the dictionary-size tension Matryoshka targets.",
+            "I can explain how Matryoshka SAEs nest feature prefixes.",
         ],
         "commonConfusions": [
-            {"wrong": "Nested training proves hierarchy is correct.", "right": "It encourages multi-scale usefulness."},
+            {"wrong": "Matryoshka requires training separate SAE models for each size.", "right": "Matryoshka trains a single SAE model with nested prefix loss terms."},
         ],
         "quiz": [
-            _q("Matryoshka SAEs aim for?", ["Useful multi-level / nested features", "Only one active feature ever", "Removing sparsity", "Only CKA"], 0, "Nested granularities."),
+            _q("What characterizes a Matryoshka SAE?", ["Nested feature prefixes providing coarse-to-fine concept granularities in one model", "Linear CCA", "Single feature dictionary of size 1", "No encoder"], 0, "Nested feature prefixes provide multi-granularity representations in one model."),
         ],
     },
     "principled-eval": {
-        "whyWeRead": "Shows reconstruction/sparsity proxies are insufficient for interpretability and control claims.",
-        "oneSentence": "Argues for evaluations tied to task-relevant approximation, control, and interpretation.",
+        "whyWeRead": "Demonstrates that reconstruction and sparsity proxy metrics are insufficient to prove interpretability or control.",
+        "oneSentence": "Towards Principled Evaluations of Sparse Autoencoders argues for task-relevant control and intervention evaluations.",
         "plainLanguage": (
-            "A nice FVU and L0 do not mean features support the interventions or interpretations you care about. "
-            "This paper pushes evaluations that test whether SAE features help approximate and control model behaviour on tasks.\n\n"
-            "Internalise: proxy metrics are necessary hygiene, not the scientific endpoint."
+            "Welcome to Makelov et al. (2024).\n\n"
+            "This paper warns the field: low FVU and low L0 are NECESSARY HYGIENE, BUT NOT SUFFICIENT PROOF of interpretability!\n\n"
+            "A dictionary can achieve great FVU while completely failing downstream intervention, steering, or task-control tests. Always evaluate claim-aligned downstream tasks."
         ),
         "keyIdeas": [
-            _idea("Proxy insufficiency", "Recon+sparsity ≠ interpretability."),
-            _idea("Control & task relevance", "Test useful interventions."),
-            _idea("Principled eval design", "Align metrics with claims."),
+            _idea("Insufficiency of Proxy Metrics", "Reconstruction and sparsity do not guarantee feature interpretability or control."),
+            _idea("Task-Relevant Evaluation", "Evaluates SAEs on downstream task performance, causal interventions, and circuit editing."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Proxy metric", "def": "Easy measure that may not track the true goal."},
+            {"term": "Proxy Metric", "def": "An easy-to-compute metric (like FVU or L0) that may not track true research goals."},
         ],
-        "whatItShows": ["Need claim-aligned evaluations"],
-        "whatItDoesNotShow": ["A single universal SAE score"],
+        "whatItShows": ["That SAE research must evaluate downstream task performance beyond proxy metrics"],
+        "whatItDoesNotShow": ["A single universal metric for all interpretability claims"],
         "setconcaUse": [
-            "Write claims first, then pick metrics that could falsify them.",
+            "Design SetConCA evaluation around claim-aligned task performance, not just FVU.",
         ],
         "masteryChecklist": [
-            "I refuse FVU-only papers as sufficient.",
+            "I refuse papers that claim success based on FVU alone.",
         ],
         "commonConfusions": [
-            {"wrong": "Best FVU SAE is best interpretable SAE.", "right": "Not necessarily."},
+            {"wrong": "The SAE with lowest FVU is automatically the most interpretable.", "right": "Lowest FVU only means best variance reconstruction; it can still suffer from feature absorption and non-canonicality."},
         ],
         "quiz": [
-            _q("Principled evaluations emphasise?", ["Task-relevant control/interpretation not just proxies", "Only lower L0", "Only wider dictionaries", "Only faster training"], 0, "Claim-aligned tests."),
+            _q("Why are FVU and L0 called 'proxy metrics'?", ["They measure hygiene but do not guarantee downstream feature interpretability or control", "They are inaccurate", "They require GPUs", "They are non-linear"], 0, "Proxy metrics measure hygiene but do not guarantee downstream task control or interpretability."),
         ],
     },
     "absorption": {
-        "whyWeRead": "Defines feature splitting and absorption — core SAE failure modes.",
-        "oneSentence": "Studies how SAE features split concepts across latents or absorb related concepts into one latent.",
+        "whyWeRead": "Defines Feature Splitting and Feature Absorption — two core empirical failure modes of SAEs.",
+        "oneSentence": "Studying Feature Splitting and Absorption in Sparse Autoencoders details how concepts fragment or get swallowed by latents.",
         "plainLanguage": (
-            "Splitting: one concept distributed across several features. "
-            "Absorption: one feature captures several related concepts (often hierarchical or correlated).\n\n"
-            "Both break the naive hope that each latent is one atomic concept. "
-            "Any SetConCA claim about concept recovery must measure these."
+            "Welcome to Chanin et al. (2024).\n\n"
+            "This paper details two fundamental structural flaws of SAEs:\n\n"
+            "1. Feature Splitting: A single concept fragments into dozens of sub-features as dictionary size grows.\n"
+            "2. Feature Absorption: A broad feature 'swallows' or absorbs related specific sub-concepts when dictionary width or sparsity is constrained.\n\n"
+            "Both failure modes break the naive hope that '1 SAE Latent = 1 Ground-Truth Atomic Concept'."
         ),
         "keyIdeas": [
-            _idea("Feature splitting", "Fragmentation of one concept."),
-            _idea("Feature absorption", "Merger of related concepts."),
-            _idea("Measurement methods", "Track how concepts map to latents."),
+            _idea("Feature Splitting", "Fragmentation of a single concept across multiple dictionary latents."),
+            _idea("Feature Absorption", "Merger/swallowing of specific sub-concepts into a single dominant latent."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Absorption", "def": "One feature eating multiple related concepts."},
-            {"term": "Splitting", "def": "One concept spread over multiple features."},
+            {"term": "Feature Absorption", "def": "A failure mode where one SAE feature absorbs multiple related sub-concepts."},
+            {"term": "Feature Splitting", "def": "A failure mode where one concept splits across many feature latents."},
         ],
-        "whatItShows": ["Systematic failure modes of SAE feature = concept"],
-        "whatItDoesNotShow": ["That multi-view automatically fixes them"],
+        "whatItShows": ["That SAE latents systematically absorb or split concepts depending on dictionary capacity"],
+        "whatItDoesNotShow": ["That single-view SAEs can automatically resolve absorption"],
         "setconcaUse": [
-            "Primary failure modes to beat with multi-view supervision — if you can demonstrate it.",
+            "Target Feature Absorption as a primary failure mode to beat using multi-view set supervision in SetConCA.",
         ],
         "masteryChecklist": [
-            "I can define splitting vs absorption with examples.",
+            "I can define Splitting and Absorption with concrete examples.",
         ],
         "commonConfusions": [
-            {"wrong": "More sparsity prevents absorption always.", "right": "Correlated concepts can still merge, especially in narrow dictionaries."},
+            {"wrong": "Absorption only happens in bad code implementation.", "right": "Absorption is a structural property of sparse dictionary optimization under capacity constraints."},
         ],
         "quiz": [
-            _q("Absorption means?", ["One feature captures several related concepts", "No features fire", "Only PCA", "Only CKA"], 0, "Merged concepts."),
+            _q("What occurs during Feature Absorption?", ["A single dominant feature swallows related specific sub-concepts", "A feature deletes itself", "FVU drops to 0", "PCA rank increases"], 0, "Feature Absorption occurs when one feature swallows related specific sub-concepts."),
         ],
     },
     "non-canonical": {
-        "whyWeRead": "Critical narrative paper: SAEs need not find unique units of analysis.",
-        "oneSentence": "Argues different SAEs can yield different decompositions while all looking reasonable; studies stitching and higher-level structure.",
+        "whyWeRead": "Critical narrative paper proving SAEs do not find unique, canonical units of analysis.",
+        "oneSentence": "Sparse Autoencoders Do Not Find Canonical Units of Analysis demonstrates that different random seeds yield non-identical feature dictionaries of equal quality.",
         "plainLanguage": (
-            "If two SAEs both reconstruct well and look interpretable but disagree on features, there is no single canonical sparse basis. "
-            "This undermines 'we found the true features' rhetoric.\n\n"
-            "Stitching analyses and higher-level structure become important. "
-            "For SetConCA: aim for stability and causal usefulness under stated assumptions — not metaphysical uniqueness."
+            "Welcome to Leask et al. (2025).\n\n"
+            "If you train two SAEs (Seed A and Seed B) on the exact same layer with identical hyperparameters, do they discover the same features?\n\n"
+            "NO! Leask et al. proved that Seed A and Seed B discover DIFFERENT, non-identical feature dictionaries despite achieving identical reconstruction and sparsity!\n\n"
+            "CONCLUSION: There is NO single 'canonical' sparse basis in activation space. Claims that 'we discovered the true fundamental features' are scientifically false."
         ),
         "keyIdeas": [
-            _idea("Non-uniqueness", "Many good dictionaries possible."),
-            _idea("Stitching", "Relate features across SAEs."),
-            _idea("Units of analysis", "What we treat as atomic may be convention."),
+            _idea("Non-Canonicality Proof", "Multiple non-identical dictionary bases span activation space with equal quality."),
+            _idea("Stitching Analysis", "Cross-dictionary feature mapping reveals lack of 1-to-1 feature alignment across seeds."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Canonical decomposition", "def": "A unique privileged feature basis — often unavailable."},
-            {"term": "Stitching", "def": "Mapping/aligning features between dictionaries."},
+            {"term": "Canonical Basis", "def": "A unique, privileged feature decomposition — proven to be absent in standard SAEs."},
         ],
-        "whatItShows": ["Reasonable SAEs need not agree"],
-        "whatItDoesNotShow": ["That interpretability is impossible"],
+        "whatItShows": ["That standard SAEs do not find unique canonical feature bases across random seeds"],
+        "whatItDoesNotShow": ["That interpretability research is useless"],
         "setconcaUse": [
-            "Frame contributions as stability/completeness/causal utility under assumptions.",
-            "Cross-seed and cross-architecture agreement tests.",
+            "Test whether multi-view set supervision in SetConCA increases cross-seed dictionary canonicality (stitching agreement).",
         ],
         "masteryChecklist": [
-            "I can explain non-canonical decompositions.",
-            "I avoid 'the true features' claims.",
+            "I can explain why seed-variance tests disprove dictionary uniqueness.",
         ],
         "commonConfusions": [
-            {"wrong": "Disagreement means SAEs are useless.", "right": "Means uniqueness fails; usefulness can remain."},
+            {"wrong": "Different seeds finding different features means SAEs failed completely.", "right": "It means uniqueness fails; dictionaries are frame representations rather than unique canonical bases."},
         ],
         "quiz": [
-            _q("Non-canonical means?", ["Different good SAEs can disagree on features", "SAEs never reconstruct", "Probes always fail", "CCA is impossible"], 0, "No unique units."),
+            _q("What did Leask et al. prove regarding SAE feature dictionaries?", ["Different random seeds yield different non-identical feature dictionaries of equal quality", "All seeds find identical features", "SAEs cannot be trained", "PCA is unique"], 0, "Proved different random seeds produce non-identical feature dictionaries of equal quality."),
         ],
     },
     "saebench": {
-        "whyWeRead": "Standard multi-family benchmark suite you should know and partially replicate.",
-        "oneSentence": "A comprehensive benchmark covering detection, probing, steering, reconstruction, and more for SAEs.",
+        "whyWeRead": "Standard multi-family benchmark suite for evaluating sparse autoencoders.",
+        "oneSentence": "SAEBench provides a standardized multi-family benchmark covering reconstruction, sparsity, probing, steering, and absorption.",
         "plainLanguage": (
-            "SAEBench gathers multiple evaluation families so progress is not judged by one proxy. "
-            "Feature detection, sparse probing, steering/interventions, and reconstruction/sparsity all appear.\n\n"
-            "Proxy metrics do not always predict downstream usefulness — another reason for a suite."
+            "Welcome to Karvonen et al. (2025).\n\n"
+            "SAEBench provides a unified benchmark suite evaluating SAEs across 5 core families:\n"
+            "1. Reconstruction & Loss Recovery\n"
+            "2. Sparsity & L0 Efficiency\n"
+            "3. Feature Interpretability & Monosemanticity\n"
+            "4. Sparse Probing (SCR)\n"
+            "5. Steering & Causal Interventions"
         ),
         "keyIdeas": [
-            _idea("Multiple families", "Broad coverage of claims."),
-            _idea("Sparse probing / detection", "Find known concepts."),
-            _idea("Steering", "Control behaviour via features."),
-            _idea("Proxy vs downstream", "Not always aligned."),
+            _idea("Multi-Family Evaluation Suite", "Standardized suite evaluating SAEs across 5 distinct functional families."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "SAEBench", "def": "Benchmark suite for sparse autoencoders."},
+            {"term": "SAEBench", "def": "Standardized evaluation benchmark suite for sparse autoencoders."},
         ],
-        "whatItShows": ["A practical evaluation menu for SAE methods"],
-        "whatItDoesNotShow": ["That every metric is perfectly reliable (see next paper)"],
+        "whatItShows": ["A standardized menu of evaluation families for fair SAE comparison"],
+        "whatItDoesNotShow": ["That winning one metric guarantees overall superiority"],
         "setconcaUse": [
-            "Adopt a subset of SAEBench families in your protocol.",
+            "Adopt SAEBench evaluation protocols to benchmark SetConCA against standard SAEs.",
         ],
         "masteryChecklist": [
-            "I can name several SAEBench evaluation families.",
+            "I can name the 5 evaluation families in SAEBench.",
         ],
         "commonConfusions": [
-            {"wrong": "Winning one SAEBench metric wins interpretability.", "right": "Look across families."},
+            {"wrong": "Evaluating on one SAEBench metric is enough.", "right": "Evaluations must report results across all 5 families."},
         ],
         "quiz": [
-            _q("SAEBench's point is?", ["Multiple evaluation families", "Only FVU", "Only width", "Only speed"], 0, "Broad suite."),
+            _q("How many evaluation families does SAEBench cover?", ["5 core families (reconstruction, sparsity, probing, steering, interpretability)", "1 metric only", "100 metrics", "0 metrics"], 0, "SAEBench covers 5 core evaluation families."),
         ],
     },
     "bench-reliable": {
-        "whyWeRead": "Audits SAEBench-style metrics — read after SAEBench to calibrate trust.",
-        "oneSentence": "Finds some SAE evaluation signals are less reliable than assumed (noise, weak ground-truth correlation).",
+        "whyWeRead": "Audits SAEBench reliability, warning against noise and metric overfitting.",
+        "oneSentence": "Are Sparse Autoencoder Benchmarks Reliable? audits metric stability and ground-truth correlation.",
         "plainLanguage": (
-            "Even standard benchmarks can be noisy across reseeds or poorly correlated with ground truth in synthetic settings. "
-            "This paper audits metric reliability so you do not overfit a flaky leaderboard.\n\n"
-            "Practice: report uncertainty, multiple seeds, and treat weak metrics as weak evidence."
+            "Welcome to Chanin (2026). Read this AFTER SAEBench to calibrate your trust!\n\n"
+            "Chanin audited SAEBench metrics on synthetic ground-truth models, discovering that several popular metrics suffer from high seed noise and weak ground-truth correlation.\n\n"
+            "PRACTICE: Always report multi-seed error bars and treat benchmark scores with calibrated scientific skepticism."
         ),
         "keyIdeas": [
-            _idea("Reseed noise", "Scores vary across seeds."),
-            _idea("Ground-truth correlation", "Synthetic checks of metric validity."),
-            _idea("Calibrated trust", "Not all benchmarks are equal."),
+            _idea("Metric Reliability Audit", "Demonstrates noise and synthetic ground-truth failure in popular SAE benchmarks."),
+            _idea("Multi-Seed Reporting Hygiene", "Mandates error bars across multiple random seeds."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Metric reliability", "def": "Stability and validity of an evaluation score."},
+            {"term": "Metric Reliability", "def": "Degree to which an evaluation score accurately tracks true underlying capability without seed noise."},
         ],
-        "whatItShows": ["Some popular SAE metrics are fragile"],
-        "whatItDoesNotShow": ["That evaluation is hopeless"],
+        "whatItShows": ["That some SAE benchmark metrics are noisy and require multi-seed validation"],
+        "whatItDoesNotShow": ["That benchmarking should be abandoned"],
         "setconcaUse": [
-            "Multi-seed reporting; avoid single-run leaderboard chasing.",
+            "Report multi-seed mean and standard deviation for all SetConCA evaluation scores.",
         ],
         "masteryChecklist": [
-            "I read SAEBench before this and know why order matters.",
-            "I report uncertainty.",
+            "I report multi-seed confidence intervals on all benchmark figures.",
         ],
         "commonConfusions": [
-            {"wrong": "Benchmarks are ground truth.", "right": "They are instruments with error bars."},
+            {"wrong": "Single-run benchmark scores are reliable.", "right": "Single-run scores suffer from random seed noise. Multi-seed reporting is required."},
         ],
         "quiz": [
-            _q("Read this paper?", ["After SAEBench", "Before learning PCA", "Instead of all evals", "Never"], 0, "Calibrate after knowing the suite."),
+            _q("What does Chanin (2026) mandate for reliable SAE benchmark reporting?", ["Multi-seed reporting with mean and error bars", "Single-run reporting", "Using only FVU", "Ignoring benchmarks"], 0, "Mandates multi-seed reporting with error bars to account for seed noise."),
         ],
     },
     "feature-hedging": {
-        "whyWeRead": "Optional: correlated features break narrow SAEs — motivates width and multi-view disambiguation.",
-        "oneSentence": "Shows correlated features cause problems for narrow sparse autoencoders (feature hedging).",
+        "whyWeRead": "Optional: shows how correlated features break narrow SAEs, motivating dictionary expansion and multi-view supervision.",
+        "oneSentence": "Feature Hedging: Correlated Features Break Narrow Sparse Autoencoders demonstrates degenerate feature merging under concept co-occurrence.",
         "plainLanguage": (
-            "When concepts co-occur, a narrow dictionary may hedge by merging or misallocating features. "
-            "Width and better supervision can help.\n\n"
-            "Connects to absorption and to why multi-view signal might disambiguate correlated concepts."
+            "Welcome to Chanin et al. (2025).\n\n"
+            "When concepts frequently co-occur (high correlation), narrow SAE dictionaries hedge by merging concepts into degenerate combination features.\n\n"
+            "SetConCA Connection: Multi-view set supervision provides the extra cross-context signal needed to disentangle correlated concepts."
         ),
         "keyIdeas": [
-            _idea("Correlation stress test", "Co-occurring concepts stress SAEs."),
-            _idea("Narrow dictionaries fail first", "Width matters."),
+            _idea("Feature Hedging Degeneracy", "Correlated concepts force narrow SAEs to learn merged combination features."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Feature hedging", "def": "Degenerate solutions under correlated features in narrow SAEs."},
+            {"term": "Feature Hedging", "def": "Degenerate feature merging caused by concept co-occurrence in narrow dictionaries."},
         ],
-        "whatItShows": ["Correlated features specifically break narrow SAEs"],
-        "whatItDoesNotShow": ["Full fix via multi-view without experiments"],
+        "whatItShows": ["That correlated features specifically break narrow SAE dictionaries"],
+        "whatItDoesNotShow": ["That sparsity alone fixes correlation hedging"],
         "setconcaUse": [
-            "Motivation for multi-view disambiguation experiments.",
+            "Motivation for multi-view concept disambiguation in SetConCA.",
         ],
         "masteryChecklist": [
-            "I can link correlation → merging/hedging.",
+            "I can explain how concept correlation causes feature hedging.",
         ],
         "commonConfusions": [
-            {"wrong": "Sparsity alone separates correlated concepts.", "right": "Correlation can still force merges."},
+            {"wrong": "High sparsity prevents feature hedging.", "right": "Correlated features cause hedging even at high sparsity unless dictionary width or multi-view supervision is added."},
         ],
         "quiz": [
-            _q("Narrow SAEs struggle especially with?", ["Correlated features", "Unit batch size only", "CPU only", "PNG images only"], 0, "Correlation stress."),
+            _q("What causes Feature Hedging in narrow SAEs?", ["High correlation / co-occurrence between concepts", "Zero learning rate", "PCA failure", "Single token input"], 0, "High correlation / co-occurrence between concepts causes feature hedging."),
         ],
     },
     "geometric-wall": {
-        "whyWeRead": "Optional: intrinsic geometry of activations predicts SAE scaling limits by layer.",
-        "oneSentence": "Links manifold structure of activations to layerwise SAE scaling laws — a geometric wall.",
+        "whyWeRead": "Optional: intrinsic activation geometry predicts layerwise SAE scaling limits.",
+        "oneSentence": "The Geometric Wall: Manifold Structure Predicts Layerwise SAE Scaling Laws links activation intrinsic dimension to dictionary scaling bounds.",
         "plainLanguage": (
-            "Not all layers are equally easy for SAEs. Intrinsic geometric structure can bound how dictionaries scale. "
-            "Useful when choosing layers/sites for SetConCA views."
+            "Welcome to Zaher et al. (2026).\n\n"
+            "Not all transformer layers are equally easy to unpack! Early layers have high intrinsic geometric dimension, while middle/late layers collapse into lower-dimensional manifolds.\n\n"
+            "The Geometric Wall shows that intrinsic layer geometry places hard bounds on SAE scaling laws."
         ),
         "keyIdeas": [
-            _idea("Layerwise difficulty", "Geometry varies by depth."),
-            _idea("Scaling limits", "Dictionary growth hits geometric constraints."),
+            _idea("Intrinsic Layer Dimension Bounds", "Activation manifold geometry constrains dictionary scaling efficiency per layer."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Geometric wall", "def": "Geometry-imposed limit on SAE scaling."},
+            {"term": "Geometric Wall", "def": "Geometry-imposed limit on layerwise SAE dictionary scaling."},
         ],
-        "whatItShows": ["Activation geometry predicts SAE scaling behaviour"],
-        "whatItDoesNotShow": ["Exact SetConCA architecture"],
+        "whatItShows": ["That intrinsic activation geometry bounds layerwise SAE scaling laws"],
+        "whatItDoesNotShow": ["How to design multi-view set losses"],
         "setconcaUse": [
-            "Choose view sites with geometry in mind.",
+            "Select layer sites for SetConCA views with intrinsic manifold geometry in mind.",
         ],
         "masteryChecklist": [
-            "I know layer choice is geometric, not arbitrary.",
+            "I know layer choice is governed by intrinsic geometric dimension.",
         ],
         "commonConfusions": [
-            {"wrong": "All layers need the same SAE width.", "right": "Geometry differs by layer."},
+            {"wrong": "All layers scale identically with SAE width.", "right": "Scaling limits vary by layer depending on intrinsic activation manifold geometry."},
         ],
         "quiz": [
-            _q("Geometric wall relates to?", ["Manifold structure limiting SAE scaling", "Only HTTP hosting", "Only PDF fonts", "Only dropout"], 0, "Geometry → scaling."),
+            _q("What predicts layerwise SAE scaling limits in Zaher et al. (2026)?", ["Intrinsic activation manifold geometry", "Token count only", "GPU VRAM", "PDF size"], 0, "Intrinsic activation manifold geometry predicts layerwise scaling limits."),
         ],
     },
     "temporal-sae": {
-        "whyWeRead": "Closest empirical ancestor: coordinates SAE codes across related activations (adjacent tokens).",
-        "oneSentence": "Adds temporal/contrastive coordination between adjacent-token SAE representations for interpretability.",
+        "whyWeRead": "Closest empirical ancestor to SetConCA: coordinates SAE codes across adjacent-token activation pairs.",
+        "oneSentence": "Temporal Sparse Autoencoders adds contrastive temporal coordination between adjacent token activations to improve feature consistency.",
         "plainLanguage": (
-            "Temporal SAEs use the sequential structure of language: nearby tokens provide related pairs for coordinating sparse codes. "
-            "Study carefully what counts as a related pair, where the contrastive term applies, and how sparsity interacts with consistency.\n\n"
-            "SetConCA generalises: replace 'adjacent tokens' with 'multiple views of the same semantic object'. "
-            "Ablate whether gains are semantic consistency or mere local similarity."
+            "Welcome to Bhalla et al. (2025).\n\n"
+            "--- THE TEMPORAL SAE BREAKTHROUGH ---\n"
+            "Standard SAEs treat every token activation in complete isolation. But language has temporal structure: adjacent tokens (t and t+1) share semantic context!\n\n"
+            "Temporal SAEs add a CONTRASTIVE LOSS between sparse codes of adjacent tokens:\n"
+            "Loss = Reconstruction + λ_sparse * Sparsity + λ_temp * Contrastive_Loss(z_t, z_{t+1})\n\n"
+            "Result: Coordinates feature activations over time, improving temporal consistency.\n\n"
+            "--- THE SETCONCA GENERALIZATION ---\n"
+            "Temporal SAEs coordinate adjacent tokens in time. SetConCA generalizes this idea from temporal pairs to MULTI-VIEW SETS of the exact same semantic object across different context prompts, paraphrases, and layers!"
         ),
         "keyIdeas": [
-            _idea("Related pairs from sequence", "Temporal neighbourhood as supervision."),
-            _idea("Contrastive regularisation on codes", "Coordinate sparse representations."),
-            _idea("Sparsity interaction", "Alignment must not destroy sparse structure."),
-            _idea("Baseline isolation", "Show benefit beyond local similarity."),
+            _idea("Temporal Pair Coordination", "Uses adjacent token activations as positive pairs for contrastive coordination."),
+            _idea("Contrastive SAE Code Loss", "Coordinates sparse codes z_t and z_{t+1} without destroying sparsity."),
+            _idea("Template for SetConCA", "SetConCA generalizes temporal pairs to multi-view semantic sets."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Temporal SAE", "def": "SAE trained with temporal coordination between token activations."},
+            {"term": "Temporal SAE", "def": "SAE trained with contrastive coordination between adjacent token activations."},
         ],
-        "whatItShows": ["Extra structure across related activations can help SAE interpretability goals"],
-        "whatItDoesNotShow": ["That multi-view sets automatically inherit all gains"],
+        "whatItShows": ["That coordinating sparse codes across related activation pairs improves feature consistency"],
+        "whatItDoesNotShow": ["How to coordinate unordered sets of multi-view activations"],
         "setconcaUse": [
-            "Direct template: change pair definition from time to multi-view sets.",
-            "Replicate their ablation philosophy.",
+            "Direct template for SetConCA: replace adjacent temporal pairs with multi-view concept sets.",
         ],
         "masteryChecklist": [
-            "I can state how SetConCA generalises Temporal SAE.",
-            "I know which ablations isolate semantic vs local similarity.",
+            "I can explain how SetConCA generalizes Temporal SAEs.",
         ],
         "commonConfusions": [
-            {"wrong": "Temporal SAE already is SetConCA.", "right": "SetConCA generalises the related-pair notion to multi-view sets."},
+            {"wrong": "Temporal SAEs work on unordered set inputs.", "right": "Temporal SAEs require sequential adjacent tokens. SetConCA uses set aggregators for unordered multi-view sets."},
         ],
         "quiz": [
-            _q("SetConCA generalises Temporal SAE by using?", ["Multi-view semantic objects instead of only adjacent tokens", "Only PCA", "Only deeper MLPs", "Removing sparsity"], 0, "Same idea, broader positives."),
+            _q("How does SetConCA generalize Temporal SAEs?", ["Generalizes adjacent temporal pairs to multi-view semantic sets", "Removes contrastive loss", "Uses linear PCA", "Deletes decoders"], 0, "Generalizes temporal adjacent pairs to multi-view semantic concept sets."),
         ],
     },
     "conca": {
-        "whyWeRead": "Alternative concept extraction via linear unmixing and identifiability — competitor/complement to SAEs.",
-        "oneSentence": "Concept Component Analysis extracts concepts via a principled linear mixture / unmixing approach.",
+        "whyWeRead": "Concept Component Analysis (ConCA) is a direct generative unmixing rival/complement to dictionary learning.",
+        "oneSentence": "Concept Component Analysis (ConCA) derives a generative linear unmixing model for concept components with identifiability proofs.",
         "plainLanguage": (
-            "ConCA posits a generative process where activations are mixtures of concept components, then recovers components under assumptions (closer to ICA than to pure reconstruction dictionaries).\n\n"
-            "Focus on: assumed generative process, log-posterior representation, identifiability, and how component recovery differs from learning a sparse reconstruction dictionary.\n\n"
-            "For SetConCA positioning: you may combine sparse dictionaries with multi-view constraints while acknowledging ConCA's unmixing story."
+            "Welcome to Liu et al. (2026).\n\n"
+            "--- THE CONCA FRAMEWORK ---\n"
+            "ConCA approaches interpretability from an ICA/generative perspective:\n"
+            "x = Σ c_i v_i + noise\n\n"
+            "ConCA computes representations under log-posterior assumptions, offering formal identifiability proofs showing when concept components can be recovered uniquely."
         ),
         "keyIdeas": [
-            _idea("Generative mixture story", "Activations as concept mixtures."),
-            _idea("Unmixing / components", "Recover latent concept components."),
-            _idea("Identifiability", "Assumptions enable recovery."),
-            _idea("Vs SAE dictionaries", "Different objective and claims."),
+            _idea("Generative Concept Component Model", "Treats activations as linear combinations of concept components with log-posterior representation."),
+            _idea("Identifiability Guarantees", "Provides formal theoretical proofs for concept component recovery under explicit assumptions."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "ConCA", "def": "Concept Component Analysis."},
-            {"term": "Linear unmixing", "def": "Recovering sources from linear mixtures."},
+            {"term": "ConCA", "def": "Concept Component Analysis; generative unmixing model for concept discovery."},
         ],
-        "whatItShows": ["A principled alternative framing for concept extraction"],
-        "whatItDoesNotShow": ["That SAEs are obsolete"],
+        "whatItShows": ["That concept components can be identified theoretically under generative unmixing assumptions"],
+        "whatItDoesNotShow": ["Standard overcomplete TopK SAE training"],
         "setconcaUse": [
-            "Cite as alternative generative story.",
-            "Compare assumptions explicitly in related work.",
+            "Direct theoretical competitor/complement to SetConCA sparse dictionary learning.",
         ],
         "masteryChecklist": [
-            "I can contrast ConCA unmixing vs SAE reconstruction dictionaries.",
-            "I can state why identifiability assumptions matter.",
+            "I can contrast ConCA generative unmixing with SAE dictionary learning.",
         ],
         "commonConfusions": [
-            {"wrong": "ConCA and SAE are the same method.", "right": "Different generative/objective stories."},
+            {"wrong": "ConCA is just a standard L1 SAE.", "right": "ConCA is a generative unmixing model with posterior representation, closer to ICA than standard SAEs."},
         ],
         "quiz": [
-            _q("ConCA is closest to?", ["ICA-style unmixing of concept components", "Mean pooling only", "SimCLR only", "BatchNorm only"], 0, "Unmixing story."),
+            _q("What theoretical framework does ConCA use?", ["Generative linear unmixing with posterior representation", "SimCLR augmentation", "Deep Sets pooling", "Gram matrix CKA"], 0, "ConCA uses a generative linear unmixing framework with log-posterior representation."),
         ],
     },
     "mv-causal": {
-        "whyWeRead": "Theory for when multiple partial views identify latent factors — foundations for multi-view claims.",
-        "oneSentence": "Studies multi-view causal representation learning under partial observability and identifiability conditions.",
+        "whyWeRead": "Provides mathematical proofs for multi-view latent factor identifiability under partial observability.",
+        "oneSentence": "Multi-View Causal Representation Learning with Partial Observability proves when latent factors can be identified from multiple partial views.",
         "plainLanguage": (
-            "Single views may only partially observe latent factors. Multiple views can make identification possible under explicit assumptions.\n\n"
-            "This is the theoretical backbone when you ask not only 'did retrieval improve?' but 'did we recover the shared concept factors?' "
-            "Use it to write assumptions and kill criteria for SetConCA."
+            "Welcome to Yao et al. (2023).\n\n"
+            "Yao et al. provide theoretical identifiability proofs showing that when a single view is partial/incomplete, observing MULTIPLE PARTIAL VIEWS permits exact identification of underlying latent causal factors!\n\n"
+            "SETCONCA THEORETICAL FOUNDATION:\n"
+            "This paper provides the mathematical proof that multi-view set supervision fundamentally resolves single-view identifiability bottlenecks!"
         ),
         "keyIdeas": [
-            _idea("Partial observability", "Each view sees only part of the latents."),
-            _idea("Multi-view identification", "Together views identify more."),
-            _idea("Assumption-driven claims", "No free identifiability."),
-            _idea("Causal representation learning", "Latents with interventional meaning."),
+            _idea("Multi-View Latent Identifiability", "Proves latent causal factors are identifiable from multiple partial view observations."),
+            _idea("Partial Observability Solution", "Multiple views overcome single-view information loss."),
         ],
         "simplifiedMath": [],
         "vocabulary": [
-            {"term": "Partial observability", "def": "Not all latents are seen in every view."},
-            {"term": "Identifiability conditions", "def": "Assumptions that make recovery unique (up to allowed transforms)."},
+            {"term": "Partial Observability", "def": "When a single view observes only a subset of latent causal variables."},
         ],
-        "whatItShows": ["When multi-view helps identify latents"],
-        "whatItDoesNotShow": ["That any multi-view SAE loss identifies concepts"],
+        "whatItShows": ["Mathematical proof that multi-view observations enable latent factor identifiability"],
+        "whatItDoesNotShow": ["Practical SAE PyTorch implementation code"],
         "setconcaUse": [
-            "Write explicit assumptions next to every strong claim.",
-            "Design experiments that could falsify identifiability-style hypotheses.",
+            "Cite as the theoretical foundation for why multi-view set supervision enables concept recovery in SetConCA.",
         ],
         "masteryChecklist": [
-            "I can explain partial observability.",
-            "I refuse assumption-free 'we recovered concepts' claims.",
+            "I can explain why single views are partially observable and how multi-view resolves it.",
         ],
         "commonConfusions": [
-            {"wrong": "More views always identify everything.", "right": "Only under suitable assumptions and view structure."},
+            {"wrong": "Single views provide full latent identifiability.", "right": "Single views suffer from partial observability. Multi-view observations are required for identifiability."},
         ],
         "quiz": [
-            _q("Multi-view helps identification especially when?", ["Each view is partially observing latents", "Views are identical noise", "There is no sparsity ever", "Probes are banned"], 0, "Partial observability + assumptions."),
+            _q("What does Yao et al. (2023) prove regarding multi-view observations?", ["Multiple partial views permit exact latent causal factor identification", "Multi-view causes collapse", "Single views are sufficient", "PCA is non-linear"], 0, "Proves multiple partial views permit exact latent causal factor identification."),
         ],
     },
 }

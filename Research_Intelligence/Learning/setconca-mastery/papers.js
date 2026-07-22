@@ -398,7 +398,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "",
           "pages": 12,
-          "pdfPath": "../../../RAW/1404.1100v1.pdf",
+          "pdfPath": "RAW/1404.1100v1.pdf",
           "teach": {
             "whyWeRead": "PCA is the default linear baseline for reconstruction. You need it to understand FVU and why good reconstruction is not interpretability.",
             "oneSentence": "A tutorial deriving PCA from variance maximisation, eigenvectors, and SVD, with emphasis on intuition.",
@@ -645,7 +645,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "",
           "pages": 13,
-          "pdfPath": "../../../RAW/1404.2986v1.pdf",
+          "pdfPath": "RAW/1404.2986v1.pdf",
           "teach": {
             "whyWeRead": "ICA is the classical unmixing story. ConCA and concept recovery arguments depend on independence-style assumptions.",
             "oneSentence": "A linear-algebra first tutorial on recovering statistically independent sources from mixtures.",
@@ -868,7 +868,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "",
           "pages": 33,
-          "pdfPath": "../../../RAW/1711.02391v1.pdf",
+          "pdfPath": "RAW/1711.02391v1.pdf",
           "teach": {
             "whyWeRead": "CCA is the foundation of multi-view learning and of comparing representations across views — core to SetConCA.",
             "oneSentence": "A comprehensive tutorial on canonical correlation analysis and its regularised, kernel, sparse, and deep variants.",
@@ -1153,7 +1153,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Recently, it has been observed that when rep- resentations are learnt in a way that encour- ages sparsity, improved performance is ob- tained on classiﬁcation tasks. These meth- ods involve combinations of activation func- tions, sampling steps and diﬀerent kinds of penalties. To investigate the eﬀectiveness of sparsity by itself, we propose the “k- sparse autoencoder”, which is an autoen- coder with linear activation function, where in hidden layers only the k highest activities are kept. When applied to the MNIST and NORB datasets, we ﬁnd that this method achieves better classiﬁcation results than de- noising autoencoders, networks trained with dropout, and RBMs. k-sparse autoencoders are simple to train and the encoding stage is very fast, making them well-suited to large problem sizes, where conventional sparse cod- ing algorithms cannot be applied.",
           "pages": 9,
-          "pdfPath": "../../../RAW/1312.5663v2.pdf",
+          "pdfPath": "RAW/1312.5663v2.pdf",
           "teach": {
             "whyWeRead": "Clearest bridge from classical sparse coding to modern TopK SAEs.",
             "oneSentence": "Autoencoders with a hard TopK activation that keep exactly k units active.",
@@ -1352,7 +1352,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "How can we perform efﬁcient inference and learning in directed probabilistic models, in the presence of continuous latent variables with intractable posterior distributions, and large datasets? We introduce a stochastic variational inference and learning algorithm that scales to large datasets and, under some mild differ- entiability conditions, even works in the intractable case. Our contributions are two-fold. First, we show that a reparameterization of the variational lower bound yields a lower bound estimator that can be straightforwardly optimized using stan- dard stochastic gradient methods. Second, we show that for i.i.d. datasets with continuous latent variables per datapoint, posterior inference can be made espe- cially efﬁcient by ﬁtting an approximate inference model (also called a recogni- tion model) to the intractable posterior using the proposed lower bound estimator. Theoretical advantages are reﬂected in experimental results. 1",
           "pages": 14,
-          "pdfPath": "../../../RAW/1312.6114v11.pdf",
+          "pdfPath": "RAW/1312.6114v11.pdf",
           "teach": {
             "whyWeRead": "Background for probabilistic latents, Gaussian aggregation, and ELBO thinking — not to become a VAE specialist.",
             "oneSentence": "Derives variational autoencoders: approximate posteriors, reparameterisation, and the ELBO.",
@@ -1592,7 +1592,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "We introduce Deep Canonical Correlation Analysis (DCCA), a method to learn com- plex nonlinear transformations of two views of data such that the resulting representations are highly linearly correlated. Parameters of both transformations are jointly learned to maximize the (regularized) total correlation. It can be viewed as a nonlinear extension of the linear method canonical correlation analy- sis (CCA). It is an alternative to the nonpara- metric method kernel canonical correlation analysis (KCCA) for learning correlated non- linear transformations. Unlike KCCA, DCCA does not require an inner product, and has the advantages of a parametric method: train- ing time scales well with data size and the training data need not be referenced when computing the representations of unseen in- stances. In experiments on two real-world datasets, we ﬁnd that DCCA learns represen- tations with signiﬁcantly higher correlation than those learned by CCA and KCCA. We also introduce a novel non-saturating sigmoid function based on the cube root that may be useful more generally in feedforward neural networks. Proceedings of the 30 th International Conference on Ma- chine Learning, Atlanta, Georgia",
           "pages": 9,
-          "pdfPath": "../../../RAW/andrew13.pdf",
+          "pdfPath": "RAW/andrew13.pdf",
           "teach": {
             "whyWeRead": "Nonlinear upgrade of CCA — precursor to coordinating neural view encoders.",
             "oneSentence": "Deep CCA replaces linear CCA projections with neural networks trained to maximise canonical correlation.",
@@ -1733,7 +1733,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "We consider learning representations (features) in the setting in which we have access to multiple unlabeled views of the data for learning while only one view is available for downstream tasks. Previous work on this problem has proposed several techniques based on deep neural networks, typically involving either autoencoder-like networks with a reconstruction objective or paired feed- forward networks with a batch-style correlation-based objective. We analyze several techniques based on prior work, as well as new variants, and compare them empirically on image, speech, and text tasks. We ﬁnd an advantage for correlation-based representation learning, while the best results on most tasks are obtained with our new variant, deep canonically correlated autoencoders (DCCAE). We also explore a stochastic optimization procedure for minibatch correlation-based objectives and discuss the time/performance trade-offs for kernel-based and neural network-based implementations.",
           "pages": 34,
-          "pdfPath": "../../../RAW/1602.01024v1.pdf",
+          "pdfPath": "RAW/1602.01024v1.pdf",
           "teach": {
             "whyWeRead": "Central tradeoff for SetConCA: cross-view correlation vs within-view reconstruction.",
             "oneSentence": "Studies deep multi-view objectives, introducing DCCAE which balances correlation and autoencoding.",
@@ -1869,7 +1869,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "We present deep variational canonical correla- tion analysis (VCCA), a deep multi-view learn- ing model that extends the latent variable model interpretation of linear CCA to nonlinear obser- vation models parameterized by deep neural net- works. We derive variational lower bounds of the data likelihood by parameterizing the posterior probability of the latent variables from the view that is available at test time. We also propose a variant of VCCA called VCCA-private that can, in addition to the “common variables” underly- ing both views, extract the “private variables” within each view, and disentangles the shared and private information for multi-view data with- out hard supervision. Experimental results on real-world datasets show that our methods are competitive across domains.",
           "pages": 13,
-          "pdfPath": "../../../RAW/1610.03454v3.pdf",
+          "pdfPath": "RAW/1610.03454v3.pdf",
           "teach": {
             "whyWeRead": "Probabilistic multi-view model with shared and private latents — closest classical cousin to probabilistic SetConCA.",
             "oneSentence": "Deep variational CCA with shared (and optionally private) latents and a generative multi-view story.",
@@ -2010,7 +2010,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "We present Deep Generalized Canonical Correlation Analysis (DGCCA) – a method for learning nonlinear transformations of arbitrarily many views of data, such that the resulting transformations are maximally informative of each other. While methods for nonlinear two-view representation learning (Deep CCA, (An- drew et al., 2013)) and linear many-view representation learning (Generalized CCA (Horst, 1961)) exist, DGCCA is the ﬁrst CCA-style multiview representation learning technique that combines the ﬂexibility of nonlinear (deep) representation learning with the statistical power of incorporating information from many inde- pendent sources, or views. We present the DGCCA formulation as well as an efﬁcient stochastic optimization algorithm for solving it. We learn DGCCA repre- sentations on two distinct datasets for three downstream tasks: phonetic transcrip- tion from acoustic and articulatory measurements, and recommending hashtags and friends on a dataset of Twitter users. We ﬁnd that DGCCA representations soundly beat existing methods at phonetic transcription and hashtag recommenda- tion, and in general perform no worse than standard linear many-view techniques. 1",
           "pages": 14,
-          "pdfPath": "../../../RAW/1702.02519v2.pdf",
+          "pdfPath": "RAW/1702.02519v2.pdf",
           "teach": {
             "whyWeRead": "Extends CCA thinking from two views to many views — the conceptual jump SetConCA needs.",
             "oneSentence": "Deep generalized CCA learns a common representation across an arbitrary number of views.",
@@ -2173,7 +2173,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "We study the problem of designing models for machine learning tasks deﬁned on sets. In contrast to traditional approach of operating on ﬁxed dimensional vectors, we consider objective functions deﬁned on sets that are invariant to permutations. Such problems are widespread, ranging from estimation of population statistics [1], to anomaly detection in piezometer data of embankment dams [2], to cosmology [3, 4]. Our main theorem characterizes the permutation invariant functions and provides a family of functions to which any permutation invariant objective function must belong. This family of functions has a special structure which enables us to design a deep network architecture that can operate on sets and which can be deployed on a variety of scenarios including both unsupervised and supervised learning tasks. We also derive the necessary and sufﬁcient conditions for permutation equivariance in deep models. We demonstrate the applicability of our method on population statistic estimation, point cloud classiﬁcation, set expansion, and outlier detection. 1",
           "pages": 29,
-          "pdfPath": "../../../RAW/1703.06114v3.pdf",
+          "pdfPath": "RAW/1703.06114v3.pdf",
           "teach": {
             "whyWeRead": "Essential theory for aggregating unordered activation views into one concept code.",
             "oneSentence": "Characterises permutation-invariant set functions as ρ(Σ φ(x)).",
@@ -2314,7 +2314,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "An efﬁcient learner is one who reuses what they already know to tackle a new problem. For a machine learner, this means understanding the similarities amongst datasets. In order to do this, one must take seriously the idea of working with datasets, rather than datapoints, as the key objects to model. Towards this goal, we demonstrate an extension of a variational autoencoder that can learn a method for computing representations, or statistics, of datasets in an unsupervised fash- ion. The network is trained to produce statistics that encapsulate a generative model for each dataset. Hence the network enables efﬁcient learning from new datasets for both unsupervised and supervised tasks. We show that we are able to learn statistics that can be used for: clustering datasets, transferring generative models to new datasets, selecting representative samples of datasets and classify- ing previously unseen classes. We refer to our model as a neural statistician, and by this we mean a neural network that can learn to compute summary statistics of datasets without supervision. 1",
           "pages": 13,
-          "pdfPath": "../../../RAW/1606.02185v2.pdf",
+          "pdfPath": "RAW/1606.02185v2.pdf",
           "teach": {
             "whyWeRead": "Treats a whole set/dataset as an object with a latent — clarifies what a set code should mean.",
             "oneSentence": "Learns latent representations of datasets/sets, aiming to capture shared generative structure.",
@@ -2429,7 +2429,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Many machine learning tasks such as multiple instance learning, 3D shape recognition and few- shot image classiﬁcation are deﬁned on sets of in- stances. Since solutions to such problems do not depend on the order of elements of the set, mod- els used to address them should be permutation invariant. We present an attention-based neural network module, the Set Transformer, speciﬁcally designed to model interactions among elements in the input set. The model consists of an encoder and a decoder, both of which rely on attention mechanisms. In an effort to reduce computational complexity, we introduce an attention scheme in- spired by inducing point methods from sparse Gaussian process literature. It reduces computa- tion time of self-attention from quadratic to linear in the number of elements in the set. We show that our model is theoretically attractive and we evaluate it on a range of tasks, demonstrating in- creased performance compared to recent methods for set-structured data.",
           "pages": 17,
-          "pdfPath": "../../../RAW/1810.00825v3.pdf",
+          "pdfPath": "RAW/1810.00825v3.pdf",
           "teach": {
             "whyWeRead": "When set meaning needs interactions among members, attention beats independent pooling.",
             "oneSentence": "Attention-based permutation-invariant networks with self-attention and inducing points.",
@@ -2561,7 +2561,7 @@ window.CURRICULUM_DATA = {
           "optional": true,
           "abstract": "We propose a general deep architecture for learning functions on multiple permutation-invariant sets. We also show how to generalize this architecture to sets of elements of any dimension by dimension equivariance. We demonstrate that our architecture is a universal approximator of these functions, and show superior results to existing methods on a va- riety of tasks including counting tasks, alignment tasks, distinguishability tasks and statistical dis- tance measurements. This last task is quite impor- tant in Machine Learning. Although our approach is quite general, we demonstrate that it can gener- ate approximate estimates of KL divergence and mutual information that are more accurate than previous techniques that are speciﬁcally designed to approximate those statistical distances. 1",
           "pages": 11,
-          "pdfPath": "../../../RAW/selby22a.pdf",
+          "pdfPath": "RAW/selby22a.pdf",
           "teach": {
             "whyWeRead": "Optional advanced reading when relationships exist between several sets, not only within one set.",
             "oneSentence": "Extends set transformers to functions on multiple sets.",
@@ -2719,7 +2719,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "While supervised learning has enabled great progress in many applications, unsu- pervised learning has not seen such widespread adoption, and remains an important and challenging endeavor for artiﬁcial intelligence. In this work, we propose a universal unsupervised learning approach to extract useful representations from high-dimensional data, which we call Contrastive Predictive Coding. The key in- sight of our model is to learn such representations by predicting the future in latent space by using powerful autoregressive models. We use a probabilistic contrastive loss which induces the latent space to capture information that is maximally useful to predict future samples. It also makes the model tractable by using negative sampling. While most prior work has focused on evaluating representations for a particular modality, we demonstrate that our approach is able to learn useful representations achieving strong performance on four distinct domains: speech, images, text and reinforcement learning in 3D environments. 1",
           "pages": 13,
-          "pdfPath": "../../../RAW/1807.03748v2.pdf",
+          "pdfPath": "RAW/1807.03748v2.pdf",
           "teach": {
             "whyWeRead": "Conceptual home of InfoNCE — the standard contrastive loss family.",
             "oneSentence": "Learns representations by predicting future/context with a contrastive InfoNCE objective.",
@@ -2861,7 +2861,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "This paper presents SimCLR: a simple framework for contrastive learning of visual representations. We simplify recently proposed contrastive self- supervised learning algorithms without requiring specialized architectures or a memory bank. In order to understand what enables the contrastive prediction tasks to learn useful representations, we systematically study the major components of our framework. We show that (1) composition of data augmentations plays a critical role in deﬁning effective predictive tasks, (2) introducing a learn- able nonlinear transformation between the repre- sentation and the contrastive loss substantially im- proves the quality of the learned representations, and (3) contrastive learning beneﬁts from larger batch sizes and more training steps compared to supervised learning. By combining these ﬁndings, we are able to considerably outperform previous methods for self-supervised and semi-supervised learning on ImageNet. A linear classiﬁer trained on self-supervised representations learned by Sim- CLR achieves 76.5% top-1 accuracy, which is a 7% relative improvement over previous state-of- the-art, matching the performance of a supervised ResNet-50. When ﬁne",
           "pages": 20,
-          "pdfPath": "../../../RAW/2002.05709v3.pdf",
+          "pdfPath": "RAW/2002.05709v3.pdf",
           "teach": {
             "whyWeRead": "Shows practical ingredients of contrastive learning: augmentations, projection heads, batch size, temperature.",
             "oneSentence": "A simple contrastive framework showing what matters empirically for visual representation learning.",
@@ -2995,7 +2995,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Contrastive learning applied to self-supervised representation learning has seen a resurgence in recent years, leading to state of the art performance in the unsu- pervised training of deep image models. Modern batch contrastive approaches subsume or signiﬁcantly outperform traditional contrastive losses such as triplet, max-margin and the N-pairs loss. In this work, we extend the self-supervised batch contrastive approach to the fully-supervised setting, allowing us to effec- tively leverage label information. Clusters of points belonging to the same class are pulled together in embedding space, while simultaneously pushing apart clus- ters of samples from different classes. We analyze two possible versions of the supervised contrastive (SupCon) loss, identifying the best-performing formula- tion of the loss. On ResNet-200, we achieve top-1 accuracy of 81.4% on the Ima- geNet dataset, which is 0.8% above the best number reported for this architecture. We show consistent outperformance over cross-entropy on other datasets and two ResNet variants. The loss shows beneﬁts for robustness to natural corruptions, and is more stable to hyperparameter settings such as optimizers and data a",
           "pages": 23,
-          "pdfPath": "../../../RAW/2004.11362v5.pdf",
+          "pdfPath": "RAW/2004.11362v5.pdf",
           "teach": {
             "whyWeRead": "Directly relevant: multiple positives per semantic class — like multiple views of one concept.",
             "oneSentence": "Contrastive learning with many positives sharing a class label, encouraging within-class compactness.",
@@ -3122,7 +3122,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Contrastive representation learning has been out- standingly successful in practice. In this work, we identify two key properties related to the con- trastive loss: (1) alignment (closeness) of features from positive pairs, and (2) uniformity of the in- duced distribution of the (normalized) features on the hypersphere. We prove that, asymptotically, the contrastive loss optimizes these properties, and analyze their positive effects on downstream tasks. Empirically, we introduce an optimizable metric to quantify each property. Extensive exper- iments on standard vision and language datasets conﬁrm the strong agreement between both met- rics and downstream task performance. Directly optimizing for these two metrics leads to repre- sentations with comparable or better performance at downstream tasks than contrastive learning. Project Page: ssnl.github.io/hypersphere. Code: github.com/SsnL/align uniform. github.com/SsnL/moco align uniform.",
           "pages": 41,
-          "pdfPath": "../../../RAW/2005.10242v10.pdf",
+          "pdfPath": "RAW/2005.10242v10.pdf",
           "teach": {
             "whyWeRead": "Gives a clean geometric vocabulary for diagnosing contrastive training: alignment and uniformity.",
             "oneSentence": "Decomposes contrastive learning into aligning positives and spreading features uniformly on the hypersphere.",
@@ -3255,7 +3255,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Recent self-supervised methods for image representation learning maximize the agreement between embedding vectors produced by encoders fed with different views of the same image. The main challenge is to prevent a collapse in which the encoders produce constant or non-informative vectors. We introduce VICReg (Variance-Invariance-Covariance Regularization), a method that explicitly avoids the collapse problem with two regularizations terms applied to both embeddings separately: (1) a term that maintains the variance of each embedding dimension above a threshold, (2) a term that decorrelates each pair of variables. Unlike most other approaches to the same problem, VICReg does not require techniques such as: weight sharing between the branches, batch normalization, feature-wise normalization, output quantization, stop gradient, memory banks, etc., and achieves results on par with the state of the art on several downstream tasks. In addition, we show that our variance regularization term stabilizes the training of other methods and leads to performance improvements. 1",
           "pages": 23,
-          "pdfPath": "../../../RAW/2105.04906v3.pdf",
+          "pdfPath": "RAW/2105.04906v3.pdf",
           "teach": {
             "whyWeRead": "Shows how to keep variance and reduce redundancy without relying heavily on explicit negatives — useful regularisers for SetConCA.",
             "oneSentence": "Self-supervised learning via Variance–Invariance–Covariance regularisation.",
@@ -3375,7 +3375,7 @@ window.CURRICULUM_DATA = {
           "optional": true,
           "abstract": "Contrastive learning has recently seen tremendous success in self-supervised learning. So far, how- ever, it is largely unclear why the learned represen- tations generalize so effectively to a large variety of downstream tasks. We here prove that feed- forward models trained with objectives belonging to the commonly used InfoNCE family learn to implicitly invert the underlying generative model of the observed data. While the proofs make cer- tain statistical assumptions about the generative model, we observe empirically that our ﬁndings hold even if these assumptions are severely vio- lated. Our theory highlights a fundamental con- nection between contrastive learning, generative modeling, and nonlinear independent component analysis, thereby furthering our understanding of the learned representations as well as providing a theoretical foundation to derive more effective contrastive losses.1",
           "pages": 12,
-          "pdfPath": "../../../RAW/zimmermann21a.pdf",
+          "pdfPath": "RAW/zimmermann21a.pdf",
           "teach": {
             "whyWeRead": "Optional theory: when contrastive objectives recover latent factors of the data-generating process.",
             "oneSentence": "Proves conditions under which InfoNCE-like objectives invert the generative process and recover latents.",
@@ -3530,7 +3530,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "We propose a new technique, Singular Vector Canonical Correlation Analysis (SVCCA), a tool for quickly comparing two representations in a way that is both invariant to afﬁne transform (allowing comparison between different layers and networks) and fast to compute (allowing more comparisons to be calculated than with previous methods). We deploy this tool to measure the intrinsic dimension- ality of layers, showing in some cases needless over-parameterization; to probe learning dynamics throughout training, ﬁnding that networks converge to ﬁnal representations from the bottom up; to show where class-speciﬁc information in networks is formed; and to suggest new training regimes that simultaneously save computation and overﬁt less. 1",
           "pages": 17,
-          "pdfPath": "../../../RAW/1706.05806v2.pdf",
+          "pdfPath": "RAW/1706.05806v2.pdf",
           "teach": {
             "whyWeRead": "Tool to compare neural subspaces across layers/models when coordinates differ.",
             "oneSentence": "SVCCA combines SVD dimensionality reduction with CCA to compare representations invariantly to affine transforms.",
@@ -3663,7 +3663,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Recent work has sought to understand the behav- ior of neural networks by comparing representa- tions between layers and between different trained models. We examine methods for comparing neu- ral network representations based on canonical correlation analysis (CCA). We show that CCA belongs to a family of statistics for measuring mul- tivariate similarity, but that neither CCA nor any other statistic that is invariant to invertible linear transformation can measure meaningful similari- ties between representations of higher dimension than the number of data points. We introduce a similarity index that measures the relationship between representational similarity matrices and does not suffer from this limitation. This simi- larity index is equivalent to centered kernel align- ment (CKA) and is also closely connected to CCA. Unlike CCA, CKA can reliably identify corre- spondences between representations in networks trained from different initializations.",
           "pages": 20,
-          "pdfPath": "../../../RAW/1905.00414v4.pdf",
+          "pdfPath": "RAW/1905.00414v4.pdf",
           "teach": {
             "whyWeRead": "Most practical representation similarity metric for your comparisons.",
             "oneSentence": "CKA compares representations using Gram matrices; linear and kernel variants; invariant to orthogonal transforms.",
@@ -3809,7 +3809,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Probes, supervised models trained to pre- dict properties (like parts-of-speech) from representations (like ELMo), have achieved high accuracy on a range of linguistic tasks. But does this mean that the representations encode linguistic structure or just that the probe has learned the linguistic task? In this paper, we propose control tasks, which associate word types with random outputs, to complement linguistic tasks. By construction, these tasks can only be learned by the probe itself. So a good probe, (one that reﬂects the representation), should be selective, achieving high linguistic task accuracy and low control task accuracy. The selectivity of a probe puts linguistic task accuracy in context with the probe’s capacity to memorize from word types. We construct control tasks for English part-of-speech tagging and dependency edge prediction, and show that popular probes on ELMo representations are not selective. We also ﬁnd that dropout, commonly used to control probe complexity, is ineffective for improving selectivity of MLPs, but that other forms of regularization are effective. Finally, we ﬁnd that while probes on the ﬁrst layer of ELMo yield slightly better part-of-speech",
           "pages": 11,
-          "pdfPath": "../../../RAW/1909.03368v1.pdf",
+          "pdfPath": "RAW/1909.03368v1.pdf",
           "teach": {
             "whyWeRead": "Stops you from overclaiming when a probe 'finds' a property in a representation.",
             "oneSentence": "Introduces control tasks and selectivity so probe accuracy is not mistaken for linguistic structure in the representation.",
@@ -3930,7 +3930,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "To measure how well pretrained representa- tions encode some linguistic property, it is common to use accuracy of a probe, i.e. a classiﬁer trained to predict the property from the representations. Despite widespread adop- tion of probes, differences in their accuracy fail to adequately reﬂect differences in repre- sentations. For example, they do not substan- tially favour pretrained representations over randomly initialized ones. Analogously, their accuracy can be similar when probing for gen- uine linguistic labels and probing for random synthetic tasks. To see reasonable differences in accuracy with respect to these random base- lines, previous work had to constrain either the amount of probe training data or its model size. Instead, we propose an alternative to the standard probes, information-theoretic prob- ing with minimum description length (MDL). With MDL probing, training a probe to pre- dict labels is recast as teaching it to effectively transmit the data. Therefore, the measure of interest changes from probe accuracy to the de- scription length of labels given representations. In addition to probe quality, the description length evaluates ‘the amount of effort’ needed ",
           "pages": 14,
-          "pdfPath": "../../../RAW/2003.12298v1.pdf",
+          "pdfPath": "RAW/2003.12298v1.pdf",
           "teach": {
             "whyWeRead": "Distinguishes 'information exists' from 'information is efficiently organised'.",
             "oneSentence": "MDL probing measures how much description length is needed to learn a property from a representation.",
@@ -4467,7 +4467,7 @@ window.CURRICULUM_DATA = {
             ]
           },
           "abstract": "",
-          "pdfPath": "../../../RAW/2209.pdf",
+          "pdfPath": "RAW/2209.pdf",
           "teach": {
             "whyWeRead": "Conceptual foundation for why SAEs exist — more features than dimensions.",
             "oneSentence": "Toy ReLU models demonstrate superposition, phase changes, geometric feature packing, and why polysemantic neurons appear.",
@@ -4709,7 +4709,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "",
           "pages": 97,
-          "pdfPath": "../../../RAW/Bricken - 2023 - Towards Monosemanticity Decomposing Language Mode.pdf",
+          "pdfPath": "RAW/Bricken - 2023 - Towards Monosemanticity Decomposing Language Mode.pdf",
           "teach": {
             "whyWeRead": "Landmark application of dictionary learning to LM activations — features vs neurons.",
             "oneSentence": "Shows sparse dictionary learning can extract more monosemantic features than neurons in a small LM.",
@@ -4843,7 +4843,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "One of the roadblocks to a better understanding of neural networks’ internals is polysemanticity, where neurons appear to activate in multiple, semantically dis- tinct contexts. Polysemanticity prevents us from identifying concise, human- understandable explanations for what neural networks are doing internally. One hypothesised cause of polysemanticity is superposition, where neural networks represent more features than they have neurons by assigning features to an over- complete set of directions in activation space, rather than to individual neurons. Here, we attempt to identify those directions, using sparse autoencoders to re- construct the internal activations of a language model. These autoencoders learn sets of sparsely activating features that are more interpretable and monoseman- tic than directions identified by alternative approaches, where interpretability is measured by automated methods. Moreover, we show that with our learned set of features, we can pinpoint the features that are causally responsible for coun- terfactual behaviour on the indirect object identification task (Wang et al., 2022) to a finer degree than previous decompositions. This work indicates that i",
           "pages": 20,
-          "pdfPath": "../../../RAW/2309.08600v3.pdf",
+          "pdfPath": "RAW/2309.08600v3.pdf",
           "teach": {
             "whyWeRead": "Central academic SAE paper — architecture, objectives, interventions, comparisons.",
             "oneSentence": "Trains SAEs on LM activations showing sparse features are more interpretable and useful for interventions than alternatives.",
@@ -4989,7 +4989,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "We demonstrate that sparse autoencoders can extract interpretable features from Claude 3 Sonnet, a production-scale language model, addressing the open question of whether dictionary learning methods scale beyond small transformers. We trained sparse autoencoders with up to 34 million features on the model’s middle layer residual stream, using scaling laws to guide hyperparameter selection. The resulting features are multilingual and multimodal (generalizing to images despite text-only training), respond to both concrete instances and abstract discussions of concepts, and can be used to steer model behavior in ways consistent with their interpretations. We find features corresponding to famous entities and locations, as well as more abstract concepts like sarcasm or errors in code. We also identify features relevant to ways in which language models might cause harm—including features representing deception, power-seeking, sycophancy, and bias—and show that these causally influence model outputs when manipulated. Additionally, we conduct analyses of feature interpretability, geometry, and computational function. However, significant limitations remain: our suite of features is incom",
           "pages": 71,
-          "pdfPath": "../../../RAW/2605.29358v1.pdf",
+          "pdfPath": "RAW/2605.29358v1.pdf",
           "teach": {
             "whyWeRead": "Shows what happens when SAE dictionaries scale to frontier models — and what scale does not buy.",
             "oneSentence": "Scales monosemantic feature extraction to Claude 3 Sonnet with very large dictionaries.",
@@ -5145,7 +5145,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Sparse autoencoders provide a promising unsupervised approach for extracting in- terpretable features from a language model by reconstructing activations from a sparse bottleneck layer. Since language models learn many concepts, autoencoders need to be very large to recover all relevant features. However, studying the proper- ties of autoencoder scaling is difficult due to the need to balance reconstruction and sparsity objectives and the presence of dead latents. We propose using k-sparse autoencoders [Makhzani and Frey, 2013] to directly control sparsity, simplifying tuning and improving the reconstruction-sparsity frontier. Additionally, we find modifications that result in few dead latents, even at the largest scales we tried. Us- ing these techniques, we find clean scaling laws with respect to autoencoder size and sparsity. We also introduce several new metrics for evaluating feature qual- ity based on the recovery of hypothesized features, the explainability of activation patterns, and the sparsity of downstream effects. These metrics all generally im- prove with autoencoder size. To demonstrate the scalability of our approach, we train a 16 million latent autoencoder on GPT-",
           "pages": 34,
-          "pdfPath": "../../../RAW/2406.04093v1.pdf",
+          "pdfPath": "RAW/2406.04093v1.pdf",
           "teach": {
             "whyWeRead": "Main modern reference for TopK SAEs, scaling, and matched evaluation frontiers.",
             "oneSentence": "Scales and evaluates SAEs with TopK activations, emphasising fair comparisons at matched sparsity/fidelity.",
@@ -5285,7 +5285,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "",
           "pages": 37,
-          "pdfPath": "../../../RAW/2404.16014v2.pdf",
+          "pdfPath": "RAW/2404.16014v2.pdf",
           "teach": {
             "whyWeRead": "Fixes L1 shrinkage by separating gate (whether active) from magnitude.",
             "oneSentence": "Gated SAEs improve the sparsity–fidelity Pareto by decoupling activation and magnitude.",
@@ -5405,7 +5405,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "",
           "pages": 26,
-          "pdfPath": "../../../RAW/2407.14435v3.pdf",
+          "pdfPath": "RAW/2407.14435v3.pdf",
           "teach": {
             "whyWeRead": "Learned thresholds and more direct L0-style sparsity — why plain L1 is no longer default.",
             "oneSentence": "JumpReLU SAEs use a discontinuous thresholded activation to improve reconstruction fidelity under sparsity.",
@@ -5519,7 +5519,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Sparse autoencoders (SAEs) have emerged as a powerful tool for interpreting language model activations by decomposing them into sparse, interpretable features. A popular approach is the TopK SAE, that uses a fixed number of the most active latents per sample to reconstruct the model activations. We introduce BatchTopK SAEs, a training method that improves upon TopK SAEs by relaxing the top- k constraint to the batch-level, allowing for a variable number of latents to be active per sample. As a result, BatchTopK adaptively allocates more or fewer latents depending on the sample, improving reconstruction without sacrificing average sparsity. We show that BatchTopK SAEs consistently outperform TopK SAEs in reconstructing activations from GPT-2 Small and Gemma 2 2B, and achieve comparable performance to state-of-the-art JumpReLU SAEs. However, an advantage of BatchTopK is that the average number of latents can be directly specified, rather than approximately tuned through a costly hyperparameter sweep. We provide code for training and evaluating BatchTopK SAEs at https://github. com/bartbussmann/BatchTopK. 1",
           "pages": 6,
-          "pdfPath": "../../../RAW/2412.06410v1.pdf",
+          "pdfPath": "RAW/2412.06410v1.pdf",
           "teach": {
             "whyWeRead": "Relaxes per-token exact-k to a batch sparsity budget — flexible for heterogeneous activations.",
             "oneSentence": "BatchTopK constrains total actives across a batch so hard tokens can use more features.",
@@ -5634,7 +5634,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Sparse autoencoders (SAEs) have emerged as a powerful tool for interpreting neural networks by extracting the concepts represented in their acti- vations. However, choosing the size of the SAE dictionary (i.e. number of learned concepts) cre- ates a tension: as dictionary size increases to cap- ture more relevant concepts, sparsity incentivizes features to be split or absorbed into more spe- cific features, leaving high-level features missing or warped. We introduce Matryoshka SAEs, a novel variant that addresses these issues by simul- taneously training multiple nested dictionaries of increasing size, forcing the smaller dictionaries to independently reconstruct the inputs without using the larger dictionaries. This organizes fea- tures hierarchically - the smaller dictionaries learn general concepts, while the larger dictionaries learn more specific concepts, without incentive to absorb the high-level features. We train Ma- tryoshka SAEs on Gemma-2-2B and TinyStories and find superior performance on sparse prob- ing and targeted concept erasure tasks, more dis- entangled concept representations, and reduced feature absorption. While there is a minor trade- off with reconstruction",
           "pages": 23,
-          "pdfPath": "../../../RAW/2503.17547v1.pdf",
+          "pdfPath": "RAW/2503.17547v1.pdf",
           "teach": {
             "whyWeRead": "Multi-level nested features — relevant to atomic vs high-level concepts.",
             "oneSentence": "Matryoshka SAEs learn useful features at multiple sparsity/prefix levels within one dictionary.",
@@ -5791,7 +5791,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Disentangling model activations into meaningful features is a central prob- lem in interpretability. However, the absence of ground-truth for these features in realistic scenarios makes validating recent approaches, such as sparse dictionary learning, elusive. To address this challenge, we propose a framework for evaluating feature dictionaries in the context of specific tasks, by comparing them against supervised feature dictionaries. First, we demonstrate that supervised dictionaries achieve excellent approximation, control, and interpretability of model computations on the task. Second, we use the supervised dictionaries to develop and contextualize evaluations of unsupervised dictionaries along the same three axes. We apply this framework to the indirect object identification (IOI) task using GPT-2 Small, with sparse autoencoders (SAEs) trained on either the IOI or OpenWebText datasets. We find that these SAEs capture interpretable fea- tures for the IOI task, but they are less successful than supervised features in controlling the model. Finally, we observe two qualitative phenomena in SAE training: feature occlusion (where a causally relevant concept is robustly overshadowed ",
           "pages": 51,
-          "pdfPath": "../../../RAW/2405.08366v3.pdf",
+          "pdfPath": "RAW/2405.08366v3.pdf",
           "teach": {
             "whyWeRead": "Shows reconstruction/sparsity proxies are insufficient for interpretability and control claims.",
             "oneSentence": "Argues for evaluations tied to task-relevant approximation, control, and interpretation.",
@@ -5905,7 +5905,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Sparse Autoencoders (SAEs) aim to decompose the activation space of large language models (LLMs) into human-interpretable latent directions or features. As we increase the number of features in the SAE, hierarchical features tend to split into finer features (“math” may split into “algebra”, “geometry”, etc.), a phenomenon referred to as feature splitting. However, we show that sparse decomposition and splitting of hierarchical features is not robust. Specifically, we show that seemingly monosemantic features fail to fire where they should, and instead get “absorbed” into their children features. We coin this phenomenon feature absorption, and show that it is caused by optimizing for sparsity in SAEs whenever the underlying features form a hierarchy. We introduce a metric to detect absorption in SAEs, and validate our findings empirically on hundreds of LLM SAEs. Our investigation suggests that varying SAE sizes or sparsity is insufficient to solve this issue. We discuss the implications of feature absorption in SAEs and some potential approaches to solve the fundamental theoretical issues before SAEs can be used for interpreting LLMs robustly and at scale. 1",
           "pages": 31,
-          "pdfPath": "../../../RAW/2409.14507v6.pdf",
+          "pdfPath": "RAW/2409.14507v6.pdf",
           "teach": {
             "whyWeRead": "Defines feature splitting and absorption — core SAE failure modes.",
             "oneSentence": "Studies how SAE features split concepts across latents or absorb related concepts into one latent.",
@@ -6025,7 +6025,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "A common goal of mechanistic interpretability is to decompose the activations of neural networks into features: interpretable properties of the input computed by the model. Sparse autoencoders (SAEs) are a popular method for finding these features in LLMs, and it has been postulated that they can be used to find a canon- ical set of units: a unique and complete list of atomic features. We cast doubt on this belief using two novel techniques: SAE stitching to show they are in- complete, and meta-SAEs to show they are not atomic. SAE stitching involves inserting or swapping latents from a larger SAE into a smaller one. Latents from the larger SAE can be divided into two categories: novel latents, which improve performance when added to the smaller SAE, indicating they capture novel in- formation, and reconstruction latents, which can replace corresponding latents in the smaller SAE that have similar behavior. The existence of novel features in- dicates incompleteness of smaller SAEs. Using meta-SAEs - SAEs trained on the decoder matrix of another SAE - we find that latents in SAEs often decom- pose into combinations of latents from a smaller SAE, showing that larger SAE latents are n",
           "pages": 23,
-          "pdfPath": "../../../RAW/2502.04878v1.pdf",
+          "pdfPath": "RAW/2502.04878v1.pdf",
           "teach": {
             "whyWeRead": "Critical narrative paper: SAEs need not find unique units of analysis.",
             "oneSentence": "Argues different SAEs can yield different decompositions while all looking reasonable; studies stitching and higher-level structure.",
@@ -6152,7 +6152,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Sparse autoencoders (SAEs) are a popular tech- nique for interpreting language model activations, and there is extensive recent work on improving SAE effectiveness. However, most prior work evaluates progress using unsupervised proxy met- rics with unclear practical relevance. We in- troduce SAEBench, a comprehensive evaluation suite that measures SAE performance across eight diverse metrics, spanning interpretability, feature disentanglement and practical applications like unlearning. To enable systematic comparison, we open-source a suite of over 200 SAEs across seven recently proposed SAE architectures and training algorithms. Our evaluation reveals that gains on proxy metrics do not reliably translate to better practical performance. For instance, while Matryoshka SAEs slightly underperform on ex- isting proxy metrics, they substantially outper- form other architectures on feature disentangle- ment metrics; moreover, this advantage grows with SAE scale. By providing a standardized framework for measuring progress in SAE de- velopment, SAEBench enables researchers to study scaling trends and make nuanced compar- isons between different SAE architectures and training methodologie",
           "pages": 42,
-          "pdfPath": "../../../RAW/2503.09532v4.pdf",
+          "pdfPath": "RAW/2503.09532v4.pdf",
           "teach": {
             "whyWeRead": "Standard multi-family benchmark suite you should know and partially replicate.",
             "oneSentence": "A comprehensive benchmark covering detection, probing, steering, reconstruction, and more for SAEs.",
@@ -6272,7 +6272,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Sparse autoencoders (SAEs) are a core interpretability tool for large language models, and progress on SAE architectures depends on benchmarks that reliably distinguish better SAEs from worse ones. We audit the SAE quality metrics in SAEBench, the de-facto standard SAE evaluation suite, through three complemen- tary lenses: reseed noise on a fixed SAE, ground-truth correlation on synthetic SAEs, and discriminability across training trajectories. We find that two of these metrics, Targeted Probe Perturbation (TPP) and Spurious Correlation Removal (SCR), fail multiple lenses at their canonical settings and should not be used to eval- uate SAEs. The other metrics show higher reseed noise and lower discriminability than the field assumes. The sae-probes variant of k-sparse probing is the most reliable metric we tested, but even sae-probes struggles to separate variants of the same SAE architecture. Our results show the field needs better SAE benchmarks. 1",
           "pages": 32,
-          "pdfPath": "../../../RAW/2605.18229v1.pdf",
+          "pdfPath": "RAW/2605.18229v1.pdf",
           "teach": {
             "whyWeRead": "Audits SAEBench-style metrics — read after SAEBench to calibrate trust.",
             "oneSentence": "Finds some SAE evaluation signals are less reliable than assumed (noise, weak ground-truth correlation).",
@@ -6386,7 +6386,7 @@ window.CURRICULUM_DATA = {
           "optional": true,
           "abstract": "It is assumed that sparse autoencoders (SAEs) decompose polysemantic activa- tions into interpretable linear directions, as long as the activations are composed of sparse linear combinations of underlying features. However, we find that if an SAE is more narrow than the number of underlying “true features” on which it is trained, and there is correlation between features, the SAE will merge compo- nents of correlated features together, thus destroying monosemanticity. In LLM SAEs, these two conditions are almost certainly true. This phenomenon, which we call feature hedging, is caused by SAE reconstruction loss, and is more severe the narrower the SAE. In this work, we introduce the problem of feature hedg- ing and study it both theoretically in toy models and empirically in SAEs trained on LLMs. We suspect that feature hedging may be one of the core reasons that SAEs consistently underperform supervised baselines. Finally, we use our under- standing of feature hedging to propose an improved variant of matryoshka SAEs. Importantly, our work shows that SAE width is not a neutral hyperparameter: nar- rower SAEs suffer more from hedging than wider SAEs. 1",
           "pages": 21,
-          "pdfPath": "../../../RAW/2505.11756v2.pdf",
+          "pdfPath": "RAW/2505.11756v2.pdf",
           "teach": {
             "whyWeRead": "Optional: correlated features break narrow SAEs — motivates width and multi-view disambiguation.",
             "oneSentence": "Shows correlated features cause problems for narrow sparse autoencoders (feature hedging).",
@@ -6493,7 +6493,7 @@ window.CURRICULUM_DATA = {
           "optional": true,
           "abstract": "Sparse autoencoders (SAEs) operationalise the linear representation hypothesis: they reconstruct model activations as sparse linear combinations of interpretable dictionary atoms, on the implicit assumption that activation space is well approx- imated by a globally linear structure. Their reconstruction error varies sharply across layers in ways that existing scaling laws, fitted at single layers, do not explain. We argue that this variation is the empirical trace of a geometric mis- match: where the activation manifold is curved and its intrinsic dimension varies across layers, no sparse linear dictionary can match it uniformly, and the SAE’s width-sparsity scaling becomes a layer-dependent function of manifold structure rather than a single universal law. We conduct the first cross-layer SAE scaling study, fitting and regressing on 844 residual-stream Gemma Scope SAE check- points across 68 layers of Gemma 2 2B and 9B. Stage 1 fits a per-layer scaling-law surface; Stage 2 regresses the fitted parameters and the derived per-layer width exponents on four layerwise geometric summaries. We find that manifold ge- ometry predicts the per-layer width exponent in both models, and that th",
           "pages": 27,
-          "pdfPath": "../../../RAW/2605.09887v1.pdf",
+          "pdfPath": "RAW/2605.09887v1.pdf",
           "teach": {
             "whyWeRead": "Optional: intrinsic geometry of activations predicts SAE scaling limits by layer.",
             "oneSentence": "Links manifold structure of activations to layerwise SAE scaling laws — a geometric wall.",
@@ -6643,7 +6643,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Translating the internal representations and computations of models into concepts that humans can understand is a key goal of interpretability. While recent dic- tionary learning methods such as Sparse Autoencoders (SAEs) provide a promis- ing route to discover human-interpretable features, they often only recover token- specific, noisy, or highly local concepts. We argue that this limitation stems from neglecting the temporal structure of language, where semantic content typically evolves smoothly over sequences. Building on this insight, we introduce Tempo- ral Sparse Autoencoders (T-SAEs), which incorporate a novel contrastive loss en- couraging consistent activations of high-level features over adjacent tokens. This simple yet powerful modification enables SAEs to disentangle semantic from syn- tactic features in a self-supervised manner. Across multiple datasets and models, T-SAEs recover smoother, more coherent semantic concepts without sacrificing reconstruction quality. Strikingly, they exhibit clear semantic structure despite being trained without explicit semantic signal, offering a new pathway for unsu- pervised interpretability in language models. 1",
           "pages": 29,
-          "pdfPath": "../../../RAW/2511.05541v2.pdf",
+          "pdfPath": "RAW/2511.05541v2.pdf",
           "teach": {
             "whyWeRead": "Closest empirical ancestor: coordinates SAE codes across related activations (adjacent tokens).",
             "oneSentence": "Adds temporal/contrastive coordination between adjacent-token SAE representations for interpretability.",
@@ -6770,7 +6770,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "Developing human understandable interpretation of large language models (LLMs) becomes in- creasingly critical for their deployment in essen- tial domains. Mechanistic interpretability seeks to mitigate the issues through extracts human- interpretable process and concepts from LLMs’ activations. Sparse autoencoders (SAEs) have emerged as a popular approach for extracting in- terpretable and monosemantic concepts by decom- posing the LLM internal representations into a dic- tionary. Despite their empirical progress, SAEs suffer from a fundamental theoretical ambiguity: the well-defined correspondence between LLM representations and human-interpretable concepts remains unclear. This lack of theoretical ground- ing gives rise to several methodological chal- lenges, including difficulties in principled method design and evaluation criteria. In this work, we show that, under mild assumptions, LLM repre- sentations can be approximated as a linear mix- ture of the log-posteriors over concepts given the input context, through the lens of a latent vari- able model where concepts are treated as latent variables. This motivates a principled framework for concept extraction, namely Concept Com",
           "pages": 36,
-          "pdfPath": "../../../RAW/2601.20420v2.pdf",
+          "pdfPath": "RAW/2601.20420v2.pdf",
           "teach": {
             "whyWeRead": "Alternative concept extraction via linear unmixing and identifiability — competitor/complement to SAEs.",
             "oneSentence": "Concept Component Analysis extracts concepts via a principled linear mixture / unmixing approach.",
@@ -6903,7 +6903,7 @@ window.CURRICULUM_DATA = {
           "optional": false,
           "abstract": "We present a unified framework for studying the identifiability of representations learned from simultaneously observed views, such as different data modalities. We allow a partially observed setting in which each view constitutes a nonlinear mixture of a subset of underlying latent variables, which can be causally related. We prove that the information shared across all subsets of any number of views can be learned up to a smooth bijection using contrastive learning and a single encoder per view. We also provide graphical criteria indicating which latent variables can be identified through a simple set of rules, which we refer to as identifiability algebra. Our general framework and theoretical results unify and extend several previous works on multi-view nonlinear ICA, disentanglement, and causal representation learning. We experimentally validate our claims on numerical, image, and multi- modal data sets. Further, we demonstrate that the performance of prior methods is recovered in different special cases of our setup. Overall, we find that access to multiple partial views enables us to identify a more fine-grained representation, under the generally milder assumption of partial",
           "pages": 32,
-          "pdfPath": "../../../RAW/2311.04056v2.pdf",
+          "pdfPath": "RAW/2311.04056v2.pdf",
           "teach": {
             "whyWeRead": "Theory for when multiple partial views identify latent factors — foundations for multi-view claims.",
             "oneSentence": "Studies multi-view causal representation learning under partial observability and identifiability conditions.",

@@ -360,9 +360,9 @@
       u.rate=.95; speechSynthesis.speak(u);
     }
 
-    function hasDemo(id){ return ['pca-shlens','ica-shlens','cca-uurtio','ksparse','align-unif','deepsets','superposition'].includes(id); }
+    function hasDemo(id){ return true; }
 
-    // demos (simplified)
+    // demos (interactive simulations)
     function mountDemos(){
       if(view.type!=='paper'||view.section!=='demo') return;
       const m=document.getElementById('demoMount'); if(!m) return;
@@ -370,10 +370,36 @@
       if(id==='pca-shlens') demoPCA(m);
       else if(id==='ica-shlens') demoICA(m);
       else if(id==='cca-uurtio') demoCCA(m);
-      else if(id==='ksparse') demoSAE(m);
-      else if(id==='align-unif') demoAlign(m);
-      else if(id==='deepsets') demoSet(m);
+      else if(id==='ksparse'||id==='topk-sae'||id==='gated-sae'||id==='jumprelu'||id==='batchtopk'||id==='matryoshka') demoSAE(m);
+      else if(id==='align-unif'||id==='cpc'||id==='simclr'||id==='supcon'||id==='vicreg') demoAlign(m);
+      else if(id==='deepsets'||id==='set-transformer'||id==='neural-stat') demoSet(m);
       else if(id==='superposition') demoSuper(m);
+      else demoGeneric(m);
+    }
+
+    function demoGeneric(mount){
+      mount.innerHTML=`<canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
+        <div class="demo-controls">
+          <label>Feature Dimension d <input id="gd" type="range" min="2" max="32" value="16"></label>
+          <label>Sparsity k <input id="gk" type="range" min="1" max="10" value="3"></label>
+        </div>
+        <p class="muted">Interactive Feature Vector Space Simulator: observe active basis projections, sparsity thresholding, and vector angles live.</p>`;
+      const ctx=document.getElementById('c').getContext('2d');
+      function draw(){
+        const d=+document.getElementById('gd').value, k=+document.getElementById('gk').value;
+        ctx.fillStyle='#0a0e14'; ctx.fillRect(0,0,440,240);
+        ctx.strokeStyle='#2a3144'; ctx.strokeRect(20,20,400,200);
+        ctx.fillStyle='#8b95a8'; ctx.font='12px IBM Plex Mono';
+        ctx.fillText(`Vector Space (d=${d}, active k=${k})`,30,40);
+        const bw=(360/d)-2;
+        for(let i=0;i<d;i++){
+          const active=i<k;
+          const h=active?30+Math.random()*90:3;
+          ctx.fillStyle=active?'#6c9eff':'#2a3144';
+          ctx.fillRect(40+i*(bw+2), 190-h, Math.max(bw,2), h);
+        }
+      }
+      document.getElementById('gd').oninput=draw; document.getElementById('gk').oninput=draw; draw();
     }
 
     function demoPCA(mount){

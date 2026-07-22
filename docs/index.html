@@ -9,16 +9,16 @@
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #090b10;
-      --surface: #111522;
-      --surface2: #181e30;
-      --surface3: #222a42;
+      --bg: #07090e;
+      --surface: #0f131f;
+      --surface2: #161c2d;
+      --surface3: #1f273d;
       --border: rgba(255, 255, 255, 0.08);
-      --border-accent: rgba(56, 189, 248, 0.3);
+      --border-accent: rgba(56, 189, 248, 0.35);
       --text: #f1f5f9;
       --muted: #94a3b8;
       --accent: #38bdf8;
-      --accent-glow: rgba(56, 189, 248, 0.15);
+      --accent-glow: rgba(56, 189, 248, 0.2);
       --indigo: #818cf8;
       --ok: #34d399;
       --warn: #fbbf24;
@@ -32,39 +32,39 @@
       font-family: var(--font);
       background: var(--bg);
       color: var(--text);
-      line-height: 1.6;
+      line-height: 1.65;
       min-height: 100vh;
-      background-image: radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.05) 0%, transparent 45%),
-                        radial-gradient(circle at 85% 85%, rgba(129, 140, 248, 0.05) 0%, transparent 45%);
+      background-image: radial-gradient(circle at 10% 10%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
+                        radial-gradient(circle at 90% 90%, rgba(129, 140, 248, 0.06) 0%, transparent 40%);
       background-attachment: fixed;
     }
-    button { font-family: inherit; cursor: pointer; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 500; transition: all 0.2s ease; }
-    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--indigo)); color: #090b10; font-weight: 600; box-shadow: 0 4px 14px rgba(56, 189, 248, 0.25); }
-    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.35); }
+    button { font-family: inherit; cursor: pointer; border: none; border-radius: 8px; padding: 0.65rem 1.25rem; font-weight: 500; transition: all 0.2s ease; }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--indigo)); color: #07090e; font-weight: 700; box-shadow: 0 4px 16px rgba(56, 189, 248, 0.28); }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(56, 189, 248, 0.38); }
     .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
     .btn-secondary:hover { background: var(--surface3); border-color: var(--accent); }
     .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
     .btn-ghost:hover { color: var(--text); background: var(--surface2); }
     
-    .layout { display: grid; grid-template-columns: 300px 1fr; min-height: 100vh; }
+    .layout { display: grid; grid-template-columns: 310px 1fr; min-height: 100vh; }
     .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 1.25rem; overflow-y: auto; position: sticky; top: 0; height: 100vh; backdrop-filter: blur(12px); }
-    .sidebar h1 { font-family: var(--heading); font-size: 1.25rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.2rem; }
-    .sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; }
+    .sidebar h1 { font-family: var(--heading); font-size: 1.3rem; font-weight: 800; background: linear-gradient(135deg, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.2rem; }
+    .sub { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.2rem; }
     
-    .progress-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem; margin-bottom: 1.25rem; }
+    .progress-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; margin-bottom: 1.25rem; }
     .progress-bar { height: 8px; background: var(--surface); border-radius: 99px; overflow: hidden; margin: 0.5rem 0; }
     .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--ok)); width: 0%; transition: width 0.4s ease; }
     .progress-label { font-size: 0.78rem; color: var(--muted); display: flex; justify-content: space-between; }
     
-    .level-nav { list-style: none; display: flex; flex-direction: column; gap: 0.35rem; }
-    .level-nav button { width: 100%; text-align: left; background: transparent; color: var(--muted); padding: 0.6rem 0.75rem; border-radius: 10px; font-size: 0.84rem; border: 1px solid transparent; display: flex; gap: 0.6rem; align-items: center; justify-content: space-between; }
+    .level-nav { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+    .level-nav button { width: 100%; text-align: left; background: transparent; color: var(--muted); padding: 0.65rem 0.8rem; border-radius: 10px; font-size: 0.84rem; border: 1px solid transparent; display: flex; gap: 0.6rem; align-items: center; justify-content: space-between; }
     .level-nav button:hover { background: var(--surface2); color: var(--text); }
-    .level-nav button.active { background: var(--surface2); color: var(--accent); border-color: var(--border-accent); box-shadow: 0 0 15px var(--accent-glow); }
+    .level-nav button.active { background: var(--surface2); color: var(--accent); border-color: var(--border-accent); box-shadow: 0 0 16px var(--accent-glow); }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border); flex-shrink: 0; }
     .level-nav button.done .dot { background: var(--ok); box-shadow: 0 0 8px rgba(52, 211, 153, 0.4); }
     
-    main { padding: 2rem 2.5rem 4rem; max-width: 1050px; margin: 0 auto; width: 100%; }
-    .badge { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.2rem 0.6rem; border-radius: 6px; background: var(--surface2); color: var(--muted); margin-right: 0.4rem; }
+    main { padding: 2rem 2.5rem 5rem; max-width: 1020px; margin: 0 auto; width: 100%; }
+    .badge { display: inline-block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.2rem 0.65rem; border-radius: 6px; background: var(--surface2); color: var(--muted); margin-right: 0.4rem; }
     .badge.accent { background: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid rgba(56, 189, 248, 0.3); }
     .badge.ok { background: rgba(52, 211, 153, 0.15); color: var(--ok); border: 1px solid rgba(52, 211, 153, 0.3); }
     
@@ -72,28 +72,44 @@
     h3 { font-family: var(--heading); font-size: 1.25rem; font-weight: 600; margin: 0 0 0.8rem; color: #fff; }
     h4 { font-family: var(--heading); font-size: 1rem; font-weight: 600; margin: 1.2rem 0 0.5rem; color: var(--accent); }
     
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1.5rem; backdrop-filter: blur(8px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
-    .callout { border-left: 4px solid var(--accent); padding: 0.9rem 1.25rem; background: rgba(56, 189, 248, 0.06); border-radius: 0 12px 12px 0; margin: 1rem 0; font-size: 0.92rem; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.6rem; margin-bottom: 1.5rem; backdrop-filter: blur(8px); box-shadow: 0 8px 30px rgba(0,0,0,0.35); }
+    .callout { border-left: 4px solid var(--accent); padding: 0.95rem 1.25rem; background: rgba(56, 189, 248, 0.06); border-radius: 0 12px 12px 0; margin: 1rem 0; font-size: 0.92rem; }
     .callout.ok { border-color: var(--ok); background: rgba(52, 211, 153, 0.06); }
     .callout.warn { border-color: var(--warn); background: rgba(251, 191, 36, 0.06); }
     .callout.bad { border-color: var(--bad); background: rgba(244, 63, 94, 0.06); }
     
-    .formula { font-family: var(--mono); font-size: 0.9rem; background: #0c0f17; border: 1px solid var(--border-accent); padding: 0.9rem 1.1rem; border-radius: 10px; color: var(--ok); margin: 0.8rem 0; box-shadow: inset 0 2px 6px rgba(0,0,0,0.4); }
+    .formula { font-family: var(--mono); font-size: 0.9rem; background: #0b0e17; border: 1px solid var(--border-accent); padding: 0.9rem 1.2rem; border-radius: 10px; color: var(--ok); margin: 0.8rem 0; box-shadow: inset 0 2px 6px rgba(0,0,0,0.4); }
     .learn-list { list-style: none; }
     .learn-list li { padding: 0.4rem 0 0.4rem 1.4rem; position: relative; font-size: 0.94rem; color: #cbd5e1; }
     .learn-list li::before { content: '➔'; position: absolute; left: 0; color: var(--accent); font-size: 0.85rem; }
     
-    .paper-item, .toc-item { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.9rem 1.1rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; margin-bottom: 0.6rem; transition: all 0.2s ease; }
+    .paper-item, .toc-item { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.95rem 1.15rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; margin-bottom: 0.6rem; transition: all 0.2s ease; }
     .paper-item:hover, .toc-item:hover { border-color: var(--accent); transform: translateX(3px); background: var(--surface3); }
     
-    .hub-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: var(--surface); padding: 0.4rem; border-radius: 12px; border: 1px solid var(--border); }
-    .hub-tab { flex: 1; text-align: center; padding: 0.65rem 1rem; border-radius: 8px; font-size: 0.88rem; font-weight: 600; background: transparent; color: var(--muted); border: none; transition: all 0.2s ease; }
-    .hub-tab.active { background: var(--accent); color: #090b10; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3); }
+    /* GUIDED STEPPER ROADMAP UI */
+    .stepper-nav { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+    .step-btn { flex: 1; min-width: 120px; text-align: center; padding: 0.6rem 0.75rem; border-radius: 10px; font-size: 0.78rem; font-weight: 600; background: var(--surface2); color: var(--muted); border: 1px solid var(--border); transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+    .step-btn.active { background: rgba(56, 189, 248, 0.15); color: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+    .step-btn.done { border-color: var(--ok); color: var(--ok); }
+
+    /* RICH VISUAL PROSE & STEP CARDS */
+    .prose-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; margin-bottom: 0.9rem; }
+    .prose-card p { margin: 0; font-size: 0.95rem; color: #cbd5e1; line-height: 1.65; }
     
-    .checkrow { display: flex; gap: 0.75rem; align-items: flex-start; margin: 0.5rem 0; font-size: 0.94rem; background: var(--surface2); padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border); }
+    .step-header-card { background: linear-gradient(135deg, #151b2c, #0b0f19); border: 1px solid var(--border-accent); border-radius: 14px; padding: 1.25rem 1.4rem; margin: 1.4rem 0 1rem; box-shadow: 0 6px 20px rgba(0,0,0,0.4); }
+    .step-header-card h3 { font-family: var(--heading); font-size: 1.35rem; color: #fff; margin: 0.3rem 0 0; }
+    
+    .math-steps-grid { display: flex; flex-direction: column; gap: 0.8rem; margin: 1.2rem 0; }
+    .math-step-card { display: flex; gap: 1rem; align-items: flex-start; background: #121726; border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; transition: border-color 0.2s ease; }
+    .math-step-card:hover { border-color: var(--accent); }
+    .step-pill { background: var(--accent); color: #07090e; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; flex-shrink: 0; margin-top: 0.1rem; }
+    
+    .kw-badge { background: rgba(56, 189, 248, 0.15); color: var(--accent); padding: 0.15rem 0.45rem; border-radius: 4px; font-weight: 600; font-family: var(--mono); font-size: 0.88em; border: 1px solid rgba(56, 189, 248, 0.25); }
+
+    .checkrow { display: flex; gap: 0.75rem; align-items: flex-start; margin: 0.5rem 0; font-size: 0.94rem; background: var(--surface2); padding: 0.8rem 1rem; border-radius: 10px; border: 1px solid var(--border); }
     .checkrow input { margin-top: 0.2rem; accent-color: var(--accent); width: 16px; height: 16px; }
     
-    .quiz-opt { display: block; width: 100%; text-align: left; padding: 0.75rem 1rem; margin: 0.5rem 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 0.9rem; transition: all 0.2s ease; }
+    .quiz-opt { display: block; width: 100%; text-align: left; padding: 0.8rem 1.1rem; margin: 0.5rem 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 0.92rem; transition: all 0.2s ease; }
     .quiz-opt:hover:not([disabled]) { border-color: var(--accent); background: var(--surface3); }
     .quiz-opt.correct { border-color: var(--ok); background: rgba(52, 211, 153, 0.15); color: #fff; }
     .quiz-opt.wrong { border-color: var(--bad); background: rgba(244, 63, 94, 0.15); color: #fff; }
@@ -109,29 +125,28 @@
     .idea-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem; margin-bottom: 0.9rem; }
     .idea-card h4 { margin: 0 0 0.5rem; font-size: 0.98rem; color: #fff; }
     
-    .demo-container { background: #06080d; border: 1px solid var(--border-accent); border-radius: 14px; padding: 1.25rem; margin-bottom: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-    .demo-canvas { width: 100%; height: 260px; background: #090c14; border: 1px solid var(--border); border-radius: 10px; display: block; }
+    .demo-container { background: #06080d; border: 1px solid var(--border-accent); border-radius: 16px; padding: 1.4rem; margin-bottom: 1.5rem; box-shadow: 0 10px 35px rgba(0,0,0,0.5); }
+    .demo-canvas { width: 100%; height: 270px; background: #090c14; border: 1px solid var(--border); border-radius: 10px; display: block; }
     .demo-controls { display: flex; gap: 1.2rem; flex-wrap: wrap; margin-top: 1rem; align-items: center; font-size: 0.85rem; color: var(--muted); background: var(--surface2); padding: 0.8rem 1rem; border-radius: 10px; }
     .demo-controls label { display: flex; align-items: center; gap: 0.6rem; font-weight: 500; color: var(--text); }
     .demo-controls input[type=range] { accent-color: var(--accent); width: 130px; }
     
-    .prose p { margin: 0.75rem 0; white-space: pre-wrap; color: #cbd5e1; font-size: 0.95rem; }
     .muted { color: var(--muted); font-size: 0.9rem; }
     .hidden { display: none !important; }
-    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.5rem; align-items: center; justify-content: space-between; }
   </style>
 </head>
 <body>
   <div class="layout">
     <aside class="sidebar">
       <h1>SetConCA Mastery</h1>
-      <p class="sub">Visual Masterclass · Self-Contained</p>
+      <p class="sub">Guided Step-by-Step Tutor</p>
       <div class="progress-card">
-        <div class="progress-label"><span>Course Mastery</span><strong id="pctText">0%</strong></div>
+        <div class="progress-label"><span>Course Progress</span><strong id="pctText">0%</strong></div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
         <div class="progress-label" style="font-size: 0.72rem; margin-top: 0.3rem;"><span id="paperStats">0/43 Papers</span><span id="primerStats">0/10 Primers</span></div>
       </div>
-      <button class="btn-ghost" style="width:100%; font-size:0.8rem; margin-bottom:0.8rem" onclick="showHome()">🏠 Course Overview</button>
+      <button class="btn-ghost" style="width:100%; font-size:0.8rem; margin-bottom:0.8rem" onclick="showHome()">🏠 Course Roadmap</button>
       <ul class="level-nav" id="levelNav"></ul>
       <button class="btn-ghost" style="width:100%; font-size:0.8rem; margin-top:1.2rem; opacity:0.6" onclick="resetProgress()">Reset Progress</button>
     </aside>
@@ -140,9 +155,18 @@
 
   <script src="papers.js"></script>
   <script>
-    const KEY = 'setconca-course-v3';
+    const KEY = 'setconca-course-v5';
     let state = load();
     let view = state.view || { type: 'home' };
+
+    const STEPS = [
+      { id: 1, key: 'intuition', title: '1. Core Intuition', icon: '💡' },
+      { id: 2, key: 'prior', title: '2. Prior Work', icon: '📜' },
+      { id: 3, key: 'demo', title: '3. Interactive Visualizer', icon: '🎮' },
+      { id: 4, key: 'math', title: '4. Math Mechanics', icon: '⚙️' },
+      { id: 5, key: 'exp', title: '5. Experiments & Ablations', icon: '🧪' },
+      { id: 6, key: 'quiz', title: '6. Quiz & Mastery', icon: '🧠' },
+    ];
 
     function load() { try { return JSON.parse(localStorage.getItem(KEY)) || def(); } catch { return def(); } }
     function def() { return { view: { type: 'home' }, primers: {}, papers: {}, checks: {} }; }
@@ -153,6 +177,12 @@
     function getLevel(id) { return CURRICULUM_DATA.levels.find(l => l.id === id); }
     function paperDone(id) { const p = state.papers[id] || {}; return !!(p.learn && p.quiz); }
     function primerDone(id) { return !!state.primers[id]; }
+
+    function getNextPaperId(currentId) {
+      const all = allPaperIds();
+      const idx = all.indexOf(currentId);
+      return idx >= 0 && idx < all.length - 1 ? all[idx + 1] : null;
+    }
 
     function progressStats() {
       const primers = CURRICULUM_DATA.levels.length;
@@ -187,7 +217,7 @@
 
     function showHome() { view = { type: 'home' }; state.view = view; save(); render(); }
     function openLevel(id) { view = { type: 'level', levelId: id }; state.view = view; save(); render(); }
-    function openPaper(id, hub) { view = { type: 'paper', paperId: id, hub: hub || 'overview' }; state.view = view; save(); render(); }
+    function openPaper(id, stepNum) { view = { type: 'paper', paperId: id, step: stepNum || 1 }; state.view = view; save(); render(); }
     function resetProgress() { if (confirm('Clear all course progress?')) { state = def(); save(); render(); } }
 
     function render() {
@@ -195,39 +225,42 @@
       const main = document.getElementById('main');
       if (view.type === 'home') main.innerHTML = renderHome();
       else if (view.type === 'level') main.innerHTML = renderLevel(view.levelId);
-      else if (view.type === 'paper') main.innerHTML = renderPaper(view.paperId, view.hub || 'overview');
+      else if (view.type === 'paper') main.innerHTML = renderPaperStep(view.paperId, view.step || 1);
     }
 
     function renderHome() {
       const intro = CURRICULUM_DATA.courseIntro || {};
       return `
-        <span class="badge accent">Visual Masterclass Curriculum</span>
+        <span class="badge accent">Guided Visual Curriculum</span>
         <h2>${intro.title || 'SetConCA Mastery'}</h2>
         <p class="muted" style="font-size:1.05rem; margin-bottom:1rem">${intro.promise || ''}</p>
         <div class="formula">${intro.formula || CURRICULUM_DATA.formula}</div>
         
         <div class="card" style="margin-top:1.5rem">
-          <h3>🎓 How to Master this Course</h3>
-          <ul class="learn-list">${(intro.howToUse || []).map(x => `<li>${x}</li>`).join('')}</ul>
-          <p class="muted" style="margin-top:1rem; border-top:1px solid var(--border); padding-top:0.8rem">${intro.pathMap || ''}</p>
+          <h3>🎓 Guided Step-by-Step Learning Path</h3>
+          <ul class="learn-list">
+            <li><strong>Guided Progression:</strong> Work through each paper step-by-step (Intuition ➔ Prior Work ➔ Interactive Visualizer ➔ Math ➔ Experiments ➔ Quiz).</li>
+            <li><strong>Visual Component Cards:</strong> Every concept is presented in interactive visual cards, step pills, and color callouts.</li>
+            <li><strong>Automatic Roadmap Advance:</strong> Complete a paper's quiz to unlock the next paper in sequence!</li>
+          </ul>
         </div>
 
         <div class="card">
-          <h3>📍 Curriculum Learning Map (10 Levels)</h3>
+          <h3>📍 Complete Course Roadmap (10 Levels)</h3>
           ${CURRICULUM_DATA.levels.map(l => `
             <div class="toc-item" onclick="openLevel(${l.id})">
               <span><strong>L${l.id}</strong> · ${l.title} ${primerDone(l.id) ? '<span class="badge ok">Primer ✓</span>' : ''}</span>
               <span class="muted">${l.papers.filter(p => paperDone(p.id)).length}/${l.papers.length} Modules</span>
             </div>`).join('')}
         </div>
-        <div class="actions"><button class="btn-primary" onclick="openLevel(1)">Begin Level 1 Masterclass →</button></div>`;
+        <div class="actions"><button class="btn-primary" onclick="openLevel(1)">Begin Level 1 Roadmap →</button></div>`;
     }
 
     function renderLevel(id) {
       const level = getLevel(id);
       const primer = (CURRICULUM_DATA.levelPrimers || {})[String(id)] || level.primer || {};
       return `
-        <button class="btn-ghost" onclick="showHome()">← Course Home</button>
+        <button class="btn-ghost" onclick="showHome()">← Course Roadmap</button>
         <div style="margin-top:1rem">
           <span class="badge accent">Level ${id}</span>
           <span class="badge">Weeks ${level.weeks || ''}</span>
@@ -235,11 +268,16 @@
         </div>
         <h2>${level.title}</h2>
         <p class="muted"><strong>Mission:</strong> ${primer.mission || ''}</p>
-        <p class="muted"><strong>Prerequisite:</strong> ${primer.beforeYouStart || ''}</p>
+
+        <!-- INTERACTIVE LEVEL STAGE SIMULATOR -->
+        <div class="demo-container">
+          <h3>🎮 Level ${id} Interactive Stage Simulator</h3>
+          <div id="demoMount"></div>
+        </div>
 
         <div class="card">
-          <h3>📖 Level Primer (Masterclass Lecture)</h3>
-          <div class="prose">${(primer.primer || '').split(/\n\n+/).map(p => `<p>${esc(p)}</p>`).join('')}</div>
+          <h3>📖 Level ${id} Masterclass Lecture</h3>
+          ${renderRichProse(primer.primer || '')}
           ${(primer.bigPictureDiagram || []).length ? `<h4>Big Picture Diagram</h4><div class="formula">${primer.bigPictureDiagram.map(esc).join('<br>')}</div>` : ''}
           ${(primer.conceptsToMaster || []).length ? `<h4>Concepts to Master</h4>${primer.conceptsToMaster.map(c => `<div class="idea-card"><h4>${esc(c.name)}</h4><div class="dual"><div class="orig"><div class="lbl">Original Idea</div>${esc(c.deeper || c.simple)}</div><div class="simp"><div class="lbl">Simple Explanation</div>${esc(c.simple)}</div></div></div>`).join('')}` : ''}
           <div class="actions">
@@ -247,18 +285,12 @@
           </div>
         </div>
 
-        ${primer.checkpoint ? `<div class="card"><h3>🧪 Practical Checkpoint</h3>
-          <p><strong>Goal:</strong> ${primer.checkpoint.goal}</p>
-          <ul class="learn-list">${(primer.checkpoint.steps || []).map(s => `<li>${s}</li>`).join('')}</ul>
-          <p class="muted" style="margin-top:0.8rem"><strong>Success Looks Like:</strong> ${primer.checkpoint.successLooksLike || ''}</p>
-        </div>` : ''}
-
         <div class="card">
-          <h3>📚 Paper Modules in Level ${id}</h3>
-          ${level.papers.map(p => `
-            <div class="paper-item" onclick="openPaper('${p.id}')">
-              <span>${p.num ? `#${p.num} ` : ''}<strong>${p.title}</strong>${p.optional ? ' <span class="badge">Optional</span>' : ''}</span>
-              <span class="muted">${paperDone(p.id) ? '✓ Complete' : 'Study Module →'}</span>
+          <h3>🗺️ Step-by-Step Module Sequence for Level ${id}</h3>
+          ${level.papers.map((p, idx) => `
+            <div class="paper-item" onclick="openPaper('${p.id}', 1)">
+              <span>Step ${idx + 1}: ${p.num ? `#${p.num} ` : ''}<strong>${p.title}</strong></span>
+              <span class="muted">${paperDone(p.id) ? '✓ Completed' : 'Start Module ➔'}</span>
             </div>`).join('')}
         </div>
         <div class="actions">
@@ -269,41 +301,50 @@
 
     function markPrimer(id) { state.primers[id] = true; save(); render(); }
 
-    function renderPaper(id, hub) {
+    function renderPaperStep(id, stepNum) {
       const paper = getPaper(id);
       const level = CURRICULUM_DATA.levels.find(l => l.papers.some(p => p.id === id));
-      const t = paper.teach || {};
+      const nextPaperId = getNextPaperId(id);
+      const nextPaper = nextPaperId ? getPaper(nextPaperId) : null;
 
       return `
-        <button class="btn-ghost" onclick="openLevel(${level.id})">← Back to Level ${level.id}</button>
+        <button class="btn-ghost" onclick="openLevel(${level.id})">← Level ${level.id} Roadmap</button>
         <div style="margin-top:1rem">
           <span class="badge accent">${paper.num ? `Paper ${paper.num}` : 'Optional'}</span>
           <span class="badge">Level ${level.id}</span>
-          ${paperDone(id) ? '<span class="badge ok">Module Complete ✓</span>' : ''}
+          ${paperDone(id) ? '<span class="badge ok">Module Mastered ✓</span>' : ''}
         </div>
         <h2>${paper.title}</h2>
         <p class="muted">${paper.authors || ''}</p>
-        
-        <div class="callout ok"><strong>Why We Read This:</strong> ${t.whyWeRead || paper.setconca || ''}</div>
 
-        <!-- STREAMLINED 3-HUB NAVIGATION -->
-        <div class="hub-tabs">
-          <button class="hub-tab ${hub === 'overview' ? 'active' : ''}" onclick="setHub('overview')">📖 Masterclass & Simulator</button>
-          <button class="hub-tab ${hub === 'analysis' ? 'active' : ''}" onclick="setHub('analysis')">⚠️ Limits & SetConCA</button>
-          <button class="hub-tab ${hub === 'quiz' ? 'active' : ''}" onclick="setHub('quiz')">🧠 Mastery & Quiz</button>
+        <!-- VISUAL STEPPER NAVIGATION BAR -->
+        <div class="stepper-nav">
+          ${STEPS.map(s => `
+            <button class="step-btn ${stepNum === s.id ? 'active' : ''} ${stepNum > s.id ? 'done' : ''}" onclick="setStep(${s.id})">
+              <span>${s.icon} ${s.title}</span>
+              <span style="font-size:0.68rem">${stepNum > s.id ? '✓' : ''}</span>
+            </button>`).join('')}
         </div>
 
-        <div id="hubBody">${renderHubContent(paper, hub)}</div>
+        <!-- STEP CONTENT BODY -->
+        <div id="stepBody">${renderStepContent(paper, stepNum)}</div>
 
-        <div class="actions">
-          ${paper.pdfPath ? `<a href="${paper.pdfPath}" target="_blank"><button class="btn-secondary">📄 Local PDF</button></a>` : ''}
-          ${paper.url ? `<a href="${paper.url}" target="_blank"><button class="btn-secondary">🌐 Online Source</button></a>` : ''}
-          <button class="btn-secondary" onclick="speakTeach()">🔊 Listen to Summary</button>
-          <button class="btn-primary" onclick="markLearn('${id}')">Mark Module Learned ✓</button>
+        <!-- FOOTER STEPPER ACTIONS -->
+        <div class="actions" style="border-top:1px solid var(--border); padding-top:1.2rem">
+          ${stepNum > 1 ? `<button class="btn-secondary" onclick="setStep(${stepNum - 1})">⟵ Step ${stepNum - 1}: ${STEPS[stepNum - 2].title}</button>` : `<span></span>`}
+          ${stepNum < 6 ? `
+            <button class="btn-primary" onclick="setStep(${stepNum + 1})">Next: ${STEPS[stepNum].title} ➔</button>
+          ` : `
+            ${nextPaper ? `
+              <button class="btn-primary" onclick="markAndAdvance('${id}', '${nextPaper.id}')">Complete & Advance to Next Paper: ${nextPaper.title} ➔</button>
+            ` : `
+              <button class="btn-primary" onclick="markAndAdvance('${id}', null)">Finish Level & Return to Course Roadmap 🎉</button>
+            `}
+          `}
         </div>`;
     }
 
-    function setHub(h) { view.hub = h; state.view = view; save(); render(); }
+    function setStep(s) { view.step = s; state.view = view; save(); render(); }
 
     function dualBlock(original, simple) {
       return `<div class="dual">
@@ -312,50 +353,120 @@
       </div>`;
     }
 
-    function renderHubContent(paper, hub) {
+    function renderRichProse(text) {
+      if (!text) return '';
+      const paragraphs = text.split(/\n\n+/);
+      let html = '';
+
+      paragraphs.forEach(p => {
+        p = p.trim();
+        if (!p) return;
+
+        if (p.startsWith('---') && p.endsWith('---')) {
+          const title = p.replace(/^---+\s*/, '').replace(/\s*---+$/, '');
+          html += `
+            <div class="step-header-card">
+              <span class="badge accent">Visual Core Concept</span>
+              <h3>${esc(title)}</h3>
+            </div>`;
+          return;
+        }
+
+        if (p.includes('CRITICAL') || p.includes('WARNING') || p.includes('THE SCIENTIFIC WARNING')) {
+          html += `
+            <div class="callout bad">
+              <strong style="color:var(--bad)">⚠️ Critical Scientific Warning:</strong>
+              <p style="margin-top:0.3rem">${esc(p.replace(/CRITICAL LESSON[^:]*:/i, '').replace(/THE SCIENTIFIC WARNING[^:]*:/i, ''))}</p>
+            </div>`;
+          return;
+        }
+
+        if (p.includes('1.') && p.includes('2.') && (p.includes('Mean') || p.includes('Variance') || p.includes('Step') || p.includes('Covariance'))) {
+          const items = p.split(/(?=\d+\.\s)/);
+          html += `<div class="math-steps-grid">`;
+          items.forEach(item => {
+            const match = item.match(/^(\d+)\.\s*([^:]+):?\s*(.*)/s);
+            if (match) {
+              html += `
+                <div class="math-step-card">
+                  <div class="step-pill">${match[1]}</div>
+                  <div style="flex:1">
+                    <h4 style="margin:0; font-size:0.95rem; color:var(--accent)">${esc(match[2])}</h4>
+                    <p style="margin:0.25rem 0 0; font-size:0.9rem; color:#cbd5e1">${esc(match[3])}</p>
+                  </div>
+                </div>`;
+            } else if (item.trim()) {
+              html += `<p class="muted">${esc(item)}</p>`;
+            }
+          });
+          html += `</div>`;
+          return;
+        }
+
+        html += `<div class="prose-card"><p>${highlightKeywords(esc(p))}</p></div>`;
+      });
+
+      return html;
+    }
+
+    function highlightKeywords(str) {
+      return str.replace(/\b(PCA|ICA|CCA|SVD|FVU|TopK|InfoNCE|ELBO|VAE|CKA|SAE|SAEs|SetConCA|Superposition|Polysemanticity|Covariance Matrix|Eigenvectors|Eigenvalues)\b/g, '<span class="kw-badge">$1</span>');
+    }
+
+    function renderStepContent(paper, stepNum) {
       const t = paper.teach || {};
 
-      if (hub === 'overview') {
+      if (stepNum === 1) {
         return `
-          <!-- INTERACTIVE VISUAL SIMULATION STAGE -->
+          <div class="card">
+            <h3>💡 Step 1: Core Problem & Real-World Intuition</h3>
+            <div class="callout ok"><strong>Why We Read This:</strong> ${t.whyWeRead || paper.setconca || ''}</div>
+            <p><em>${t.oneSentence || ''}</em></p>
+            <h4 style="margin-top:1.2rem">Teacher Walkthrough</h4>
+            ${renderRichProse(t.plainLanguage || '')}
+          </div>`;
+      }
+
+      if (stepNum === 2) {
+        return `
+          <div class="card">
+            <h3>📜 Step 2: Prior Work & Literature Context</h3>
+            <p class="muted">Where the field stood before this paper, what missing gap it targets, and what earlier methods it builds on or critiques.</p>
+            ${renderRichProse(t.priorWork || 'Analyzes earlier literature and addresses missing research gaps.')}
+          </div>`;
+      }
+
+      if (stepNum === 3) {
+        return `
           <div class="demo-container">
-            <h3>🎮 Interactive Concept & Math Simulator</h3>
+            <h3>🎮 Step 3: Interactive Visual Concept & Math Simulator</h3>
+            <p class="muted" style="margin-bottom:1rem">Adjust sliders to see how vector space angles, component projections, or sparsity thresholds behave live!</p>
             <div id="demoMount"></div>
-          </div>
+          </div>`;
+      }
 
-          <!-- CORE LECTURE -->
+      if (stepNum === 4) {
+        return `
           <div class="card">
-            <h3>📖 Masterclass Lecture & Plain English Walkthrough</h3>
-            <div class="prose">${(t.plainLanguage || 'Lecture content loading…').split(/\n\n+/).map(p => `<p>${esc(p)}</p>`).join('')}</div>
-          </div>
-
-          <!-- PRIOR WORK CONTEXT -->
-          <div class="card">
-            <h3>📜 Prior Work & Literature Context</h3>
-            <div class="prose">${(t.priorWork || 'Analyzes earlier representation work and resolves missing research gaps.').split(/\n\n+/).map(p => `<p>${esc(p)}</p>`).join('')}</div>
-          </div>
-
-          <!-- TECHNICAL ARCHITECTURE & MATH -->
-          <div class="card">
-            <h3>⚙️ Technical Architecture & Mathematical Mechanics</h3>
-            <div class="prose">${(t.paperArchitecture || 'Mathematical mechanics and step-by-step algorithms.').split(/\n\n+/).map(p => `<p>${esc(p)}</p>`).join('')}</div>
-            ${(t.simplifiedMath || []).length ? `<h4>Formulas Breakdown</h4>${t.simplifiedMath.map(m => `
+            <h3>⚙️ Step 4: Technical Architecture & Step-by-Step Math</h3>
+            ${renderRichProse(t.paperArchitecture || 'Mathematical mechanics and step-by-step equations.')}
+            ${(t.simplifiedMath || []).length ? `<h4>Formula Decompositions</h4>${t.simplifiedMath.map(m => `
               <div class="idea-card">
                 <h4>${esc(m.name)}</h4>
                 <div class="formula">${esc(m.formula)}</div>
                 ${dualBlock(m.original || m.formula, m.simple || m.meaning)}
               </div>`).join('')}` : ''}
-          </div>
+          </div>`;
+      }
 
-          <!-- EXPERIMENTS & ABLATIONS -->
+      if (stepNum === 5) {
+        return `
           <div class="card">
-            <h3>🧪 Empirical Setup, Datasets & Ablation Evidence</h3>
-            <div class="prose">${(t.experimentalSetup || 'Experimental evidence and ablation findings.').split(/\n\n+/).map(p => `<p>${esc(p)}</p>`).join('')}</div>
+            <h3>🧪 Step 5: Experiments, Datasets & Ablation Evidence</h3>
+            ${renderRichProse(t.experimentalSetup || 'Experimental evidence and evaluation findings.')}
           </div>
-
-          <!-- KEY IDEAS DUAL CARDS -->
           <div class="card">
-            <h3>💡 Key Ideas (Original vs Simple)</h3>
+            <h3>💡 Key Paper Ideas Summary</h3>
             ${(t.keyIdeas || []).map((k, i) => `
               <div class="idea-card">
                 <h4>${i + 1}. ${esc(k.title)}</h4>
@@ -364,36 +475,28 @@
           </div>`;
       }
 
-      if (hub === 'analysis') {
-        const shows = (t.limitPairs && t.limitPairs.length) ? t.limitPairs : (t.whatItShows || []).map(s => ({ original: s, simple: 'Evidence supports this.' }));
-        const nots = (t.nonClaimPairs && t.nonClaimPairs.length) ? t.nonClaimPairs : (t.whatItDoesNotShow || []).map(s => ({ original: s, simple: 'Do not overclaim into this.' }));
-        const applies = (t.setconcaPairs && t.setconcaPairs.length) ? t.setconcaPairs : (t.setconcaUse || [paper.setconca]).map(u => ({ original: u, simple: u }));
-
-        return `
-          <div class="card">
-            <h3>📊 What the Empirical Results Support</h3>
-            ${shows.map((x, i) => `<div class="idea-card"><h4>Supported Finding ${i + 1}</h4>${dualBlock(x.original, x.simple)}</div>`).join('')}
-          </div>
-          <div class="card">
-            <h3>⚠️ Failure Modes & What Results Do NOT Establish</h3>
-            ${nots.map((x, i) => `<div class="idea-card"><h4>Non-Claim / Limitation ${i + 1}</h4>${dualBlock(x.original, x.simple)}</div>`).join('')}
-          </div>
-          <div class="card">
-            <h3>🎯 SetConCA Action Plan & Application</h3>
-            ${applies.map((x, i) => `<div class="idea-card"><h4>Action ${i + 1}</h4>${dualBlock(x.original, x.simple)}</div>`).join('')}
-            <div class="callout ok">${esc(paper.setconca || '')}</div>
-          </div>`;
-      }
-
-      if (hub === 'quiz') {
+      if (stepNum === 6) {
         const checks = t.masteryChecklist || [];
         const st = state.checks[paper.id] || {};
         const quiz = paper.quiz || t.quiz || [];
+        const shows = (t.limitPairs && t.limitPairs.length) ? t.limitPairs : (t.whatItShows || []).map(s => ({ original: s, simple: 'Evidence supports this.' }));
+        const nots = (t.nonClaimPairs && t.nonClaimPairs.length) ? t.nonClaimPairs : (t.whatItDoesNotShow || []).map(s => ({ original: s, simple: 'Do not overclaim into this.' }));
 
         return `
           <div class="card">
+            <h3>📊 What the Paper Proves vs What It Does NOT Establish</h3>
+            ${shows.map((x, i) => `<div class="idea-card"><h4>Supported Finding ${i + 1}</h4>${dualBlock(x.original, x.simple)}</div>`).join('')}
+            ${nots.map((x, i) => `<div class="idea-card"><h4>Limitation / Non-Claim ${i + 1}</h4>${dualBlock(x.original, x.simple)}</div>`).join('')}
+          </div>
+
+          <div class="card">
+            <h3>🎯 SetConCA Research Application</h3>
+            <div class="callout ok">${esc(paper.setconca || '')}</div>
+          </div>
+
+          <div class="card">
             <h3>📋 Self-Assessment Mastery Checklist</h3>
-            <p class="muted" style="margin-bottom:0.8rem">Check each box only when you can explain the concept from memory without looking.</p>
+            <p class="muted" style="margin-bottom:0.8rem">Check off items as you master them.</p>
             ${checks.map((c, i) => `<label class="checkrow"><input type="checkbox" ${st[i] ? 'checked' : ''} onchange="toggleCheck('${paper.id}',${i},this.checked)"/><span>${esc(c)}</span></label>`).join('')}
           </div>
 
@@ -404,7 +507,6 @@
               ${(q.options || []).map((o, j) => `<button class="quiz-opt" onclick="answer('${paper.id}',${i},${j},${q.a},this)">${esc(o)}</button>`).join('')}
               <div class="callout ok hidden" id="qf-${paper.id}-${i}" style="margin-top:0.5rem; font-size:0.85rem"></div>
             </div>`).join('') || '<p class="muted">No quiz for this module.</p>'}
-            <button class="btn-primary" onclick="markQuiz('${paper.id}')">Complete Module Quiz ✓</button>
           </div>`;
       }
 
@@ -413,8 +515,19 @@
 
     function esc(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function toggleCheck(pid, i, v) { state.checks[pid] = state.checks[pid] || {}; state.checks[pid][i] = v; save(); }
-    function markLearn(id) { state.papers[id] = state.papers[id] || {}; state.papers[id].learn = true; save(); render(); }
-    function markQuiz(id) { state.papers[id] = state.papers[id] || {}; state.papers[id].quiz = true; save(); render(); }
+
+    function markAndAdvance(currentId, nextId) {
+      state.papers[currentId] = state.papers[currentId] || {};
+      state.papers[currentId].learn = true;
+      state.papers[currentId].quiz = true;
+      save();
+
+      if (nextId) {
+        openPaper(nextId, 1);
+      } else {
+        showHome();
+      }
+    }
 
     function answer(pid, qi, chosen, correct, btn) {
       const box = btn.parentElement;
@@ -430,35 +543,27 @@
       fb.innerHTML = (chosen === correct ? '<strong>✓ Correct!</strong> ' : '<strong>✗ Incorrect.</strong> ') + esc(q?.explain || '');
     }
 
-    function speakTeach() {
-      const p = getPaper(view.paperId); const t = p.teach || {};
-      const u = new SpeechSynthesisUtterance(`${p.title}. ${t.whyWeRead || ''}. ${t.oneSentence || ''}`);
-      u.rate = 0.95; speechSynthesis.speak(u);
-    }
-
     // -------------------------------------------------------------
-    // INTERACTIVE VISUAL CANVAS ENGINE (100% MODULE COVERAGE)
+    // INTERACTIVE VISUAL CANVAS ENGINE
     // -------------------------------------------------------------
     function mountDemos() {
-      if (view.type !== 'paper' || view.hub !== 'overview') return;
+      const id = view.paperId || (view.type === 'level' ? `level-${view.levelId}` : null);
       const m = document.getElementById('demoMount'); if (!m) return;
-      const id = view.paperId;
 
-      if (id === 'pca-shlens') demoPCA(m);
+      if (id === 'pca-shlens' || view.levelId === 1) demoPCA(m);
       else if (id === 'ica-shlens') demoICA(m);
       else if (id === 'cca-uurtio') demoCCA(m);
-      else if (['ksparse','topk-sae','gated-sae','jumprelu','batchtopk','matryoshka'].includes(id)) demoSAE(m);
-      else if (['align-unif','cpc','simclr','supcon','vicreg'].includes(id)) demoAlign(m);
-      else if (['deepsets','set-transformer','neural-stat'].includes(id)) demoSet(m);
-      else if (id === 'superposition') demoSuper(m);
-      else if (['cka','svcca'].includes(id)) demoCKA(m);
+      else if (['ksparse','topk-sae','gated-sae','jumprelu','batchtopk','matryoshka'].includes(id) || view.levelId === 2) demoSAE(m);
+      else if (['align-unif','cpc','simclr','supcon','vicreg'].includes(id) || view.levelId === 5) demoAlign(m);
+      else if (['deepsets','set-transformer','neural-stat'].includes(id) || view.levelId === 4) demoSet(m);
+      else if (id === 'superposition' || view.levelId === 7) demoSuper(m);
+      else if (['cka','svcca'].includes(id) || view.levelId === 6) demoCKA(m);
       else if (['probe-control','mdl-probe'].includes(id)) demoProbe(m);
       else if (id === 'transformer-circuits') demoResidual(m);
-      else if (['absorption','non-canonical'].includes(id)) demoAbsorption(m);
+      else if (['absorption','non-canonical'].includes(id) || view.levelId === 9) demoAbsorption(m);
       else demoGeneric(m);
     }
 
-    // 1. PCA Visualizer
     function demoPCA(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="260"></canvas>
@@ -493,7 +598,6 @@
       document.getElementById('k').oninput = draw; draw();
     }
 
-    // 2. ICA Visualizer
     function demoICA(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
@@ -517,7 +621,6 @@
       document.getElementById('a').oninput = draw; draw();
     }
 
-    // 3. CCA Visualizer
     function demoCCA(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="220"></canvas>
@@ -534,7 +637,6 @@
       }
     }
 
-    // 4. SAE TopK vs L1 Visualizer
     function demoSAE(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
@@ -563,7 +665,6 @@
       document.getElementById('sk').oninput = draw; document.getElementById('sl').oninput = draw; draw();
     }
 
-    // 5. InfoNCE & Alignment/Uniformity Hypersphere
     function demoAlign(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
@@ -590,7 +691,6 @@
       document.getElementById('aw').oninput = draw; document.getElementById('uw').oninput = draw; draw();
     }
 
-    // 6. Deep Sets & Set Transformer
     function demoSet(mount) {
       mount.innerHTML = `
         <div class="formula">Set Output: f(X) = ρ( Σ_{x∈X} φ(x) )</div>
@@ -600,7 +700,6 @@
         </div>`;
     }
 
-    // 7. Superposition Geometric Packing
     function demoSuper(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
@@ -608,7 +707,7 @@
           <label>Features (M): <input id="sn" type="range" min="2" max="16" value="8"></label>
           <span style="color:var(--accent)">Dimensions: 2D</span>
         </div>
-        <p class="muted" style="margin-top:0.4rem">M features packed into 2D space. Vectors form regular polygons (antipodal, pentagons, etc.) causing neuron polysemanticity.</p>`;
+        <p class="muted" style="margin-top:0.4rem">M features packed into 2D space. Vectors form regular polygons causing neuron polysemanticity.</p>`;
       const ctx = document.getElementById('c').getContext('2d');
       function draw() {
         const n = +document.getElementById('sn').value;
@@ -624,7 +723,6 @@
       document.getElementById('sn').oninput = draw; draw();
     }
 
-    // 8. CKA & SVCCA Subspace Heatmap
     function demoCKA(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>
@@ -642,7 +740,6 @@
       }
     }
 
-    // 9. Probe Selectivity Visualizer
     function demoProbe(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="220"></canvas>
@@ -670,7 +767,6 @@
       document.getElementById('pc').oninput = draw; draw();
     }
 
-    // 10. Residual Stream Pipeline
     function demoResidual(mount) {
       mount.innerHTML = `
         <div class="formula">Residual Stream: x_{l+1} = x_l + Attention(x_l) + MLP(x_l)</div>
@@ -678,7 +774,6 @@
         <div class="actions"><button class="btn-primary" onclick="alert('Step 1: Attn OV circuit added update vector Δx_attn to residual stream.')">Step Layer 1 Update →</button></div>`;
     }
 
-    // 11. Feature Absorption & Splitting
     function demoAbsorption(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="220"></canvas>
@@ -706,7 +801,6 @@
       document.getElementById('dw').oninput = draw; draw();
     }
 
-    // 12. Fallback Generic Simulator
     function demoGeneric(mount) {
       mount.innerHTML = `
         <canvas class="demo-canvas" id="c" width="440" height="240"></canvas>

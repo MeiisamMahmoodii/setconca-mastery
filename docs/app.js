@@ -3,7 +3,7 @@
  * ES Module — imported by index.html
  */
 
-import { createRenderer } from './renderer.js';
+import { createRenderer } from './renderer.js?v=20260723';
 import { createVisualisations } from './visualisations.js';
 
 // ── Constants ─────────────────────────────────────────────────────────────────

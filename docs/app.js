@@ -7,8 +7,8 @@ import { createRenderer } from './renderer.js';
 import { createVisualisations } from './visualisations.js';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'setconca-mastery-v1';
-const SCHEMA_VERSION = 1;
+const STORAGE_KEY = 'setconca-mastery-v2';
+const SCHEMA_VERSION = 2;
 
 // Spaced review intervals in milliseconds
 const REVIEW_INTERVALS = [
@@ -25,36 +25,10 @@ function defaultState() {
     fontSize: 'md',
     currentLessonId: null,
     currentPhase: 0,
-
-    // Progress: keyed by lesson id
     lessons: {},
-    // { [lessonId]: {
-    //     sectionsViewed: Set<string>,
-    //     exerciseCompleted: boolean,
-    //     quizScore: number,          // 0–1
-    //     quizAttempts: number,
-    //     masteryQuestionAnswered: boolean,
-    //     writtenExplanation: string,
-    //     confidenceBefore: number,   // 1–5
-    //     confidenceAfter: number,
-    //     startedAt: number,          // timestamp
-    //     completedAt: number | null,
-    //     mastered: boolean,
-    //     nextReviewAt: number | null,
-    //     reviewCount: number,
-    //     notes: string,
-    //   } }
-
-    // Glossary interaction
     glossaryExpanded: {},
-
-    // Research worksheet answers (keyed by lessonId + fieldKey)
     worksheets: {},
-
-    // Open disclosure panels (keyed by elementId)
     disclosures: {},
-
-    // Concept map viewport
     mapViewport: { x: 0, y: 0, scale: 1 },
   };
 }
@@ -65,14 +39,21 @@ function loadState() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultState();
     const parsed = JSON.parse(raw);
-    if (parsed.schemaVersion !== SCHEMA_VERSION) return defaultState();
-    // Restore sets
-    Object.values(parsed.lessons || {}).forEach(l => {
-      if (Array.isArray(l.sectionsViewed)) l.sectionsViewed = new Set(l.sectionsViewed);
-      else if (!l.sectionsViewed) l.sectionsViewed = new Set();
-    });
+    if (!parsed || typeof parsed !== 'object' || parsed.schemaVersion !== SCHEMA_VERSION) return defaultState();
+    // Restore sets safely
+    if (parsed.lessons && typeof parsed.lessons === 'object') {
+      Object.values(parsed.lessons).forEach(l => {
+        if (l && typeof l === 'object') {
+          if (Array.isArray(l.sectionsViewed)) l.sectionsViewed = new Set(l.sectionsViewed);
+          else if (!l.sectionsViewed) l.sectionsViewed = new Set();
+        }
+      });
+    } else {
+      parsed.lessons = {};
+    }
     return parsed;
-  } catch {
+  } catch (e) {
+    console.warn('Resetting state due to parse error:', e);
     return defaultState();
   }
 }

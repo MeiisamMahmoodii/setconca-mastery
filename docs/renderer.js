@@ -843,6 +843,7 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
     `;
   }
 
+  /* Corrupted duplicate render block retained below for recovery reference.
   async function renderSearch(phases, state) {
     return `
       <h2 style="margin-bottom:0.5rem">Search</h2>
@@ -974,4 +975,59 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
     renderPaper,
     renderConcept,
   };
+}
+  */
+
+  async function renderSearch() {
+    return `
+      <h2 style="margin-bottom:0.5rem">Search</h2>
+      <p class="muted">Use the phase navigation, research library, or glossary to browse the course.</p>
+    `;
+  }
+
+  async function renderPaper(paperId) {
+    let papers;
+    try { papers = await ensurePapers(); } catch { papers = []; }
+    const paper = papers.find(p => p.id === paperId);
+    if (!paper) return `<p class="muted">Paper "${esc(paperId)}" not found in library.</p>`;
+
+    return `
+      <button class="btn-ghost" onclick="app.navigate('/library')" style="margin-bottom:1rem">← Research Library</button>
+      <div style="margin-bottom:0.5rem">
+        <span class="badge badge-blue">Tier ${paper.tier}</span>
+        <span class="badge badge-dim">${esc(paper.year || '')}</span>
+        <span class="badge badge-dim">${esc(paper.venue || '')}</span>
+      </div>
+      <h1 style="margin-bottom:0.5rem; font-size:1.5rem">${esc(paper.title)}</h1>
+      <p class="muted" style="margin-bottom:1rem">${esc(paper.authors || '')}</p>
+      ${paper.file ? `<a href="RAW/${paper.file}" target="_blank" class="btn-secondary" style="display:inline-block; text-decoration:none; margin-bottom:1rem">Open source PDF ↗</a>` : ''}
+      ${paper.url ? `<a href="${paper.url}" target="_blank" class="btn-ghost" style="display:inline-block; text-decoration:none; margin:0 0 1rem 0.5rem">Paper page ↗</a>` : ''}
+      <article class="card"><h3>Main contribution</h3><p>${esc(paper.contribution || paper.summary || 'Not yet documented.')}</p></article>
+      ${paper.limitations ? `<article class="card"><h3>Limitations</h3><p>${esc(paper.limitations)}</p></article>` : ''}
+      ${paper.setconcaRelevance ? `<div class="callout purple"><strong>SetConCA relevance:</strong> ${esc(paper.setconcaRelevance)}</div>` : ''}
+    `;
+  }
+
+  async function renderConcept(conceptId) {
+    let concepts;
+    try { concepts = await ensureConcepts(); } catch { concepts = []; }
+    const concept = concepts.find(c => c.id === conceptId);
+    if (!concept) return '<p class="muted">Concept not found.</p>';
+
+    return `
+      <button class="btn-ghost" onclick="app.navigate('/map')" style="margin-bottom:1rem">← Concept Map</button>
+      <span class="badge badge-blue">${esc(concept.category || 'Concept')}</span>
+      <h1 style="margin:0.5rem 0">${esc(concept.title)}</h1>
+      <div class="callout">${esc(concept.fullDefinition || concept.oneSentenceDefinition)}</div>
+    `;
+  }
+
+  function getProgress(state, phases) {
+    if (!phases) return { done: 0, total: 0, pct: 0 };
+    const allLessons = phases.flatMap(phase => phase.lessons.filter(lesson => lesson.status !== 'stub'));
+    const done = allLessons.filter(lesson => state.lessons[lesson.id]?.mastered).length;
+    return { done, total: allLessons.length, pct: allLessons.length ? Math.round(100 * done / allLessons.length) : 0 };
+  }
+
+  return { renderHome, renderPhase, renderLesson, renderConceptMap, renderLibrary, renderGlossary, renderSearch, renderPaper, renderConcept };
 }

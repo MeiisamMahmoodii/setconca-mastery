@@ -421,7 +421,8 @@ export function createApp() {
   async function init() {
     try {
       phases = await ensurePhases();
-      handleRoute();
+      renderSidebar(state, phases, parseRoute(location.hash));
+      await handleRoute();
     } catch (err) {
       document.getElementById('main').innerHTML = `
         <div class="card" style="border-color:var(--border-bad)">
@@ -434,6 +435,13 @@ export function createApp() {
   }
 
   async function handleRoute() {
+    if (!phases) {
+      try {
+        phases = await ensurePhases();
+      } catch (e) {
+        console.warn('Waiting for phases in handleRoute:', e);
+      }
+    }
     const route = parseRoute(location.hash);
     if (phases) renderSidebar(state, phases, route);
 
@@ -676,7 +684,7 @@ export function createApp() {
   }
 
   // ── Public API ──────────────────────────────────────────────────────────────
-  return {
+  const api = {
     continueLearning() {
       if (!phases) return;
       const next = getNextLesson(state, phases);
@@ -772,6 +780,11 @@ export function createApp() {
 
     init,
   };
+
+  // Kickoff initialization on creation
+  init();
+
+  return api;
 }
 
 // Auto-init

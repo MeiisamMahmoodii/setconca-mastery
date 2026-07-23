@@ -4,161 +4,130 @@
   "phaseIndex": 2,
   "lessonIndex": 5,
   "title": "Interventions and causal representation claims",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 35,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p02-l04"
-  ],
+  "prerequisites": ["p02-l04"],
   "learningObjectives": [
-    "Explain interventions and causal representation claims in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Distinguish between correlational evidence (probing) and causal evidence (intervention).",
+    "Describe methods of intervention such as activation patching, ablation, and steering.",
+    "Evaluate the strength of a causal claim made about a discovered feature.",
+    "Recognize the limitations of steering as proof of precise feature semantics."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "If changing a representation component changes a target behaviour while relevant alternatives are controlled, that is stronger evidence than a correlation or probe score. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Once we have applied our fancy math—whether PCA, ICA, or SetConCA—and extracted a set of features from a model, we face a rigorous scientific challenge: proving those features actually do what we claim they do. \n\nHistorically, interpretability relied heavily on *probing*. If a linear classifier could predict the concept 'is a dog' from a set of activations, researchers claimed the model 'understood' dogs. But correlation is not causation. The activations might be tracking 'has fur' or 'is outdoors', or simply a spurious artifact of the dataset. To truly understand a mechanism, we must move beyond observation to *intervention*.\n\nThis lesson transitions from finding features to rigorously testing them. By intervening on the model's internal representations—forcing them to be something else and observing the downstream effect on the model's output—we can verify whether the features we discovered are actually the causal gears turning inside the network."
     },
-    "bridgeFrom": "p02-l04",
+    "bridgeFrom": "We spent the phase learning how to identify unique, independent latent sources mathematically. Now we learn how to prove empirically that these discovered mathematical objects have causal semantic meaning within the network.",
     "intuition": {
-      "analogy": "Think of hearing several instruments through a wall. The sound at the wall is observable; the instruments are the proposed hidden causes. If changing a representation component changes a target behaviour while relevant alternatives are controlled, that is stronger evidence than a correlation or probe score.",
-      "analogyLimit": "Latent recovery claims are conditional: remove an assumption and the same observations can support a different latent explanation.",
-      "text": "If changing a representation component changes a target behaviour while relevant alternatives are controlled, that is stronger evidence than a correlation or probe score."
+      "analogy": "A thermometer and a fever.",
+      "analogyLimit": "Thermometers only read data. In neural networks, activations are both readers of past context and writers of future output, meaning changing them *does* change the downstream outcome.",
+      "text": "Consider a patient with a fever, and a thermometer that reads 102°F. The thermometer reading is highly correlated with the patient feeling ill. If we train a 'probe' on the thermometer, it will predict illness with 100% accuracy. \n\nDoes this mean the high thermometer reading *causes* the illness? Of course not. If we intervene by taking the thermometer out and putting it in a glass of ice water, the reading drops to 32°F, but the patient is still sick. The intervention proves the causal direction: the illness causes the reading, not vice versa.\n\nIn neural networks, probing a feature is like reading the thermometer. It tells you the information exists there. But to prove that feature actually *drives* the model's behavior, we must intervene. We must 'change the thermometer' (patch or steer the activation) and see if the 'patient's health' (the model's output) actually changes as a result."
     },
     "toyExample": {
-      "description": "Mix two non-Gaussian sources, then change the mixing matrix. Ask which assumptions make unmixing possible and which leave several answers equally valid.",
+      "description": "Testing a hypothetical 'capital city' feature.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what interventions and causal representation claims should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Find a feature $f_{cap}$ that activates strongly on tokens like 'Paris', 'Tokyo', and 'London'.",
+          "result": "A linear probe predicts whether a word is a capital city with 95% accuracy based on $f_{cap}$.",
+          "insight": "Correlational evidence. The information is present."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Ablation intervention.",
+          "result": "Take a prompt like 'The capital of France is'. Zero out $f_{cap}$ in the activations before the final layer. The model now predicts 'cheese' instead of 'Paris'.",
+          "insight": "Causal evidence that the feature is *necessary* for the correct behavior."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Steering intervention.",
+          "result": "Take a prompt like 'The largest city in France is'. Add $+10 \\times f_{cap}$ to the activation. The model shifts its prediction from 'Marseille' (non-capital) to 'Paris' (capital).",
+          "insight": "Causal evidence that the feature is *sufficient* to drive the behavior."
         }
       ]
     },
     "visual": {
-      "id": "ica-mixing",
-      "question": "Which assumption behind interventions and causal representation claims changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "intervention-diagram",
+      "question": "How does the intervention flow bypass the normal computational graph?",
+      "description": "A diagram of a transformer layer. The normal flow goes Input -> Activation -> Output. An 'Intervention' box overrides the Activation node, replacing its value with a patched value, showing the downstream Output changing."
     },
     "technical": {
-      "text": "If changing a representation component changes a target behaviour while relevant alternatives are controlled, that is stronger evidence than a correlation or probe score. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Causal interventions in neural networks test counterfactuals. Let $M(x)$ be the model output for input $x$, and $a_l(x)$ be the activation at layer $l$. Activation patching (or causal tracing) involves running input $x_{source}$, saving $a_l(x_{source})$, and then running a forward pass on $x_{base}$ but replacing its layer $l$ activation with $a_l(x_{source})$. If $M(x_{base})$ changes to resemble $M(x_{source})$, the activation is causally implicated. Ablation means setting a feature's activation to zero or its mean value. Steering (or representation engineering) means adding a scaled feature vector $\\alpha \\cdot v$ to the activation during a forward pass.",
+      "definitions": [
+        "Probing: Training a simple classifier on internal activations to predict a concept (correlational).",
+        "Intervention: Modifying the internal activations during a forward pass and observing the effect on the output (causal).",
+        "Activation Patching: Swapping a specific activation from one prompt into another.",
+        "Steering: Shifting an activation vector in the direction of a specific feature to alter model behavior."
+      ]
     },
     "mathematics": [
       {
-        "equation": "x=As+\\epsilon",
+        "id": "eq-1",
+        "label": "Activation Steering",
+        "latex": "\\tilde{a} = a + \\alpha \\cdot v_{concept}",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "a": "The original activation vector.",
+          "\\tilde{a}": "The modified (steered) activation vector.",
+          "\\alpha": "A scalar multiplier determining intervention strength.",
+          "v_{concept}": "The direction vector representing the discovered feature."
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. If changing a representation component changes a target behaviour while relevant alternatives are controlled, that is stronger evidence than a correlation or probe score.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Latent recovery claims are conditional: remove an assumption and the same observations can support a different latent explanation."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What does the assumption buy?",
-        "methods": [
-          {
-            "name": "Correlation",
-            "answer": "Correlation: a linear summary"
-          },
-          {
-            "name": "Independence",
-            "answer": "Independence: stronger separation"
-          },
-          {
-            "name": "Causal model",
-            "answer": "Causal model: intervention predictions"
-          }
-        ],
-        "practicalImplication": "Do not upgrade one kind of evidence into another."
+        "plainExplanation": "To make the model exhibit more of a concept, we literally add the vector representing that concept to the model's 'thoughts' (activations) as it computes.",
+        "whyNeeded": "Formalizes how we test sufficiency of a feature direction.",
+        "ifRemoved": "We couldn't precisely describe how features are manipulated in practice.",
+        "encourages": "Viewing features as causal directions in activation space.",
+        "doesNotGuarantee": "That $v_{concept}$ means *exactly* what we think it means; it could be a correlated feature that happens to drive the same output."
       }
     ],
     "evidence": [
       {
-        "claim": "If changing a representation component changes a target behaviour while relevant alternatives are controlled, that is stronger evidence than a correlation or probe score.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Probing alone is insufficient to prove causal mechanisms; interventions are required.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "2311.04056v2",
+        "section": "Conclusion / Related Work",
+        "verified": true,
+        "paraphrase": "While representational geometry can be analyzed correlationally, true causal representation learning requires verifiable causal interventions to prove that learned latents govern the data generating process."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The Steering Illusion",
+        "mechanism": "Successfully steering a model using a vector, and concluding the vector precisely represents the intended human concept.",
+        "symptom": "Adding a 'politeness' vector makes the model say 'please', but also makes it speak in 18th-century English. The vector was actually 'Victorian era', not just 'polite'.",
+        "diagnosticTest": "Evaluate steering across diverse prompts and check for unintended off-target effects.",
+        "mitigation": "Acknowledge that steering proves a vector has a causal effect, but does *not* perfectly prove the semantic purity of the vector.",
+        "setconcaRelevance": "Because SetConCA claims to find purer, more independent features, it must demonstrate not just that its features can steer, but that they steer *with fewer off-target effects* than baseline methods."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Interventions and causal representation claims determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA needs robust proof that its discovered features are causally active.",
+      "whichPart": "The evaluation methodology for SetConCA.",
+      "whichDesignChoice": "Prioritizing intervention metrics (like patching success rate and clean steering) over purely correlational metrics (like probe accuracy) when evaluating ConCA components.",
+      "proposedExperiment": "Perform activation patching using SetConCA components vs PCA components. SetConCA components should be able to flip the model's prediction using fewer, more localized interventions."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that interventions and causal representation claims improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "You train a linear probe on layer 10 to detect whether the input text is in French, and it gets 99% accuracy. You then ablate (zero out) the direction the probe found, but the model still perfectly translates the text into English. What does this mean?",
+        "reveal": "It means the feature you probed is correlational but not causally necessary for the translation task. The model might be using a redundant pathway, or the 'French' information might be stored in multiple directions, or the specific direction you found is just a downstream byproduct rather than the main causal driver."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain interventions and causal representation claims to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Why is a successful steering intervention (e.g., making a model output more code by adding a 'coding' vector) insufficient to prove that the vector perfectly and exclusively represents the concept of 'coding'?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Acknowledges that steering proves a causal link to the output.",
+          "Explains that the vector might represent an entangled concept (e.g., 'coding and markdown and english syntax').",
+          "Mentions off-target effects or the difference between causing an output and being the pure semantic representation of the concept."
+        ],
+        "badVersion": "Because steering just forces it to happen, it doesn't mean it understands it.",
+        "goodVersion": "A successful steering intervention proves that the vector is causally sufficient to change the model's behavior in a specific direction. However, it does not prove semantic purity. The vector might represent an entangled concept, like 'Python programming + technical jargon + a specific forum's tone.' Adding this vector will cause the model to output code, but it will also introduce unintended side effects (like speaking in the forum's tone). Therefore, steering proves causal influence, but without checking for off-target effects, it does not prove the vector uniquely and exclusively represents the pure concept."
       }
-    ],
-    "nextLesson": {
-      "id": null,
-      "bridge": "This phase checkpoint now combines the ideas from the phase."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p03-l01",
+    "text": "Phase 2 has equipped us with the theory of latent causes, independence, identifiability, and causal intervention. In Phase 3, we move from theory to practice: How do we actually build algorithms, like Sparse Autoencoders, to find these features at scale?"
   }
 }

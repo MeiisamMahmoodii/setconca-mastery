@@ -3,162 +3,149 @@
   "phase": "Sparse representation learning",
   "phaseIndex": 3,
   "lessonIndex": 4,
-  "title": "Dead features, shrinkage, and dictionary width",
-  "estimatedMinutes": 25,
+  "title": "Dead Features, Shrinkage, and Dictionary Width",
+  "estimatedMinutes": 30,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p03-l03"
-  ],
+  "prerequisites": ["p03-l03"],
   "learningObjectives": [
-    "Explain dead features, shrinkage, and dictionary width in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Define dead features and explain why they occur during SAE training.",
+    "Describe methods for mitigating dead features, such as ghost gradients and resampling.",
+    "Review the shrinkage problem and its solutions.",
+    "Analyze the trade-offs involved in selecting dictionary width."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A feature can die when it rarely receives gradient; L1 can shrink useful magnitudes; a wider dictionary can reduce merging but can also split broad patterns into many fragments. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Training a Sparse Autoencoder is notoriously finicky. If you implement the equations from the previous lesson perfectly and hit 'train', you will likely end up with a fundamentally broken model. The optimization landscape of sparse dictionaries is plagued by poor local minima and unstable dynamics.\n\nThree main practical problems dominate the engineering of SAEs: Dead Features (features that never activate), Shrinkage (which we've discussed, but now look at in a broader architectural context), and Dictionary Width (the unsolved problem of how many features to allocate). \n\nTo be an effective researcher in representation learning, you must know how to diagnose these pathologies from training logs and apply the standard engineering mitigations developed by frontier labs."
     },
-    "bridgeFrom": "p03-l03",
+    "bridgeFrom": "We have the perfect mathematical objective for an SAE, but the reality of gradient descent introduces ugly optimization problems. We now confront the engineering reality of making SAEs work.",
     "intuition": {
-      "analogy": "Think of an overcomplete dictionary as a large box of labelled tools. Sparsity says that only a few tools may be taken out for any one job. A feature can die when it rarely receives gradient; L1 can shrink useful magnitudes; a wider dictionary can reduce merging but can also split broad patterns into many fragments.",
-      "analogyLimit": "A sparse code can still be unstable, polysemantic, or aligned to a convenient decomposition rather than the intended factors.",
-      "text": "A feature can die when it rarely receives gradient; L1 can shrink useful magnitudes; a wider dictionary can reduce merging but can also split broad patterns into many fragments."
+      "analogy": "Managing a massive sales team.",
+      "analogyLimit": "Salespeople have autonomous agency; SAE features are purely updated by gradient signals.",
+      "text": "Imagine you hire a sales team of 10,000 people (a very wide dictionary). \n\n**Dead Features**: If a few superstar salespeople start closing all the early deals, they get all the bonuses and experience (gradients). The other 9,000 salespeople get discouraged, sit at their desks, and never make a sale. In an SAE, a 'dead feature' is one that never activates for any input in the dataset. Because it never activates, it never receives gradients, and thus can never learn to become useful. It is permanently stuck.\n\n**Shrinkage**: Imagine penalizing your salespeople for every dollar they claim in expenses, to encourage them to only claim necessary expenses. The problem is, even when they make a massive, highly profitable sale that legitimately requires a large expense account, you still penalize them. They end up underspending on crucial deals, hurting overall performance. This is L1 shrinkage.\n\n**Dictionary Width**: How many salespeople do you actually need? If you hire too few (narrow dictionary), they have to generalize and cover multiple totally different territories (polysemanticity). If you hire too many (wide dictionary), they start stepping on each other's toes, splitting single territories into tiny fractions, making it hard to track who is doing what (feature splitting)."
     },
     "toyExample": {
-      "description": "Generate activations from a few sparse ground-truth factors, then compare an L1 code and a TopK code at similar reconstruction error.",
+      "description": "The lifecycle of a dead feature.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what dead features, shrinkage, and dictionary width should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Initialization: Feature 45 in the dictionary is initialized with a random vector.",
+          "result": "The vector happens to point in a direction that rarely occurs in the data, or it is slightly misaligned with a common concept.",
+          "insight": "Initial conditions heavily dictate early learning dynamics."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Early Training: Other features (e.g., Feature 12) happen to align better with the data and start activating.",
+          "result": "Feature 12 updates its weights to align even BETTER with the data. Feature 45, because its pre-activation is negative, is killed by the ReLU. Its gradient is exactly 0.",
+          "insight": "The rich get richer. Active features improve; inactive features learn nothing."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Death: After 10,000 training steps, Feature 45 has never activated. It is 'dead'.",
+          "result": "Wasted capacity. The effective dictionary size is much smaller than $k$.",
+          "insight": "We must intervene to force dead features back into the optimization process."
+        },
+        {
+          "step": 4,
+          "action": "Mitigation (Resampling): The training script detects that Feature 45 is dead. It resets its weights to match an input vector that the current SAE reconstructs poorly.",
+          "result": "Feature 45 now perfectly aligns with a high-error input. It will activate on the next pass and start receiving gradients.",
+          "insight": "Resampling directly reallocates wasted capacity to model unexplained variance."
         }
       ]
     },
     "visual": {
-      "id": "sparse-dict",
-      "question": "Which assumption behind dead features, shrinkage, and dictionary width changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "absorption-demo",
+      "question": "How does an overly wide dictionary lead to 'feature splitting'?",
+      "description": "A diagram showing a single core concept (e.g., 'Mathematics') being represented by one feature in a narrow SAE, but split into 10 nearly identical micro-features in an overly wide SAE."
     },
     "technical": {
-      "text": "A feature can die when it rarely receives gradient; L1 can shrink useful magnitudes; a wider dictionary can reduce merging but can also split broad patterns into many fragments. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Mitigating these issues requires architectural and algorithmic interventions during training.",
+      "definitions": [
+        {
+          "term": "Dead Feature",
+          "definition": "A feature $z_i$ such that $\\mathbb{E}_{x \\in \\mathcal{D}}[z_i] = 0$. It never activates across the entire training distribution."
+        },
+        {
+          "term": "Neuron Resampling",
+          "definition": "A technique (popularized by Anthropic) where dead features are periodically identified and their encoder/decoder weights are reset to match data points that currently have high reconstruction error."
+        },
+        {
+          "term": "Ghost Gradients",
+          "definition": "An alternative to resampling where an auxiliary loss is added specifically to push dead features toward active data points without hard resetting them."
+        },
+        {
+          "term": "Polysemanticity vs. Feature Splitting",
+          "definition": "The fundamental trade-off of dictionary width. Too narrow = one feature represents many concepts (polysemantic). Too wide = one concept is split arbitrarily across many features."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L=\\|x-\\hat{x}\\|_2^2+\\lambda\\|z\\|_1",
+        "id": "eq-1",
+        "label": "The Dead Feature Gradient",
+        "latex": "\\frac{\\partial \\mathcal{L}}{\\partial W_{e, i}} = 0 \\quad \\text{if} \\quad W_{e, i} x + b_{e, i} \\le 0 \\; \\forall x",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "W_{e, i}": "The i-th row of the encoder weight matrix",
+          "x": "Any input in the training set"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A feature can die when it rarely receives gradient; L1 can shrink useful magnitudes; a wider dictionary can reduce merging but can also split broad patterns into many fragments.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A sparse code can still be unstable, polysemantic, or aligned to a convenient decomposition rather than the intended factors."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "How is sparsity imposed?",
-        "methods": [
-          {
-            "name": "L1 SAE",
-            "answer": "L1: soft magnitude penalty"
-          },
-          {
-            "name": "TopK SAE",
-            "answer": "TopK: exact activity budget"
-          },
-          {
-            "name": "Dense AE",
-            "answer": "Dense AE: no sparse constraint"
-          }
-        ],
-        "practicalImplication": "Compare methods at matched fidelity and activity."
+        "plainExplanation": "If the pre-activation of a feature is negative for every single data point, the ReLU zeroes it out, and the gradient of the loss with respect to that feature's weights is exactly zero.",
+        "whyNeeded": "This proves why dead features cannot recover on their own; they are trapped in a zero-gradient region.",
+        "ifRemoved": "We might wrongly assume that training longer will eventually fix dead features.",
+        "encourages": "The development of active interventions like resampling.",
+        "doesNotGuarantee": "That resampled features will stay alive forever."
       }
     ],
     "evidence": [
       {
-        "claim": "A feature can die when it rarely receives gradient; L1 can shrink useful magnitudes; a wider dictionary can reduce merging but can also split broad patterns into many fragments.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Neuron resampling is highly effective at eliminating dead features and improving SAE capacity.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Bricken et al. 2023 (Towards Monosemanticity)",
+        "section": "Appendix / Training Details",
+        "verified": true,
+        "paraphrase": "Anthropic introduced a method to track feature activation frequencies and periodically reset 'dead' neurons (those that never fire) to align with inputs that the current SAE fails to reconstruct well, massively improving dictionary utilization."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Catastrophic Feature Splitting",
+        "mechanism": "Setting the dictionary width $k$ excessively high (e.g., millions of features for a small LM layer).",
+        "symptom": "The SAE has low reconstruction error and high sparsity, but downstream interpretability is terrible. A single natural concept (like 'Python syntax') activates dozens of highly correlated, redundant features.",
+        "diagnosticTest": "Compute the pairwise cosine similarity between the decoder weights of all active features for a given input. High similarity among co-occurring features indicates splitting.",
+        "mitigation": "Reduce dictionary width, or introduce a penalty for highly correlated features.",
+        "setconcaRelevance": "If SetConCA uses an SAE backbone that has severe feature splitting, coordinating views will become mathematically unstable due to massive redundancy."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Dead features, shrinkage, and dictionary width determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA must manage the dictionary width of its local encoders.",
+      "whichPart": "Hyperparameter selection for the representation bottleneck.",
+      "whichDesignChoice": "Selecting an appropriate dictionary expansion factor.",
+      "proposedExperiment": "Sweep the dictionary width of the local SetConCA encoders. Observe how the cross-view coordination loss behaves. We hypothesize that coordination loss might actually *regularize* feature splitting by forcing views to agree on a canonical set of features."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that dead features, shrinkage, and dictionary width improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "You train an SAE and notice that 40% of the features have an activation frequency of exactly 0. You let the model train for another 100,000 steps. What will the activation frequency of those features likely be at the end?",
+        "reveal": "Still exactly 0. Because of the ReLU activation, features with negative pre-activations receive exactly 0 gradient. They cannot 'learn' to become active on their own; they are permanently trapped unless you intervene."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain dead features, shrinkage, and dictionary width to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain why the ReLU activation function inherently creates the 'dead feature' problem in SAEs, and describe how Anthropic's resampling technique resolves it.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies that ReLU zeros out negative pre-activations.",
+          "Explains that zero activation means zero gradient during backpropagation.",
+          "Concludes that features trapped in this state cannot update their weights to align with the data.",
+          "Describes resampling: identifying dead features based on zero activation frequency.",
+          "Explains the reset mechanism: assigning the dead feature's weights to match data points with high reconstruction error."
+        ],
+        "badVersion": "ReLU makes things zero, so they die. Resampling just randomizes them again so they can try again.",
+        "goodVersion": "The ReLU activation function outputs exactly zero for any negative input. If a feature's weights are initialized such that its pre-activation is negative for the entire training distribution, it will always output zero. Consequently, its gradient with respect to the loss will always be zero, preventing any weight updates. It is permanently 'dead'. Anthropic's resampling technique mitigates this by tracking activation frequencies. Periodically, features that haven't fired are deemed dead. Their weights are forcibly overwritten to match the activation patterns of inputs that the SAE is currently failing to reconstruct well. This instantly aligns the dead feature with meaningful data variance, ensuring it has a positive pre-activation on future passes and re-enters the optimization process."
       }
-    ],
-    "nextLesson": {
-      "id": "p03-l05",
-      "bridge": "Next: Reconstruction is not interpretability. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p03-l05",
+    "text": "We've spent four lessons optimizing SAEs to achieve sparse codes with perfect reconstruction. But is that actually the goal? In the final, most critical lesson of this phase, we will dismantle a dangerous assumption: the belief that good reconstruction implies good interpretability."
   }
 }

@@ -6,159 +6,129 @@
   "title": "Reconstruction, FVU, and loss recovery",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
-    "p07-l05"
+    "p03-l05"
   ],
   "learningObjectives": [
-    "Explain reconstruction, fvu, and loss recovery in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Define and compute Mean Squared Error (MSE) and Fraction of Variance Unexplained (FVU) for representation reconstruction.",
+    "Explain why FVU alone is an insufficient metric for evaluating Sparse Autoencoder (SAE) quality.",
+    "Understand the concept of loss recovery and why it provides a more practically relevant measure of representation quality.",
+    "Analyze the limitations of variance-based metrics when specific representation dimensions carry disproportionate functional importance for the model."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "FVU measures how much activation variance reconstruction misses; loss recovery tests whether replacing activations preserves the model's next-token behaviour. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "When we train a Sparse Autoencoder (SAE) to find interpretable features in a neural network, our first question is simple: did it work? To answer this, we need to know if the SAE actually captured the important information from the original representation. But how do we measure 'important information'?\n\nIf we just look at the raw mathematical difference between the original representation and the SAE's reconstruction, we might be misled. The mathematical difference might be small, but what if the SAE lost the exact piece of information the model was about to use to make its next prediction? This lesson introduces three core metrics—MSE, FVU, and loss recovery—that help us quantify how well a representation preserves information, and it explains why the metric that sounds the most sophisticated (FVU) can sometimes be the most deceptive. Understanding these metrics is essential for evaluating whether our interpretability tools are actually faithfully modeling the network's behavior or just approximating its noise."
     },
-    "bridgeFrom": "p07-l05",
+    "bridgeFrom": "In Phase 3, we explored how models build representations in superposition. Now, we turn to the rigorous evaluation of those representations, starting with the most basic property: reconstruction fidelity.",
     "intuition": {
-      "analogy": "Evaluation is a medical panel, not a single thermometer. One number can be reassuring while another reveals the problem. FVU measures how much activation variance reconstruction misses; loss recovery tests whether replacing activations preserves the model's next-token behaviour.",
-      "analogyLimit": "No single metric measures interpretability. Every metric needs an explicit non-claim beside it.",
-      "text": "FVU measures how much activation variance reconstruction misses; loss recovery tests whether replacing activations preserves the model's next-token behaviour."
+      "analogy": "Imagine you are summarizing a dense, 500-page legal contract into a 5-page brief for a lawyer.",
+      "analogyLimit": "Unlike the legal brief, where a human reader interprets meaning, the neural network's loss landscape is a precise mathematical function that we can evaluate exactly.",
+      "text": "If you summarize the contract by keeping 98% of the words but you delete the single sentence that states the penalty fee, your summary is technically 98% accurate. However, if the lawyer uses your summary to negotiate the penalty fee, the summary is useless.\n\nIn neural networks, the total variance of an activation vector is like the total word count of the contract. A reconstruction metric like MSE or FVU measures how much of that total variance you preserved. But the model is like the lawyer: it only cares about the specific pieces of information it needs for its next calculation. The model might heavily rely on a feature that accounts for only 2% of the total variance. If your SAE reconstructs the 98% perfectly but misses the crucial 2%, the mathematical reconstruction error will look fantastic, but the model will fail completely when forced to rely on the reconstruction.\n\nThis is why we must distinguish between 'capturing the variance' and 'capturing the functional behavior.' Capturing the variance is a mathematical exercise; capturing the functional behavior is what allows us to truly understand and steer the model."
     },
     "toyExample": {
-      "description": "Run two methods across several seeds and plot fidelity, sparsity, similarity, and intervention effects separately instead of collapsing them into one score.",
+      "description": "Consider 10 activation vectors in a 4-dimensional space. We will compute MSE and FVU for a reconstruction and show how a reconstruction can have excellent FVU while losing the exact information needed for the model's next prediction.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what reconstruction, fvu, and loss recovery should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Generate 10 original activation vectors in 4D space where dimension 1 has variance 100, dimension 2 has variance 100, dimension 3 has variance 100, and dimension 4 has variance 2.",
+          "result": "Total variance is 302. Dimensions 1-3 dominate the variance.",
+          "insight": "Variance is highly skewed across dimensions, which is common in neural network activations."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Create a reconstruction that perfectly matches dimensions 1, 2, and 3, but completely zeroes out dimension 4.",
+          "result": "MSE is low. FVU is 2 / 302 = 0.0066 (which means FVU is 0.66%, an excellent score).",
+          "insight": "The reconstruction looks near-perfect according to variance-based metrics."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Evaluate the model's loss using the original activations vs. the reconstructed activations, assuming the model's next layer relies EXCLUSIVELY on dimension 4 to output the correct logit.",
+          "result": "The model's cross-entropy loss skyrockets. Loss recovery is 0%.",
+          "insight": "Despite an FVU of 0.0066, the reconstruction is functionally useless because it lost the critical 2% of variance."
         }
       ]
     },
     "visual": {
       "id": "sae-pareto",
-      "question": "Which assumption behind reconstruction, fvu, and loss recovery changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "question": "Looking at the Pareto curve of FVU vs L0 sparsity, what happens to loss recovery as we increase sparsity?",
+      "description": "A line chart showing three curves: FVU, L0 Sparsity, and Loss Recovery. The FVU curve decreases smoothly as sparsity decreases (more features active). However, the Loss Recovery curve jumps sharply at a specific sparsity threshold, illustrating that certain critical features must be active to recover functional performance, even if their contribution to total FVU is small."
     },
     "technical": {
-      "text": "FVU measures how much activation variance reconstruction misses; loss recovery tests whether replacing activations preserves the model's next-token behaviour. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The Mean Squared Error (MSE) measures the average squared difference between the original activation $x$ and the reconstructed activation $\\hat{x}$. The Fraction of Variance Unexplained (FVU) normalizes the MSE by the total variance of the original activations. This makes FVU scale-invariant. An FVU of 0 indicates perfect reconstruction, while an FVU of 1 means the reconstruction is no better than predicting the mean of the activations. Loss recovery, in contrast, is an end-to-end metric: it measures the increase in the model's cross-entropy loss when we replace the true activations with the SAE reconstructions. High loss recovery means the model behaves similarly to how it would with the true activations.",
+      "definitions": [
+        "Mean Squared Error (MSE): The average of the squares of the errors between the original and reconstructed vectors.",
+        "Fraction of Variance Unexplained (FVU): The ratio of the unexplained variance (MSE) to the total variance of the data.",
+        "Loss Recovery: The percentage of the model's original performance (measured in cross-entropy loss) that is maintained when using the reconstructed representations."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathrm{FVU}=\\frac{\\|X-\\hat X\\|_F^2}{\\|X-\\bar X\\|_F^2}",
+        "id": "eq-1",
+        "label": "Fraction of Variance Unexplained (FVU)",
+        "latex": "FVU = \\frac{||X - \\hat{X}||^2_F}{||X - \\bar{X}||^2_F}",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "X": "Original activation matrix",
+          "\\hat{X}": "Reconstructed activation matrix",
+          "\\bar{X}": "Mean of the original activation matrix",
+          "||\\cdot||_F": "Frobenius norm"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. FVU measures how much activation variance reconstruction misses; loss recovery tests whether replacing activations preserves the model's next-token behaviour.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "No single metric measures interpretability. Every metric needs an explicit non-claim beside it."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What does the metric measure?",
-        "methods": [
-          {
-            "name": "FVU",
-            "answer": "FVU: reconstruction"
-          },
-          {
-            "name": "CKA",
-            "answer": "CKA: geometry similarity"
-          },
-          {
-            "name": "Intervention",
-            "answer": "Intervention: causal effect"
-          }
-        ],
-        "practicalImplication": "Report the metric's non-claim beside its result."
+        "plainExplanation": "The numerator is the total squared error of the reconstruction. The denominator is the total variance of the original data around its mean. The ratio tells you what fraction of the variance your reconstruction failed to capture.",
+        "whyNeeded": "MSE is scale-dependent; an MSE of 10 might be good or bad depending on the magnitude of the activations. FVU normalizes this, giving a metric between 0 and 1 that is comparable across different layers and models.",
+        "ifRemoved": "We would struggle to compare reconstruction quality across different layers or different models, as the raw activation magnitudes vary wildly.",
+        "encourages": "Minimizing overall error regardless of which specific features are being accurately reconstructed.",
+        "doesNotGuarantee": "It does NOT guarantee that the most functionally important features for the model's downstream behavior are reconstructed accurately."
       }
     ],
     "evidence": [
       {
-        "claim": "FVU measures how much activation variance reconstruction misses; loss recovery tests whether replacing activations preserves the model's next-token behaviour.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "SAEs can achieve low FVU while failing to recover model loss.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Makelov et al. 2024",
+        "section": "Experiments",
+        "verified": true,
+        "paraphrase": "Variance-based metrics like FVU are insufficient for evaluating SAEs because representations often contain high-variance noise directions that are irrelevant to downstream model performance, while functionally critical directions might have low variance."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The FVU Illusion",
+        "mechanism": "Relying solely on FVU to evaluate an SAE, leading to the selection of a model that captures high-variance noise but misses low-variance functional features.",
+        "symptom": "An SAE reports an excellent (low) FVU but when its reconstructions are plugged into the model, the model outputs gibberish or suffers a massive spike in cross-entropy loss.",
+        "diagnosticTest": "Measure Loss Recovery alongside FVU. If FVU is low but Loss Recovery is also low, you have fallen for the FVU Illusion.",
+        "mitigation": "Always report Loss Recovery. Optimize SAE hyperparameters (like L1 penalty) based on the Pareto frontier of Loss Recovery vs. L0 sparsity, not just FVU vs. L0.",
+        "setconcaRelevance": "High"
       }
     ],
     "setconcaConnection": {
-      "relevance": "Reconstruction, FVU, and loss recovery determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA aims to improve the recovery of robust, causal concepts.",
+      "whichPart": "Evaluation Phase",
+      "whichDesignChoice": "Choosing the primary evaluation metric for SetConCA training runs.",
+      "proposedExperiment": "Train SetConCA models and standard SAEs. Plot FVU against Loss Recovery for both. Show that SetConCA achieves higher Loss Recovery for the same FVU, indicating it is better at prioritizing functionally relevant features."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that reconstruction, fvu, and loss recovery improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you multiply all activations in a layer by 10, how does the MSE of a fixed-quality reconstruction change? How does the FVU change?",
+        "reveal": "MSE will increase by a factor of 100 (since it's squared). FVU will remain exactly the same, because both the numerator (error variance) and denominator (total variance) scale by 100, canceling out."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain reconstruction, fvu, and loss recovery to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain why a reconstruction with FVU=0.05 could be functionally worse than a reconstruction with FVU=0.15.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies that FVU weights all variance equally.",
+          "Explains that a model may rely heavily on low-variance dimensions for critical predictions.",
+          "Concludes that the FVU=0.05 reconstruction might have missed the critical low-variance features, while the FVU=0.15 reconstruction captured them at the expense of high-variance noise."
+        ],
+        "badVersion": "Because FVU is just a math formula and models are complicated.",
+        "goodVersion": "FVU treats all variance as equally important. However, neural networks often rely on specific, low-variance directions to make critical downstream predictions (like outputting a specific token). A reconstruction with FVU=0.05 might perfectly capture 95% of the variance, which could just be noise or broad contextual features, while missing the exact 5% the model needs for its next step. Conversely, an FVU=0.15 reconstruction might miss more noise but perfectly capture the functionally critical features, resulting in better loss recovery."
       }
-    ],
-    "nextLesson": {
-      "id": "p08-l02",
-      "bridge": "Next: Probes and control tasks. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p08-l02",
+    "text": "Now that we know how to measure if information is PRESERVED, we need to ask a harder question: is that information actually structured in a way we can extract and understand? In the next lesson, we'll explore linear probes and the danger of probes that are 'too smart.'"
   }
 }

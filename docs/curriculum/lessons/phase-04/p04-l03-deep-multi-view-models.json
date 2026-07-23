@@ -4,161 +4,137 @@
   "phaseIndex": 4,
   "lessonIndex": 3,
   "title": "Deep multi-view models",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 35,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
     "p04-l02"
   ],
   "learningObjectives": [
-    "Explain deep multi-view models in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Explain how Deep CCA extends classical linear CCA.",
+    "Describe the training objective and architecture of Deep CCA.",
+    "Understand the purpose of adding a reconstruction objective in DCCAE.",
+    "Compare the trade-offs between pure correlation maximization and autoencoder-based models."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Deep CCA-style models learn nonlinear encoders before applying an alignment objective, which increases flexibility but also creates more ways to discard useful information. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Real-world data, especially in domains like vision and language, rarely exhibits simple linear relationships. The shared information between an image of a dog and the text 'A brown dog' is deeply non-linear. Classical CCA fails on such complex multi-view data because linear projections cannot disentangle the tangled manifolds of semantic meaning.\n\nDeep Canonical Correlation Analysis (Deep CCA) bridges the gap between the principled objective of CCA and the expressive power of deep neural networks. By passing each view through a separate neural network and then applying CCA to the network outputs, Deep CCA can discover highly non-linear shared representations.\n\nHowever, Deep CCA has its own vulnerabilities, primarily the risk of trivial or distorted representations. To counter this, Deep Canonically Correlated Autoencoders (DCCAE) introduces an additional constraint: the learned representation must also be able to reconstruct the original views. Understanding this evolution from CCA to Deep CCA to DCCAE is crucial for designing robust multi-view models."
     },
-    "bridgeFrom": "p04-l02",
+    "bridgeFrom": "We saw how linear CCA maximizes correlation. Now we use neural networks to learn non-linear transformations before maximizing correlation.",
     "intuition": {
-      "analogy": "Two cameras can film the same event from different angles. What both cameras see is shared; their lighting, occlusion, and viewpoint are private. Deep CCA-style models learn nonlinear encoders before applying an alignment objective, which increases flexibility but also creates more ways to discard useful information.",
-      "analogyLimit": "Correlation identifies agreement, not necessarily cause. A shared nuisance can look just as attractive as a shared concept.",
-      "text": "Deep CCA-style models learn nonlinear encoders before applying an alignment objective, which increases flexibility but also creates more ways to discard useful information."
+      "analogy": "Two complex languages translating into a simple universal language.",
+      "analogyLimit": "Translation implies perfect information retention, whereas Deep CCA only retains the correlated information.",
+      "text": "Imagine View 1 is a complex encrypted message, and View 2 is a different complex encrypted message. Both contain the same underlying secret.\n\nA linear method (CCA) tries to decrypt them using simple multiplication, which fails because the encryption is complex. Deep CCA uses two powerful code-breaking machines (neural networks), one for each view. These machines process the messages and output a simplified 'universal' code.\n\nThe training objective for these machines is simple: adjust your internal gears (weights) so that the universal code output by Machine 1 is as highly correlated as possible with the universal code output by Machine 2."
     },
     "toyExample": {
-      "description": "Create two views with one shared factor and one private factor. Increase private signal and watch an alignment-only objective ignore it.",
+      "description": "Learning a non-linear shared factor.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what deep multi-view models should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Create two 5D views of 100 samples. The shared factor is a 1D sine wave, but it's passed through complex non-linear functions to create the 5D views.",
+          "result": "Linear CCA fails to find a high correlation.",
+          "insight": "Linear projections cannot invert the non-linear functions."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Train Deep CCA with 2-layer neural networks on the views.",
+          "result": "The networks learn to invert the non-linearities, and the CCA objective on their outputs achieves high correlation.",
+          "insight": "Deep neural networks provide the necessary capacity to untangle the shared information."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Compare Deep CCA with DCCAE.",
+          "result": "DCCAE also learns the shared factor, but its networks also successfully reconstruct the original 5D views from the 1D shared representation.",
+          "insight": "The reconstruction objective in DCCAE forces the representation to retain information about the original input, not just the correlated parts."
         }
       ]
     },
     "visual": {
-      "id": "cca-shared-noise",
-      "question": "Which assumption behind deep multi-view models changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "deep-cca-arch",
+      "question": "Where is the CCA objective applied in this architecture?",
+      "description": "A diagram showing View 1 passing through Network f, View 2 passing through Network g. The outputs f(X) and g(Y) are then fed into a CCA layer which computes the correlation objective."
     },
     "technical": {
-      "text": "Deep CCA-style models learn nonlinear encoders before applying an alignment objective, which increases flexibility but also creates more ways to discard useful information. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Deep CCA (Andrew et al., 2013) learns non-linear mappings f(X; \u03b8_f) and g(Y; \u03b8_g) to maximize corr(f(X), g(Y)). The objective is the sum of the top-k canonical correlations. DCCAE (Wang et al., 2016) adds autoencoder branches: it learns encoders f, g and decoders u, v, optimizing a joint loss: max corr(f(X), g(Y)) - \u03bb_1 ||X - u(f(X))||^2 - \u03bb_2 ||Y - v(g(Y))||^2.",
+      "definitions": [
+        "Deep CCA: A model that uses neural networks to map views to a space where they are maximally correlated.",
+        "DCCAE (Deep Canonically Correlated Autoencoders): An extension of Deep CCA that adds reconstruction losses to ensure the learned representations retain information about the original inputs."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\max_{u,v}\\;\\mathrm{corr}(u^\\top X,v^\\top Y)",
+        "id": "eq-4",
+        "label": "Deep CCA Objective",
+        "latex": "\\max_{\\theta_f, \\theta_g} \\text{CCA}(f(X; \\theta_f), g(Y; \\theta_g))",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "\\theta_f": "Network 1 parameters",
+          "\\theta_g": "Network 2 parameters"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Deep CCA-style models learn nonlinear encoders before applying an alignment objective, which increases flexibility but also creates more ways to discard useful information.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Correlation identifies agreement, not necessarily cause. A shared nuisance can look just as attractive as a shared concept."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What information is rewarded?",
-        "methods": [
-          {
-            "name": "CCA",
-            "answer": "CCA: shared correlation"
-          },
-          {
-            "name": "Reconstruction",
-            "answer": "Reconstruction: within-view fidelity"
-          },
-          {
-            "name": "Shared/private model",
-            "answer": "Shared/private model: both"
-          }
-        ],
-        "practicalImplication": "Alignment alone can discard valuable private signal."
+        "plainExplanation": "Adjust the weights of both neural networks to maximize the canonical correlation of their outputs.",
+        "whyNeeded": "Allows end-to-end training of non-linear feature extractors for alignment.",
+        "ifRemoved": "We would be stuck with linear CCA.",
+        "encourages": "Networks to discard any information that is not shared between the views.",
+        "doesNotGuarantee": "That the retained information is useful for anything other than correlation."
       }
     ],
     "evidence": [
       {
-        "claim": "Deep CCA-style models learn nonlinear encoders before applying an alignment objective, which increases flexibility but also creates more ways to discard useful information.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Deep networks can learn complex non-linear mappings for CCA.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "andrew13",
+        "section": "Abstract",
+        "verified": true,
+        "paraphrase": "Andrew et al. (2013) demonstrated that by passing views through multiple layers of non-linearities, Deep CCA learns representations that are far more highly correlated than those found by linear CCA."
+      },
+      {
+        "claim": "Adding autoencoders prevents trivial solutions and preserves information.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "1602.01024v1",
+        "section": "1. Introduction",
+        "verified": true,
+        "paraphrase": "Wang et al. (2016) proposed DCCAE to address the issue that Deep CCA might discard useful private information, showing that a reconstruction objective acts as a powerful regularizer."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Representation Collapse (in pure Deep CCA)",
+        "mechanism": "The networks learn to project all inputs to a very small, dense region of the output space, artificially inflating correlation without capturing meaningful structure.",
+        "symptom": "High training correlation, but terrible performance on downstream tasks or validation data.",
+        "diagnosticTest": "Check the variance of the outputs f(X) and g(Y). If it is extremely low, the networks have collapsed.",
+        "mitigation": "Use DCCAE (add reconstruction loss), or add variance-preserving regularizers.",
+        "setconcaRelevance": "When extracting concepts from sets, we must ensure the model doesn't just output a constant vector to trivially maximize agreement between set elements."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Deep multi-view models determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "Deep CCA and DCCAE establish the paradigm for non-linear multi-view alignment, which is structurally similar to how SetConCA aligns representations across contexts.",
+      "whichPart": "Architecture / Loss formulation",
+      "whichDesignChoice": "The tension between alignment (Deep CCA) and preservation (DCCAE) directly informs how SetConCA balances clustering representations of the same concept while maintaining overall representation geometry.",
+      "proposedExperiment": "Train a Deep CCA model on paired context-activations of the same concept and compare the extracted features against SetConCA's conceptual representations."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that deep multi-view models improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "Why might a network trained *only* with the Deep CCA objective perform worse on a downstream classification task compared to DCCAE?",
+        "reveal": "Deep CCA might aggressively discard 'private' information that, while not shared with the other view, is actually highly predictive for the downstream task. DCCAE's reconstruction loss forces it to retain more information."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain deep multi-view models to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the architectural difference between Deep CCA and DCCAE and why the latter was proposed.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies Deep CCA uses only feedforward networks to maximize correlation.",
+          "Identifies DCCAE adds a decoder and reconstruction loss.",
+          "Explains that DCCAE prevents discarding too much information."
+        ],
+        "badVersion": "DCCAE is deeper than Deep CCA.",
+        "goodVersion": "Deep CCA consists of two encoder networks that map inputs to a shared space where correlation is maximized. DCCAE adds decoder networks that try to reconstruct the original inputs from that shared space. This was proposed because pure Deep CCA can discard useful information in its pursuit of correlation, whereas the reconstruction loss in DCCAE acts as a regularizer to ensure the representation retains fidelity to the original data."
       }
-    ],
-    "nextLesson": {
-      "id": "p04-l04",
-      "bridge": "Next: Shared and private latent variables. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p04-l04",
+    "text": "DCCAE tries to save private information, but it does so heuristically. Can we formally model what is shared and what is private? Yes, with Variational CCA."
   }
 }

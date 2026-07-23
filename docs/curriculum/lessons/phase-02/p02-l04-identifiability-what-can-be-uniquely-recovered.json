@@ -4,161 +4,122 @@
   "phaseIndex": 2,
   "lessonIndex": 4,
   "title": "Identifiability: what can be uniquely recovered?",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 30,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p02-l03"
-  ],
+  "prerequisites": ["p02-l03"],
   "learningObjectives": [
-    "Explain identifiability: what can be uniquely recovered? in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Define identifiability in the context of latent variable models.",
+    "Explain the rotation ambiguity of PCA.",
+    "Articulate why unsupervised disentanglement is mathematically impossible without inductive biases.",
+    "Explain how multi-view data acts as an inductive bias to restore identifiability."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A latent variable is identifiable only when the stated assumptions rule out alternative explanations for the same observations, apart from known symmetries such as permutation or scaling. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "When we build an algorithm to extract features from a neural network, we want to know that the features it finds are the *true* features, not just one of infinitely many mathematically equivalent illusions. This concept is called 'identifiability.'\n\nIf a model is identifiable, it means that given enough data, there is only one unique set of latent variables that could have generated that data. If a model is not identifiable, different sets of latent variables can produce the exact same observed data. In that case, no algorithm, no matter how clever or how much data it has, can decide which set of latent variables is the 'true' one.\n\nUnderstanding identifiability is crucial because it tells us what is mathematically possible. It warns us against naive unsupervised approaches and guides us toward the necessary inductive biases—like sparsity, independence, or multi-view structures—needed to make feature discovery a solvable problem."
     },
-    "bridgeFrom": "p02-l03",
+    "bridgeFrom": "We saw that ICA uses non-Gaussianity to find unique sources where PCA fails. Identifiability is the formal mathematical theory of exactly *when* and *why* we can guarantee that unique recovery.",
     "intuition": {
-      "analogy": "Think of hearing several instruments through a wall. The sound at the wall is observable; the instruments are the proposed hidden causes. A latent variable is identifiable only when the stated assumptions rule out alternative explanations for the same observations, apart from known symmetries such as permutation or scaling.",
-      "analogyLimit": "Latent recovery claims are conditional: remove an assumption and the same observations can support a different latent explanation.",
-      "text": "A latent variable is identifiable only when the stated assumptions rule out alternative explanations for the same observations, apart from known symmetries such as permutation or scaling."
+      "analogy": "Solving a puzzle with missing constraints.",
+      "analogyLimit": "Puzzles are discrete; latent spaces are continuous, meaning non-identifiability usually implies infinitely many solutions, not just a few alternative configurations.",
+      "text": "Imagine I ask you to find two numbers that sum to 10. You might say 5 and 5, or 7 and 3, or -100 and 110. There are infinitely many answers. The problem is not identifiable. No matter how many times I tell you 'the sum is 10,' you will never know which two numbers I was thinking of.\n\nNow imagine I give you an additional constraint: the two numbers sum to 10, and their difference is 2. Now, you can solve it with certainty: the numbers are 6 and 4. The problem has become identifiable because I added a necessary inductive bias (a second constraint).\n\nIn representation learning, our 'sum is 10' is the requirement that our learned features must reconstruct the original activations. As we'll see, reconstruction alone leaves the problem completely unidentifiable. We need additional constraints—like statistical independence (ICA) or causal structure—to find the unique true features."
     },
     "toyExample": {
-      "description": "Mix two non-Gaussian sources, then change the mixing matrix. Ask which assumptions make unmixing possible and which leave several answers equally valid.",
+      "description": "The Rotation Ambiguity in PCA.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what identifiability: what can be uniquely recovered? should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Consider data generated by two independent Gaussian sources, with a covariance matrix $C = [[3, 0], [0, 1]]$.",
+          "result": "The data forms an ellipse aligned with the x and y axes. PCA correctly identifies the x and y axes as the principal components.",
+          "insight": "PCA finds orthogonal directions that explain the variance."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
-        },
-        {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 2,
+          "action": "Apply a 45-degree rotation matrix $R$ to the original data, and also to the PCA basis vectors.",
+          "result": "The reconstruction of the data using the rotated basis is mathematically identical to the reconstruction using the original basis. The reconstruction error is the same. The covariance is the same.",
+          "insight": "Because the Gaussian distribution is rotationally symmetric, there is no statistical footprint left by the rotation. PCA cannot tell whether the 'true' features are aligned with the axes or rotated by 45 degrees. It is non-identifiable up to orthogonal rotation."
         }
       ]
     },
     "visual": {
-      "id": "ica-mixing",
-      "question": "Which assumption behind identifiability: what can be uniquely recovered? changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "pca-rotation-ambiguity",
+      "question": "Can you tell which pair of orthogonal axes originally generated the circular point cloud?",
+      "description": "Two plots showing a perfectly circular scatter plot of 2D Gaussian noise. The first plot shows red axes forming a cross. The second plot shows blue axes rotated 45 degrees. The caption emphasizes that any orthogonal axes describe the circular data equally well."
     },
     "technical": {
-      "text": "A latent variable is identifiable only when the stated assumptions rule out alternative explanations for the same observations, apart from known symmetries such as permutation or scaling. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "A parametric model characterized by parameter $\\theta$ is identifiable if $\\theta_1 \\neq \\theta_2 \\implies P(x|\\theta_1) \\neq P(x|\\theta_2)$. Locatello et al. (2019) proved that unsupervised learning of disentangled representations is fundamentally impossible without inductive biases on both the models and the data. For any completely unsupervised model, there exists an infinite family of entangled representations that yield the same marginal distribution over the observations. To achieve identifiability, we must introduce inductive biases, such as sparsity, temporal continuity, or auxiliary variables (views).",
+      "definitions": [
+        "Identifiability: The theoretical guarantee that the true parameters of a generative model can be uniquely determined from the observable distribution.",
+        "Inductive Bias: The set of assumptions a learning algorithm uses to predict outputs given inputs it hasn't encountered.",
+        "Rotation Ambiguity: The property where multiplying latent vectors by an orthogonal matrix results in the same observable data distribution."
+      ]
     },
     "mathematics": [
       {
-        "equation": "x=As+\\epsilon",
+        "id": "eq-1",
+        "label": "Non-Identifiability Proof Sketch",
+        "latex": "P(x) = \\int P(x|z)P(z)dz = \\int P(x|f(z))P(f(z))dz",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "x": "Observed data.",
+          "z": "Latent variables.",
+          "f(z)": "A volume-preserving transformation of the latents."
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A latent variable is identifiable only when the stated assumptions rule out alternative explanations for the same observations, apart from known symmetries such as permutation or scaling.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Latent recovery claims are conditional: remove an assumption and the same observations can support a different latent explanation."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What does the assumption buy?",
-        "methods": [
-          {
-            "name": "Correlation",
-            "answer": "Correlation: a linear summary"
-          },
-          {
-            "name": "Independence",
-            "answer": "Independence: stronger separation"
-          },
-          {
-            "name": "Causal model",
-            "answer": "Causal model: intervention predictions"
-          }
-        ],
-        "practicalImplication": "Do not upgrade one kind of evidence into another."
+        "plainExplanation": "If you transform the latent variables using a function $f$, and adjust the generation process to match, the final probability of observing the data $x$ doesn't change. Therefore, looking only at $x$, you can't tell if the latents were $z$ or $f(z)$.",
+        "whyNeeded": "It is the formal proof of the Locatello impossibility theorem.",
+        "ifRemoved": "We might falsely believe that scaling up data or compute could eventually solve unsupervised disentanglement.",
+        "encourages": "Designing explicitly constrained models or utilizing multi-view data.",
+        "doesNotGuarantee": "That any arbitrary constraint will yield the *correct* identifiable model, only a unique one."
       }
     ],
     "evidence": [
       {
-        "claim": "A latent variable is identifiable only when the stated assumptions rule out alternative explanations for the same observations, apart from known symmetries such as permutation or scaling.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Multiple views of the same latent structure improve identifiability under explicit causal assumptions.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "2311.04056v2",
+        "section": "Abstract & Theorem 1",
+        "verified": true,
+        "paraphrase": "By utilizing multiple diverse views of the same underlying causal variables, we can prove identifiability of those latent causal variables up to permutation and scaling, overcoming the impossibility results of purely unsupervised single-view settings."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The Unsupervised Illusion",
+        "mechanism": "Training a standard VAE or autoencoder and assuming the hidden bottleneck neurons correspond one-to-one with true semantic concepts.",
+        "symptom": "The learned representations reconstruct the data perfectly but are hopelessly entangled; interpolating one neuron changes multiple concepts simultaneously.",
+        "diagnosticTest": "Train the model twice with different random seeds. If the resulting latent spaces require a complex transformation to align, the model is not identifiable.",
+        "mitigation": "Introduce inductive biases, such as weak supervision, contrastive multi-view learning, or sparsity penalties (as in SAEs).",
+        "setconcaRelevance": "SetConCA is deeply informed by identifiability theory. It uses multiple views (activations from semantically related tokens or layers) as the crucial auxiliary information needed to break rotational symmetries and guarantee unique concept recovery."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Identifiability: what can be uniquely recovered? determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA uses multiple views to guarantee the discovery of true concepts.",
+      "whichPart": "The theoretical justification for processing sets of related tokens rather than individual isolated tokens.",
+      "whichDesignChoice": "Using auxiliary variables (the context or related tokens) as multi-view data, directly applying the theorems of causal representation learning to achieve identifiability.",
+      "proposedExperiment": "Compare the consistency of features learned by standard ICA (single view) vs SetConCA (multi-view) across multiple training runs with different random seeds. SetConCA should have near-perfect consistency due to identifiability."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that identifiability: what can be uniquely recovered? improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you train a standard autoencoder on images of shapes, and it learns to perfectly reconstruct them, can you be mathematically certain that one specific neuron represents 'color' and another represents 'size'?",
+        "reveal": "No. Due to the lack of identifiability in purely unsupervised models, the autoencoder could learn any arbitrary rotated combination of color and size that still allows for perfect reconstruction. The features will likely be entangled."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain identifiability: what can be uniquely recovered? to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Why is the Locatello impossibility result considered a mathematical warning rather than a conjecture, and how do multi-view methods overcome it?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies that Locatello is a formal proof showing unsupervised disentanglement is theoretically impossible without inductive biases.",
+          "Explains that multi-view methods provide the necessary inductive bias.",
+          "Notes that multiple views restrict the set of possible latent models that can simultaneously explain all views."
+        ],
+        "badVersion": "Locatello thought it was hard, but multi-view makes it easier because more data.",
+        "goodVersion": "The Locatello result is a formal mathematical proof demonstrating that for any unsupervised model, there are infinitely many entangled latent spaces that perfectly explain the observed data distribution. It proves that no algorithm can distinguish the 'true' disentangled space just from observations. Multi-view methods overcome this by introducing an inductive bias: they assume the same latent variables generate multiple different, but related, observations (views). Forcing the model to simultaneously explain the shared structure across multiple views places severe restrictions on the latent space, breaking the rotational symmetries and restoring identifiability."
       }
-    ],
-    "nextLesson": {
-      "id": "p02-l05",
-      "bridge": "Next: Interventions and causal representation claims. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p02-l05",
+    "text": "Once we have mathematically identifiable features, how do we prove they actually mean what we think they mean inside the neural network? We can't just look for correlation; we must perform causal interventions."
   }
 }

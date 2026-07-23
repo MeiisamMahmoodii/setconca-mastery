@@ -4,161 +4,146 @@
   "phaseIndex": 8,
   "lessonIndex": 3,
   "title": "CKA, SVCCA, and representation similarity",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 30,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
     "p08-l02"
   ],
   "learningObjectives": [
-    "Explain cka, svcca, and representation similarity in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand the challenge of comparing high-dimensional representations across different models or layers.",
+    "Explain the mechanics of SVCCA and how it isolates structural similarity from noise.",
+    "Define Centered Kernel Alignment (CKA) and explain its reliance on relative distances (kernel matrices).",
+    "Analyze the invariances of CKA (orthogonal rotation, isotropic scaling) and their implications for interpretability."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Similarity metrics compare geometry or subspaces across models and runs. They do not establish one-to-one correspondence between features. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "How do we know if two neural networks have learned the 'same thing'? If we train a ResNet and a Vision Transformer on ImageNet, their internal representations have different dimensions and fundamentally different architectures. We can't just subtract one vector from another to see if they are similar. Even within the same model, comparing layer 3 to layer 10 is mathematically difficult because the features might be rotated or scaled differently.\n\nTo answer questions like 'Do these two models learn the same representations?' or 'Does this SAE capture the same structure as the original layer?', we need tools that can compare the underlying *geometry* of two representation spaces, regardless of how the axes are aligned. This lesson introduces SVCCA and CKA, the two most important techniques for measuring representation similarity, and explores exactly what they do—and do not—tell us about feature alignment."
     },
-    "bridgeFrom": "p08-l02",
+    "bridgeFrom": "While linear probes tell us if a *specific concept* is extractable from a representation, CKA and SVCCA allow us to compare the *entire holistic structure* of two representation spaces.",
     "intuition": {
-      "analogy": "Evaluation is a medical panel, not a single thermometer. One number can be reassuring while another reveals the problem. Similarity metrics compare geometry or subspaces across models and runs. They do not establish one-to-one correspondence between features.",
-      "analogyLimit": "No single metric measures interpretability. Every metric needs an explicit non-claim beside it.",
-      "text": "Similarity metrics compare geometry or subspaces across models and runs. They do not establish one-to-one correspondence between features."
+      "analogy": "Imagine two maps of the same city. One map is oriented with North at the top and distances in miles. The other map is rotated 45 degrees, oriented with Northeast at the top, and uses kilometers.",
+      "analogyLimit": "Maps are 2D, while neural network representations are thousands of dimensions where linear transformations can wildly obscure similarities.",
+      "text": "If you just overlay the two maps directly, none of the roads will line up. A naive comparison would say these are maps of completely different cities. But if you look at the *relative distances* between landmarks—the distance from the hospital to the school compared to the distance from the school to the park—you will realize the underlying geometry is identical. You just need to rotate and scale one map to match the other.\n\nSVCCA and CKA do this for neural networks. They ignore the arbitrary orientation of the axes (orthogonal rotations) and the arbitrary size of the space (isotropic scaling). Instead, they measure whether the data points relate to *each other* in the same way in both spaces. If the 'relative distances' between inputs are the same in Model A and Model B, CKA will report a high similarity, even if the individual neurons look completely different."
     },
     "toyExample": {
-      "description": "Run two methods across several seeds and plot fidelity, sparsity, similarity, and intervention effects separately instead of collapsing them into one score.",
+      "description": "Compare three representations of 20 data points to see how CKA evaluates structural similarity.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what cka, svcca, and representation similarity should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Representation A is a 2D space where data points form a distinct cluster pattern.",
+          "result": "We establish a baseline geometry.",
+          "insight": "The relative distances between the 20 points define the structure of Representation A."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Representation B is created by taking Representation A, rotating it 90 degrees, and multiplying all coordinates by 5.",
+          "result": "CKA(A, B) = 0.99.",
+          "insight": "Even though the exact values and feature axes are completely different, CKA recognizes that the underlying geometric structure (the clusters) is identical."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Representation C is a completely different 2D space where the 20 points are randomly scattered.",
+          "result": "CKA(A, C) = 0.15.",
+          "insight": "The relative distances are fundamentally different, so CKA reports low similarity."
+        },
+        {
+          "step": 4,
+          "action": "Analyze the individual features. In A, Feature 1 might be 'X-coordinate'. In B, Feature 1 is a mix of X and Y due to rotation.",
+          "result": "CKA is high, but the individual features are NOT aligned.",
+          "insight": "High CKA means similar geometry, NOT identical individual features."
         }
       ]
     },
     "visual": {
-      "id": "sae-pareto",
-      "question": "Which assumption behind cka, svcca, and representation similarity changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "cka-rotation",
+      "question": "Why does CKA remain unchanged when a representation is orthogonally rotated?",
+      "description": "A visualization showing a scatter plot of data points in a 2D space. The plot is then rotated. A matrix showing the pairwise distances between all points (the kernel matrix) is shown next to it. As the scatter plot rotates, the kernel matrix remains completely unchanged. Since CKA operates on the kernel matrix, it is perfectly invariant to the rotation."
     },
     "technical": {
-      "text": "Similarity metrics compare geometry or subspaces across models and runs. They do not establish one-to-one correspondence between features. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "SVCCA (Singular Vector Canonical Correlation Analysis) first uses SVD to truncate the representations, removing low-variance noise dimensions. It then applies CCA to find linear combinations of the truncated representations that maximize correlation. CKA (Centered Kernel Alignment) takes a different approach. It computes a kernel matrix for each representation (e.g., $K_X = XX^T$), which captures the pairwise similarities between all data points. It then measures the similarity between these two kernel matrices using the Hilbert-Schmidt Independence Criterion (HSIC). CKA is generally preferred for deep learning because it scales well to large dimensions and reliably identifies corresponding layers across different network initializations.",
+      "definitions": [
+        "SVCCA: A method that uses Singular Value Decomposition to remove noise, followed by Canonical Correlation Analysis to find the maximum correlation between two spaces.",
+        "CKA (Centered Kernel Alignment): A metric that compares the similarity of two representations by comparing their kernel (similarity) matrices.",
+        "Invariance: A property of a metric where certain transformations (like rotation or scaling) do not change the output of the metric.",
+        "Kernel Matrix: A matrix containing the pairwise inner products (or distances) between all data points in a representation."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathrm{FVU}=\\frac{\\|X-\\hat X\\|_F^2}{\\|X-\\bar X\\|_F^2}",
+        "id": "eq-1",
+        "label": "Centered Kernel Alignment (CKA)",
+        "latex": "CKA(X,Y) = \\frac{HSIC(K_X, K_Y)}{\\sqrt{HSIC(K_X, K_X) \\cdot HSIC(K_Y, K_Y)}}",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "X, Y": "Activation matrices for two representations",
+          "K_X, K_Y": "Kernel matrices (e.g., $XX^T$ and $YY^T$)",
+          "HSIC": "Hilbert-Schmidt Independence Criterion"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Similarity metrics compare geometry or subspaces across models and runs. They do not establish one-to-one correspondence between features.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "No single metric measures interpretability. Every metric needs an explicit non-claim beside it."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What does the metric measure?",
-        "methods": [
-          {
-            "name": "FVU",
-            "answer": "FVU: reconstruction"
-          },
-          {
-            "name": "CKA",
-            "answer": "CKA: geometry similarity"
-          },
-          {
-            "name": "Intervention",
-            "answer": "Intervention: causal effect"
-          }
-        ],
-        "practicalImplication": "Report the metric's non-claim beside its result."
+        "plainExplanation": "CKA measures how similar the pairwise distances in space X are to the pairwise distances in space Y, normalized by the internal variance of each space.",
+        "whyNeeded": "It provides a scalar similarity score between 0 and 1 that is invariant to orthogonal transformations, allowing us to compare fundamentally different architectures.",
+        "ifRemoved": "We would be unable to meaningfully compare representations across different models or random seeds, as the arbitrary alignment of axes would confound any direct comparison.",
+        "encourages": "Evaluating the global, holistic geometric structure of a representation.",
+        "doesNotGuarantee": "It does not guarantee that the individual basis directions (features) correspond to the same concepts."
       }
     ],
     "evidence": [
       {
-        "claim": "Similarity metrics compare geometry or subspaces across models and runs. They do not establish one-to-one correspondence between features.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "SVCCA can identify corresponding layers and training dynamics by filtering out noise.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Raghu et al. 2017",
+        "section": "SVCCA Method",
+        "verified": true,
+        "paraphrase": "By applying SVD before CCA, SVCCA effectively isolates the structurally important directions in neural representations, revealing that networks learn a core set of invariant features across different initializations."
+      },
+      {
+        "claim": "CKA reliably identifies corresponding layers across different architectures and initializations better than CCA methods.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Kornblith et al. 2019",
+        "section": "Experiments",
+        "verified": true,
+        "paraphrase": "CKA's sensitivity to similarity of examples (rather than just variance of features) makes it the most robust metric for identifying representation similarity across different neural network architectures and random seeds."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The Invariance Trap",
+        "mechanism": "Assuming that a high CKA score means that the individual features (neurons or SAE directions) in two models are identical.",
+        "symptom": "Two SAEs have a CKA of 0.95, but when you inspect Feature 42 in both SAEs, they represent completely different concepts.",
+        "diagnosticTest": "Check the invariances of your metric. CKA is invariant to orthogonal rotation.",
+        "mitigation": "Understand that CKA measures *geometric* similarity, not *feature* alignment. To measure feature alignment, you must use techniques that are NOT invariant to rotation, such as measuring the cosine similarity of individual paired features.",
+        "setconcaRelevance": "Medium"
       }
     ],
     "setconcaConnection": {
-      "relevance": "CKA, SVCCA, and representation similarity determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA explores how concept coordination impacts representation geometry.",
+      "whichPart": "Evaluation Phase",
+      "whichDesignChoice": "How we measure if SetConCA fundamentally changes the representation space.",
+      "proposedExperiment": "Compute CKA between the internal representations of a standard model and a SetConCA-regularized model. A high CKA suggests SetConCA merely rotates the existing space to align with concepts. A low CKA suggests SetConCA fundamentally alters the geometry of the representations learned by the model."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that cka, svcca, and representation similarity improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "You take a representation space X and multiply every vector by -1. What is the CKA between the original X and the new -X? What happens to the individual feature directions?",
+        "reveal": "CKA will be exactly 1.0, because multiplying by -1 is an orthogonal transformation and the relative pairwise distances between points do not change. However, every individual feature direction has been completely flipped."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain cka, svcca, and representation similarity to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain why two representations can have a CKA of 0.99 while having completely different feature labels.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies that CKA is based on kernel matrices (relative distances between data points).",
+          "Explains that CKA is invariant to orthogonal rotations.",
+          "Concludes that you can rotate a representation space so the axes (features) point in completely new directions, changing the feature labels, while preserving the relative distances and thus maintaining a CKA of 1.0."
+        ],
+        "badVersion": "Because CKA is not very accurate and makes mistakes.",
+        "goodVersion": "CKA measures the similarity of representations by comparing the relative distances between data points (via kernel matrices). It is mathematically designed to be invariant to orthogonal rotations. This means you can take a representation space and rotate it arbitrarily. The individual axes (which correspond to specific feature labels) will now point in completely different directions, meaning the features have changed. However, because the rotation preserves the relative distances between all the data points, the geometric structure remains identical, and CKA will report a similarity of exactly 1.0."
       }
-    ],
-    "nextLesson": {
-      "id": "p08-l04",
-      "bridge": "Next: Stability across seeds and models. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p08-l04",
+    "text": "CKA tells us if the overall geometry is the same, but it ignores the specific axes. In Mechanistic Interpretability, we care deeply about those specific axes (the features). If we train an SAE twice, do we get the exact same features? The next lesson explores stability across seeds."
   }
 }

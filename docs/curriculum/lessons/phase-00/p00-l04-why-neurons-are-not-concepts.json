@@ -4,161 +4,150 @@
   "phaseIndex": 0,
   "lessonIndex": 4,
   "title": "Why neurons are not concepts",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 30,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p00-l03"
-  ],
+  "prerequisites": ["p00-l03"],
   "learningObjectives": [
-    "Explain why neurons are not concepts in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Define polysemanticity and explain why looking at individual neurons is misleading.",
+    "Explain the phenomenon of superposition.",
+    "Understand why neural networks prefer to use non-orthogonal directions for features."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A neuron coordinate can respond to several features when the model stores more features than dimensions: this is polysemanticity. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "For years, researchers assumed that to understand a neural network, you just needed to figure out what each individual neuron 'did'. They searched for the 'cat neuron' or the 'sentiment neuron'. They failed. \n\nThis lesson explains why they failed. It introduces the twin concepts of polysemanticity and superposition, which form the entire justification for why Sparse Autoencoders (and SetConCA) are necessary. If you don't understand superposition, you won't understand why we can't just read the network's weights directly."
     },
-    "bridgeFrom": "p00-l03",
+    "bridgeFrom": "Features are directions, not necessarily single coordinates.",
     "intuition": {
-      "analogy": "One shelf can hold several rarely co-occurring objects. Looking at the shelf's occupancy does not tell you which object caused it without context.",
-      "analogyLimit": "Sparsity can make feature directions clearer, but it does not guarantee a unique or complete semantic basis.",
-      "text": "A neuron coordinate can respond to several features when the model stores more features than dimensions: this is polysemanticity."
+      "analogy": "A polysemantic neuron is like a radio station that plays jazz music on Mondays, classical on Tuesdays, and heavy metal on Wednesdays, depending entirely on what time you tune in. If you only listen on Mondays and label it 'the jazz station', you will be completely confused when it suddenly starts playing Slayer.",
+      "analogyLimit": "In a radio station, the changes happen over time. In a neuron, the change in meaning depends entirely on the surrounding context of the other neurons firing simultaneously.",
+      "text": "A neuron is a single dimension (a single coordinate) in our high-dimensional activation space. For a long time, we hoped models would be monosemantic: one neuron = one concept. \n\nInstead, models are highly polysemantic. A single neuron might fire strongly when the model reads 'academic citations', but also when it reads 'English text', and 'Korean text'. These concepts are totally unrelated. Why does the model do this? Is it just messy?\n\nNo. It's doing this deliberately to save space. This is called superposition. A language model needs to track millions of concepts, but its residual stream only has a few thousand dimensions (neurons). If it assigned one concept per neuron, it would run out of space instantly.\n\nBecause most features are sparse (they rarely occur at the same time), the model can pack more features than dimensions by representing features as directions that are almost, but not quite, orthogonal (90 degrees apart). When it does this, a single basis coordinate (a neuron) will necessarily be involved in representing multiple different features. Therefore, individual neurons lose any specific meaning."
     },
     "toyExample": {
-      "description": "Track one token through two contexts and compare its activation at the same layer. The changing vector is the object the later lessons will analyze.",
+      "description": "We will see how 3 features can be packed into a 2-dimensional space.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what why neurons are not concepts should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "We have 2 neurons (x, y). We want to represent 3 features: F1, F2, F3.",
+          "result": "Not enough orthogonal dimensions (we need 3, we have 2).",
+          "insight": "We cannot map one feature per neuron."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Assign feature directions as vectors spaced 120 degrees apart: F1=[1, 0], F2=[-0.5, 0.866], F3=[-0.5, -0.866].",
+          "result": "Features are now packed into 2D space.",
+          "insight": "This is superposition. The features are no longer perfectly orthogonal."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Assume F2 is active. The activation vector is [-0.5, 0.866]. Look at Neuron X (the first coordinate, which is -0.5).",
+          "result": "Neuron X is active (negative), but not because F1 is active.",
+          "insight": "Neuron X is polysemantic! It responds strongly to F1, but it also responds to F2 and F3. You cannot look at Neuron X alone and know what is happening."
         }
       ]
     },
     "visual": {
-      "id": "vector-space",
-      "question": "Which assumption behind why neurons are not concepts changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "superposition-geometry",
+      "question": "How can a model store more features than it has dimensions?",
+      "description": "An interactive 2D plane showing 5 different feature vectors (arrows). They are not orthogonal, but they are spread out. When a token is processed, only one feature is active (is sparse). You can see how the 2 basis neurons constantly fire for multiple different features."
     },
     "technical": {
-      "text": "A neuron coordinate can respond to several features when the model stores more features than dimensions: this is polysemanticity. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Superposition occurs when a neural network represents more features than it has dimensions. Mathematically, it does this by assigning features to overcomplete, non-orthogonal basis vectors. \n\nLet N be the number of features and d be the number of dimensions, with N > d. The model learns a projection matrix W in R^{d x N}. The representation is h = Wx, where x in R^N is the sparse vector of true features. \n\nBecause N > d, W cannot be orthogonal. The dot product between different feature directions W_i and W_j will be non-zero (interference). However, if the features are sparse (meaning x_i and x_j are rarely non-zero at the same time), the model can tolerate this interference. The consequence of this projection is that the standard basis vectors (the neurons) are linear combinations of multiple features. Therefore, polysemanticity is an unavoidable artifact of superposition.",
+      "definitions": [
+        {
+          "term": "Polysemanticity",
+          "definition": "The phenomenon where a single neuron responds to multiple, seemingly unrelated features or concepts."
+        },
+        {
+          "term": "Superposition",
+          "definition": "The strategy neural networks use to represent more features than dimensions by packing them into non-orthogonal directions."
+        },
+        {
+          "term": "Sparsity",
+          "definition": "The property that most features are inactive for any given input."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "x=\\sum_i z_i d_i,\\quad M>d",
+        "id": "eq-interference",
+        "label": "Interference in Superposition",
+        "latex": "I = W_i \\cdot W_j",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "I": "Interference term",
+          "W_i": "Direction vector for feature i",
+          "W_j": "Direction vector for feature j"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A neuron coordinate can respond to several features when the model stores more features than dimensions: this is polysemanticity.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A diagram of activations makes the pipeline visible, but it does not identify a concept or a mechanism."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What is being named?",
-        "methods": [
-          {
-            "name": "Neuron coordinate",
-            "answer": "A coordinate"
-          },
-          {
-            "name": "Feature",
-            "answer": "A feature direction"
-          },
-          {
-            "name": "Concept label",
-            "answer": "A human concept"
-          }
-        ],
-        "practicalImplication": "Keep the measurement separate from the interpretation."
+        "plainExplanation": "In words: If two feature vectors are not perfectly 90 degrees apart (orthogonal), their dot product is not zero. They interfere with each other.",
+        "whyNeeded": "Explains the fundamental trade-off: packing more features saves dimensions but introduces noise/interference.",
+        "ifRemoved": "If I=0 for all pairs, we have no superposition, only orthogonal features.",
+        "encourages": "Designing systems that can disentangle this interference (like Sparse Autoencoders).",
+        "doesNotGuarantee": "That the interference is small enough for perfect reconstruction."
       }
     ],
     "evidence": [
       {
-        "claim": "A neuron coordinate can respond to several features when the model stores more features than dimensions: this is polysemanticity.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Neural networks use superposition to represent more features than dimensions, leading to polysemantic neurons.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "elhage-2022-superposition",
+        "section": "Toy Models of Superposition",
+        "verified": true,
+        "paraphrase": "Elhage et al. (2022) mathematically demonstrated in toy models that when features are sparse, networks naturally learn to pack them into non-orthogonal overcomplete bases (superposition), making individual neurons polysemantic."
+      },
+      {
+        "claim": "Polysemantic neurons are prevalent in state-of-the-art language models.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "bricken-2023-claude-features",
+        "section": "Introduction",
+        "verified": true,
+        "paraphrase": "Bricken et al. (2023) empirically showed that neurons in models like Claude are highly polysemantic, responding to completely disjoint semantic categories."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Single Neuron Analysis Fallacy",
+        "mechanism": "Attempting to interpret a network by analyzing the maximum activating dataset examples for individual neurons.",
+        "symptom": "Producing lists of what \"Neuron 402\" does, and finding confusing, disjoint categories.",
+        "diagnosticTest": "Look at the top 100 activating examples for a neuron. Do they fall into clear, distinct, unrelated semantic clusters?",
+        "mitigation": "Stop looking at individual neurons. Use techniques like Dictionary Learning (Sparse Autoencoders) to disentangle the true feature directions.",
+        "setconcaRelevance": "Because neurons are polysemantic, SetConCA cannot operate on single neurons. It must operate on the full vector space and use dictionary learning to disentangle features."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Why neurons are not concepts determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA is fundamentally a tool for resolving superposition.",
+      "whichPart": "Core Motivation",
+      "whichDesignChoice": "Sparse Autoencoders (SAEs) are the current best method for untangling superposition by finding the true feature directions. SetConCA is an advanced form of SAE that uses set-level coordination to do this untangling more accurately and stably.",
+      "proposedExperiment": "Train a standard model and observe a highly polysemantic neuron. Train a SetConCA on those activations, and observe how it correctly separates the neuron's overlapping features into distinct, monosemantic SetConCA dictionary elements."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that why neurons are not concepts improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If a network has 100 dimensions, and needs to perfectly represent 100 dense (always active) features, will it use superposition?",
+        "reveal": "No. Superposition only works when features are sparse. If dense features overlap, the interference destroys the information. It will map 1 feature per dimension."
+      },
+      {
+        "type": "computation",
+        "prompt": "Feature A is vector [1, 0, 0]. Feature B is vector [0.8, 0.6, 0]. What is the interference (dot product) between them?",
+        "reveal": "Dot product = (1*0.8) + (0*0.6) + (0*0) = 0.8. They interfere heavily."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain why neurons are not concepts to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the relationship between sparsity and superposition. Why is one necessary for the other?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Defines sparsity (features rarely active).",
+          "Defines superposition (packing features non-orthogonally).",
+          "Explains that if features were not sparse, the non-orthogonal packing would result in constant, destructive interference, making the information unreadable."
+        ],
+        "badVersion": "Sparsity means many zeros, and superposition means many features. They both help the model hold more data.",
+        "goodVersion": "Superposition requires packing features into non-orthogonal directions. This inherently causes interference when multiple features are active. If features were dense (often active together), this interference would drown out the signal. Sparsity guarantees that only a few features are active at once, so the interference is minimal and the model can cleanly resolve which feature is actually present. Thus, sparsity is the enabler of superposition."
       }
-    ],
-    "nextLesson": {
-      "id": "p00-l05",
-      "bridge": "Next: What SetConCA is trying to improve. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p00-l05",
+    "text": "We now know the problem: features are trapped in superposition, mixed together across dimensions. Standard Sparse Autoencoders try to untangle them by looking at one token at a time. The next lesson reveals why that isn't enough, and what SetConCA proposes to do about it."
   }
 }

@@ -6,159 +6,121 @@
   "title": "SetConCA: the full objective",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p09-l05"
-  ],
+  "prerequisites": ["p09-l05"],
   "learningObjectives": [
-    "Explain setconca: the full objective in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand the components of the full SetConCA objective.",
+    "Analyze the competing forces between reconstruction, sparsity, contrastive, and alignment losses.",
+    "Formulate testable hypotheses about how the joint objective shapes the learned dictionary."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "SetConCA combines reconstruction, sparsity, and cross-view coordination. Each term needs a separate ablation because a combined loss can hide where a gain comes from. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "This is it. The culmination of everything you've learned. In Phase 10, we bring together all the theoretical pieces into a concrete, testable research proposal: Set-Based Contrastive Concept Analysis (SetConCA).\n\nThe full objective we will study combines pointwise constraints (reconstruction and sparsity) with set-wise constraints (contrastive learning and point-to-set alignment). This lesson details how these terms interact and the hypotheses they inspire. If you can master how these forces balance, you understand the core of multi-view representation learning applied to mechanistic interpretability."
     },
-    "bridgeFrom": "p09-l05",
+    "bridgeFrom": "We've seen how standard SAEs struggle with feature absorption and polysemanticity, and how contrastive learning can pull shared concepts together. Now, we unify them into a single objective.",
     "intuition": {
-      "analogy": "A toy experiment is a wind tunnel: simplified enough to know the ground truth, but rich enough that the method can fail for the same kinds of reasons it might fail in practice. SetConCA combines reconstruction, sparsity, and cross-view coordination. Each term needs a separate ablation because a combined loss can hide where a gain comes from.",
-      "analogyLimit": "The toy model tests a mechanism under controlled assumptions. It does not predict a gain on language-model activations until that experiment is run.",
-      "text": "SetConCA combines reconstruction, sparsity, and cross-view coordination. Each term needs a separate ablation because a combined loss can hide where a gain comes from."
+      "analogy": "A sculptor working with three constraints: the statue must be structurally sound, aesthetically pleasing, and historically accurate.",
+      "analogyLimit": "Unlike a physical statue where constraints are rigid, neural loss terms are soft and trade off smoothly against one another via hyperparameters.",
+      "text": "Think of training a dictionary as trying to sculpt a statue under multiple competing constraints. First, the statue must not collapse (reconstruction loss ensures the original activation can be rebuilt). Second, the statue should be elegant and minimalist, using as little material as possible (sparsity penalty).\n\nIf we only had these two constraints (like a standard SAE), we might get a statue that stands up but is an abstract amalgamation of concepts—a chimera. So we add a third constraint: the statue must match historical records (the contrastive loss across sets), ensuring that when we look at pieces from different angles, they refer to the same underlying entity.\n\nFinally, the fourth constraint demands that individual details perfectly align with the overall historical narrative (the point-to-set alignment). Each constraint is reasonable alone, but satisfying all simultaneously is exceptionally hard. A bad trade-off produces a weak, ugly, or inaccurate statue."
     },
     "toyExample": {
-      "description": "Sample known latent concepts, render several noisy partial views per concept, and compare a pointwise SAE with a set-coordinated variant under equal capacity and compute.",
+      "description": "A 4D activation space with 3 known ground-truth concepts. We generate 100 activations and group them into sets of 5 tokens per concept.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what setconca: the full objective should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Train an SAE-baseline using only L_recon + L_sparse.",
+          "result": "The baseline achieves low reconstruction error but fails to cleanly separate the 3 concepts.",
+          "insight": "Pointwise constraints alone do not guarantee concept purity."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
-        },
-        {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 2,
+          "action": "Train SetConCA using the full objective on the constructed sets.",
+          "result": "The learned features align more cleanly with the 3 ground-truth concepts.",
+          "insight": "The contrastive and alignment terms provide the necessary coordination signal."
         }
       ]
     },
     "visual": {
       "id": "setconca-lab",
-      "question": "Which assumption behind setconca: the full objective changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "question": "How do the different loss terms trade off?",
+      "description": "An interactive environment where you can adjust the hyperparameters α, β, and γ to observe the effect on feature-to-concept alignment, seed stability, and absorption rate in the 4D toy world."
     },
     "technical": {
-      "text": "SetConCA combines reconstruction, sparsity, and cross-view coordination. Each term needs a separate ablation because a combined loss can hide where a gain comes from. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The complete SetConCA objective is a linear combination of four terms: L = L_recon + α L_sparse + β L_contrast + γ L_align. The pointwise terms operate on individual activations, while the set-wise terms operate on groupings of activations constructed to share semantic concepts.",
+      "definitions": [
+        "Pointwise SAE reconstruction (L_recon): The mean squared error between the original activation and its reconstruction.",
+        "Sparsity penalty (L_sparse): An L1 or TopK penalty on the latent activations to encourage a minimal active set.",
+        "Set-level contrastive loss (L_contrast): An InfoNCE loss applied to set-level representations to cluster same-concept sets and repel different-concept sets.",
+        "Point-to-set alignment (L_align): A distance metric between individual token codes and their corresponding set mean codes."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L=\\mathcal L_{\\mathrm{recon}}+\\lambda_s\\mathcal L_{\\mathrm{sparse}}+\\lambda_c\\mathcal L_{\\mathrm{set}}",
+        "id": "eq-1",
+        "label": "SetConCA Full Objective",
+        "latex": "\\mathcal{L} = \\frac{1}{n} \\sum_{i} ||x_i - \\hat{x}_i||^2 + \\alpha \\mathcal{L}_{sparse} + \\beta \\mathcal{L}_{contrast} + \\gamma \\mathcal{L}_{align}",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "x_i": "original point activation",
+          "\\hat{x}_i": "reconstructed activation",
+          "\\alpha": "sparsity weight",
+          "\\beta": "contrastive weight",
+          "\\gamma": "alignment weight"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. SetConCA combines reconstruction, sparsity, and cross-view coordination. Each term needs a separate ablation because a combined loss can hide where a gain comes from.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "The toy model tests a mechanism under controlled assumptions. It does not predict a gain on language-model activations until that experiment is run."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What must be held fixed?",
-        "methods": [
-          {
-            "name": "Pointwise SAE",
-            "answer": "Pointwise SAE: no set signal"
-          },
-          {
-            "name": "SetConCA",
-            "answer": "SetConCA: coordination term"
-          },
-          {
-            "name": "Term ablation",
-            "answer": "Ablation: remove one term"
-          }
-        ],
-        "practicalImplication": "The ablation identifies which added component caused a gain."
+        "plainExplanation": "The total loss is the sum of reconstruction error, a sparsity penalty, a contrastive loss across sets, and a point-to-set alignment penalty.",
+        "whyNeeded": "To balance the competing goals of fidelity, sparsity, semantic coherence, and cross-granularity consistency.",
+        "ifRemoved": "Removing any term collapses the representation to a degenerate solution: no L_recon means meaningless features; no L_sparse means dense entanglement; no L_contrast means poor semantic grouping.",
+        "encourages": "A feature space where active components correspond reliably to shared conceptual structures.",
+        "doesNotGuarantee": "Perfect disentanglement of completely co-occurring concepts or immunity to hyperparameter sensitivity."
       }
     ],
     "evidence": [
       {
-        "claim": "SetConCA combines reconstruction, sparsity, and cross-view coordination. Each term needs a separate ablation because a combined loss can hide where a gain comes from.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
+        "claim": "The combination produces features that are more monosemantic and more stable than any single objective alone.",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "setconca-proposal",
+        "section": "core objective",
         "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "paraphrase": "Combining reconstruction and contrastive objectives results in a more interpretable and reliable dictionary."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Hyperparameter Collapse",
+        "mechanism": "One of the loss terms (e.g., contrastive loss) dominates, leading the model to ignore the others (e.g., reconstruction).",
+        "symptom": "Features cluster perfectly by set but fail to reconstruct the original activations.",
+        "diagnosticTest": "Check the magnitude of the gradients from each loss term during the early stages of training.",
+        "mitigation": "Carefully tune α, β, and γ, and consider dynamic weighting or curriculum learning.",
+        "setconcaRelevance": "Each additional loss term introduces a hyperparameter and a potential failure mode, demanding precise tuning."
       }
     ],
     "setconcaConnection": {
-      "relevance": "SetConCA: the full objective determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "This objective is the core mathematical definition of SetConCA.",
+      "whichPart": "The loss function.",
+      "whichDesignChoice": "Combining reconstruction, sparsity, contrastive, and alignment terms.",
+      "proposedExperiment": "Train SetConCA models with varying values of β and γ to trace the Pareto frontier of reconstruction vs. concept purity."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that setconca: the full objective improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you set β (contrastive weight) extremely high and α (sparsity) to 0, what will happen to the learned dictionary?",
+        "reveal": "The dictionary will likely collapse to trivial solutions where all tokens in a set are mapped to identical dense vectors, completely failing to reconstruct the original input activations faithfully."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain setconca: the full objective to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the tension between L_recon and L_contrast. Why might they pull the learned features in opposite directions?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies that L_recon requires preserving all idiosyncratic details of a point activation.",
+          "Identifies that L_contrast encourages ignoring idiosyncratic details to maximize similarity within a set."
+        ],
+        "badVersion": "They are different math equations.",
+        "goodVersion": "L_recon pushes the model to encode everything unique about a specific token's context. L_contrast pushes the model to discard those unique details so that tokens in the same set look identical. They are fundamentally opposed: one seeks fidelity, the other seeks abstraction."
       }
-    ],
-    "nextLesson": {
-      "id": "p10-l02",
-      "bridge": "Next: Designing multi-view activation sets. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p10-l02",
+    "text": "Now that we understand the objective, a massive question remains: how do we actually form these semantic sets from raw language model activations? That is the focus of our next lesson."
   }
 }

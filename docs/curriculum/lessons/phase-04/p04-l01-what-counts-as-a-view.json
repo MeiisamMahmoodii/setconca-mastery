@@ -6,159 +6,128 @@
   "title": "What counts as a view?",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
-    "p03-l05"
+    "p02-l05"
   ],
   "learningObjectives": [
-    "Explain what counts as a view? in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Define what constitutes a 'view' in the context of multi-view representation learning.",
+    "Distinguish between shared and private information across different views of the same object.",
+    "Identify valid and invalid examples of views in machine learning datasets.",
+    "Relate the concept of views to activations in neural networks, specifically within the SetConCA framework."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A view is a second observation of the same underlying item that changes some information while preserving something you want to identify. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Multi-view representation learning is a paradigm that leverages the presence of multiple distinct observations (or 'views') of the same underlying phenomenon. In many real-world scenarios, data is inherently multi-view. For instance, an object can be seen from different angles, a concept can be expressed in different languages, or an event can be recorded with both audio and video.\n\nUnderstanding what counts as a view is the foundational step for all subsequent multi-view methods, such as Canonical Correlation Analysis (CCA) and its deep variants. If we do not clearly define our views, our models may align unrelated noise or fail to capture the true underlying semantics. In representation learning for neural networks, defining views correctly allows us to isolate abstract concepts from context-specific idiosyncrasies.\n\nThis lesson formalizes the definition of a view. It explores the critical dichotomy between shared information (the signal we care about) and private information (the view-specific details we often want to abstract away). By the end of this lesson, you will be able to evaluate whether a given set of data modalities or internal network representations forms a valid multi-view problem."
     },
-    "bridgeFrom": "p03-l05",
+    "bridgeFrom": "In previous phases, we explored representations in a single space. Now, we expand our scope to situations where information is distributed across multiple parallel spaces.",
     "intuition": {
-      "analogy": "Two cameras can film the same event from different angles. What both cameras see is shared; their lighting, occlusion, and viewpoint are private. A view is a second observation of the same underlying item that changes some information while preserving something you want to identify.",
-      "analogyLimit": "Correlation identifies agreement, not necessarily cause. A shared nuisance can look just as attractive as a shared concept.",
-      "text": "A view is a second observation of the same underlying item that changes some information while preserving something you want to identify."
+      "analogy": "Watching a movie with subtitles.",
+      "analogyLimit": "Subtitles are a direct translation of the audio, whereas in many ML problems, views may capture overlapping but distinct aspects of the underlying object.",
+      "text": "Imagine you are watching a movie with the audio on and the subtitles enabled. The audio track is one view, and the text subtitles are another view. Both of these views are observations of the same underlying object: the movie's dialogue and plot.\n\nThey share a significant amount of information. The core semantic content\u2014what the characters are saying and the meaning of their conversation\u2014is conveyed by both the audio and the text. This is the 'shared' information.\n\nHowever, each view also contains information that the other lacks. The audio track contains the tone of voice, background music, and sound effects. The subtitles contain information about the font, the timing of the text on the screen, and perhaps translation artifacts. This is the 'private' information, unique to each view.\n\nWhen we apply multi-view learning (like Canonical Correlation Analysis), our goal is typically to extract the shared dialogue while ignoring the private parts like the background noise or the font style. We want to find the common denominator that unites the views."
     },
     "toyExample": {
-      "description": "Create two views with one shared factor and one private factor. Increase private signal and watch an alignment-only objective ignore it.",
+      "description": "Identifying views in a multimodal dataset.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what what counts as a view? should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Collect an image of a dog and a text description 'A brown dog running'.",
+          "result": "We have two distinct modalities (image and text).",
+          "insight": "These are valid views because they describe the same underlying semantic concept (the dog)."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Collect the activations of Layer 5 and Layer 10 for the same token in a language model.",
+          "result": "We have two representations from different parts of the network.",
+          "insight": "These are valid views of the token's representation, allowing us to find shared features across depth."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Collect the activations for the word 'Paris' in sentence A and the word 'London' in sentence B.",
+          "result": "We have representations of different semantic concepts.",
+          "insight": "These are INVALID views for alignment because they do not share the same underlying object."
         }
       ]
     },
     "visual": {
-      "id": "cca-shared-noise",
-      "question": "Which assumption behind what counts as a view? changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "venn-shared-private",
+      "question": "Where does the semantic concept reside in this diagram?",
+      "description": "A Venn diagram showing two overlapping circles, View 1 and View 2. The intersection is labeled 'Shared Information (Semantics)' and the non-overlapping regions are labeled 'Private Information (View-specific)'."
     },
     "technical": {
-      "text": "A view is a second observation of the same underlying item that changes some information while preserving something you want to identify. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Formally, a multi-view dataset consists of tuples (x1_i, x2_i, ..., xv_i) for i=1..N, where each xj_i is a view of the i-th instance. The fundamental assumption is that these views are conditionally independent given a shared latent variable z, i.e., p(x1, x2 | z) = p(x1 | z) p(x2 | z).",
+      "definitions": [
+        "View: A specific modality, feature set, or representation space providing an observation of a data point.",
+        "Shared Information: The variation or structure that is common across multiple views, often corresponding to the underlying semantic concept.",
+        "Private Information: The variation or structure that is unique to a single view, often corresponding to noise, style, or modality-specific details."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\max_{u,v}\\;\\mathrm{corr}(u^\\top X,v^\\top Y)",
+        "id": "eq-1",
+        "label": "Conditional Independence of Views",
+        "latex": "p(x_1, x_2 \\mid z) = p(x_1 \\mid z) p(x_2 \\mid z)",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "x_1": "View 1",
+          "x_2": "View 2",
+          "z": "Shared latent variable"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A view is a second observation of the same underlying item that changes some information while preserving something you want to identify.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Correlation identifies agreement, not necessarily cause. A shared nuisance can look just as attractive as a shared concept."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What information is rewarded?",
-        "methods": [
-          {
-            "name": "CCA",
-            "answer": "CCA: shared correlation"
-          },
-          {
-            "name": "Reconstruction",
-            "answer": "Reconstruction: within-view fidelity"
-          },
-          {
-            "name": "Shared/private model",
-            "answer": "Shared/private model: both"
-          }
-        ],
-        "practicalImplication": "Alignment alone can discard valuable private signal."
+        "plainExplanation": "Given the underlying shared concept (z), the variations in View 1 and View 2 are independent.",
+        "whyNeeded": "It mathematically defines the separation of shared and private information.",
+        "ifRemoved": "We would not be able to factorize the generative process into shared and view-specific components.",
+        "encourages": "Models that isolate the true shared cause of both views.",
+        "doesNotGuarantee": "That 'z' captures *only* semantics; it might capture shared noise."
       }
     ],
     "evidence": [
       {
-        "claim": "A view is a second observation of the same underlying item that changes some information while preserving something you want to identify.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Multi-view learning relies on the existence of multiple views of the same data.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "1711.02391v1",
+        "section": "Introduction",
+        "verified": true,
+        "paraphrase": "Canonical Correlation Analysis and multi-view methods fundamentally assume the availability of paired observations that reflect a common underlying phenomenon."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Mismatched Views",
+        "mechanism": "Pairing data points that do not actually share an underlying latent variable.",
+        "symptom": "The model fails to learn any meaningful shared representation; correlations are extremely low or spurious.",
+        "diagnosticTest": "Check if a human can identify a common concept between pairs (e.g., in (x1_i, x2_i)).",
+        "mitigation": "Ensure rigorous data pairing processes. For network activations, ensure views are matched by token identity or input context.",
+        "setconcaRelevance": "Crucial. SetConCA requires that the set of activations (views) truly correspond to the same underlying concept."
       }
     ],
     "setconcaConnection": {
-      "relevance": "What counts as a view? determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA operates on the principle that different contexts containing the same concept provide multiple views of that concept.",
+      "whichPart": "Data Construction / View Definition",
+      "whichDesignChoice": "SetConCA defines 'views' as the network activations for tokens that share a known semantic concept, across different sentences or contexts.",
+      "proposedExperiment": "Train a model where views are randomly paired vs. correctly paired by concept, and measure the quality of the learned representation."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that what counts as a view? improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you use an image of a cat and an audio recording of a dog barking as View 1 and View 2, what will a multi-view learning algorithm extract as the shared representation?",
+        "reveal": "It will likely extract nothing meaningful (or just dataset-level bias/noise), because there is no shared semantic concept between the two views."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain what counts as a view? to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the difference between shared and private information using the analogy of a translated book.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies the core plot/meaning as shared.",
+          "Identifies language-specific idioms/syntax as private.",
+          "Clearly distinguishes the two concepts."
+        ],
+        "badVersion": "Shared is the book, private is the reader.",
+        "goodVersion": "The shared information is the story, the characters, and the plot events, which remain constant regardless of the language. The private information is the specific vocabulary, grammar, and idioms unique to the English or French versions."
       }
-    ],
-    "nextLesson": {
-      "id": "p04-l02",
-      "bridge": "Next: CCA: align shared variation. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p04-l02",
+    "text": "Now that we know what a view is, how do we mathematically extract the shared information? We turn to Canonical Correlation Analysis (CCA)."
   }
 }

@@ -4,161 +4,127 @@
   "phaseIndex": 6,
   "lessonIndex": 4,
   "title": "False negatives and shortcut solutions",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 30,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p06-l03"
-  ],
+  "prerequisites": ["p06-l03"],
   "learningObjectives": [
-    "Explain false negatives and shortcut solutions in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Identify what constitutes a 'false negative' in unsupervised contrastive learning.",
+    "Explain how false negatives degrade learned representations.",
+    "Describe what shortcut solutions are and how models exploit them.",
+    "Evaluate mitigation strategies like Supervised Contrastive Learning."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Theoretical contrastive learning assumes that randomly sampled items in a batch are true negatives (i.e., semantically distinct). In reality, this is often false. Furthermore, neural networks are lazy and will find the easiest way to solve the contrastive task, often ignoring semantic meaning entirely. Understanding these failure modes is critical for applying contrastive learning to real-world data."
     },
-    "bridgeFrom": "p06-l03",
+    "bridgeFrom": "We understand how the loss pushes negatives apart to ensure uniformity. But what happens if it pushes apart two things that actually *should* be close together?",
     "intuition": {
-      "analogy": "Contrastive learning is a sorting game: place genuine variants of the same item close together without piling every item into one corner. A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics.",
-      "analogyLimit": "A lower contrastive loss can come from a shortcut in the views, not from recovery of the intended invariant.",
-      "text": "A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics."
+      "analogy": "Imagine training a dog to find truffles (positive) and ignore rocks (negative). If you accidentally throw a truffle in with the rocks and punish the dog for finding it (a false negative), the dog gets confused. Alternatively, if you always hide truffles in red boxes and rocks in blue boxes, the dog just looks for red boxes (shortcut) and never learns what a truffle smells like.",
+      "analogyLimit": "Models don't get 'confused'; they just mathematically adjust their weights to accommodate the contradictory gradients, resulting in a degraded representation space.",
+      "text": "**False Negatives:** In self-supervised contrastive learning, we typically treat any two different images (or documents) in a batch as a negative pair. However, if a batch contains two different photos of a Golden Retriever, treating them as negatives forces the model to push their representations apart. This teaches the model to ignore the shared semantic concept ('dog') and focus on superficial differences to satisfy the loss.\n\n**Shortcut Solutions:** If the contrastive task can be solved using a low-level feature, the model will use it instead of learning complex semantics. For example, if patches from the same image always have chromatic aberration while patches from different images don't, the model will just detect chromatic aberration to identify positive pairs, learning nothing about the image content."
     },
     "toyExample": {
-      "description": "Give each item two legitimate views and several near-duplicate negatives. Sweep temperature and inspect when the loss starts punishing semantically valid neighbours.",
+      "description": "Consider a batch of 8 documents used for contrastive pretraining. Unbeknownst to the model, 4 are about 'Paris' and 4 are about 'London'.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what false negatives and shortcut solutions should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "The model takes Document 1 ('Paris') and creates an augmented view (positive pair).",
+          "result": "The model pulls these two representations together.",
+          "insight": "Alignment works as intended."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "The model treats Documents 2 through 8 as negatives and pushes Document 1 away from them.",
+          "result": "Document 1 is pushed away from the London documents (good) AND the other three Paris documents (bad).",
+          "insight": "This is the false negative problem. The model is penalized for recognizing the semantic similarity between the different Paris documents."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "The model notices that Document 1 and its augmented view both happen to contain the rare typo 'teh'.",
+          "result": "The model learns to use 'teh' as a perfect signature to identify the positive pair, ignoring the word 'Paris' entirely.",
+          "insight": "This is a shortcut solution. The contrastive loss is perfectly minimized, but the representation is semantically meaningless."
         }
       ]
     },
     "visual": {
-      "id": "contrastive-temp",
-      "question": "Which assumption behind false negatives and shortcut solutions changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "false-negatives",
+      "question": "How do false negatives distort the latent space?",
+      "description": "Diagram showing how true classes (e.g., dogs, cats) should ideally cluster, but how treating samples from the same class as negatives fractures those clusters into many isolated points."
     },
     "technical": {
-      "text": "A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The severity of the false negative problem is often linked to batch size and dataset diversity. Mitigations include Supervised Contrastive Learning (which uses labels to define all same-class items as positives) and careful negative mining strategies.",
+      "definitions": [
+        "False Negative: Two samples that share semantic meaning but are treated as a negative pair by the loss function.",
+        "Shortcut Solution: A superficial, low-level feature that perfectly solves the contrastive task without requiring semantic understanding."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L_{\\mathrm{NCE}}=-\\log\\frac{e^{s(z,z^+)/\\tau}}{\\sum_j e^{s(z,z_j)/\\tau}}",
+        "id": "eq-supcon",
+        "label": "Supervised Contrastive Loss",
+        "latex": "\\mathcal{L}_{sup} = \\sum_{i=1}^N \\frac{-1}{|P(i)|} \\sum_{p \\in P(i)} \\log \\frac{\\exp(z_i \\cdot z_p / \\tau)}{\\sum_{a \\in A(i)} \\exp(z_i \\cdot z_a / \\tau)}",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "P(i)": "Set of indices of all positives for anchor i (same label)",
+          "A(i)": "Set of all indices excluding anchor i"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A lower contrastive loss can come from a shortcut in the views, not from recovery of the intended invariant."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What prevents collapse?",
-        "methods": [
-          {
-            "name": "InfoNCE",
-            "answer": "InfoNCE: negatives"
-          },
-          {
-            "name": "VICReg",
-            "answer": "VICReg: variance and covariance terms"
-          },
-          {
-            "name": "Supervised contrastive",
-            "answer": "Supervised contrastive: class positives"
-          }
-        ],
-        "practicalImplication": "The positive-pair definition is usually the highest-leverage choice."
+        "plainExplanation": "Instead of having just one positive pair per anchor, this loss pulls the anchor toward *all* samples in the batch that share the same class label, while pushing away everything else.",
+        "whyNeeded": "It completely eliminates the false negative problem by utilizing supervised labels.",
+        "ifRemoved": "We revert to self-supervised InfoNCE, which suffers from false negatives.",
+        "encourages": "Tight clustering of known classes.",
+        "doesNotGuarantee": "Can't be used if labels are unavailable."
       }
     ],
     "evidence": [
       {
-        "claim": "A negative can secretly share the target concept with the anchor, and a model can exploit nuisance cues that distinguish views without learning the intended semantics.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Supervised Contrastive Learning outperforms cross-entropy and self-supervised contrastive learning.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Supervised Contrastive, Khosla et al. 2020",
+        "section": "Introduction",
+        "verified": true,
+        "paraphrase": "By leveraging label information to pull all samples of the same class together, Supervised Contrastive Learning avoids the false negative problem of self-supervised methods and achieves better robustness and accuracy."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Semantic Fracturing",
+        "mechanism": "High rates of false negatives in the batch.",
+        "symptom": "Representations of semantically identical items are pushed apart, resulting in poor performance on clustering or K-nearest neighbor evaluations.",
+        "diagnosticTest": "Measure the similarity between known same-class samples (if labels exist). If similarity is low despite low contrastive loss, false negatives are likely fracturing the space.",
+        "mitigation": "Use larger datasets, Supervised Contrastive Learning, or false-negative cancellation techniques.",
+        "setconcaRelevance": "In SetConCA, if two different semantic sets actually represent highly overlapping concepts, treating them as negatives will damage the coordination of their SAE features."
       }
     ],
     "setconcaConnection": {
-      "relevance": "False negatives and shortcut solutions determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "Directly impacts how we sample 'negative sets' in SetConCA.",
+      "whichPart": "Batch Construction & Negative Sampling",
+      "whichDesignChoice": "Carefully selecting negative sets to ensure they are truly distinct from the anchor set.",
+      "proposedExperiment": "Evaluate SetConCA performance when negative sets are drawn randomly vs. drawn from explicitly disjoint semantic categories."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that false negatives and shortcut solutions improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "Why might a very large batch size actually *increase* the damage caused by false negatives in an unlabelled dataset?",
+        "reveal": "In a very large batch drawn from a limited dataset, the probability of randomly sampling two items from the same underlying class (a false negative) increases significantly."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain false negatives and shortcut solutions to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain how color histograms act as a shortcut solution in image contrastive learning, and how data augmentations prevent this.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Defines what a shortcut solution is.",
+          "Explains that color histograms are easily computable and unique to an image.",
+          "Explains that color jittering/distortion forces the positive pair to have different color profiles.",
+          "Concludes that the model is forced to learn deeper semantic structures to match the pair."
+        ],
+        "badVersion": "The model uses color to cheat, so we change the colors.",
+        "goodVersion": "A shortcut solution is a low-level feature that perfectly identifies positive pairs without semantic understanding. Without augmentation, a model can just compare the color histograms of two image crops—if they match, it's a positive pair. By aggressively applying color jittering and distortion to the augmented views, we break this shortcut. The color histograms no longer match, forcing the network to look for deeper, invariant structural features (like shapes or objects) to successfully identify the positive pair and minimize the loss."
       }
-    ],
-    "nextLesson": {
-      "id": "p06-l05",
-      "bridge": "Next: Contrastive coordination for sparse features. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p06-l05",
+    "text": "We now possess all the theory of contrastive learning. In the final lesson of this phase, we will synthesize everything and apply it directly to the problem of coordinating sparse features in SetConCA."
   }
 }

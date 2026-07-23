@@ -4,161 +4,134 @@
   "phaseIndex": 6,
   "lessonIndex": 2,
   "title": "InfoNCE and temperature",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 30,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p06-l01"
-  ],
+  "prerequisites": ["p06-l01"],
   "learningObjectives": [
-    "Explain infonce and temperature in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand the mathematical formulation of the InfoNCE loss function.",
+    "Explain the role of temperature in controlling the hardness of comparisons.",
+    "Calculate probabilities and loss values for toy examples using different temperatures."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "InfoNCE raises the similarity of positives relative to negatives; temperature controls how sharply the loss concentrates on the hardest comparisons. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "With positive pairs defined, we need a way to train the network. The InfoNCE loss is the workhorse of modern contrastive learning. Understanding its mechanics, particularly the temperature hyperparameter, is essential for tuning and troubleshooting contrastive models."
     },
-    "bridgeFrom": "p06-l01",
+    "bridgeFrom": "We established what makes representations similar. Now we look at the mathematical engine that enforces this similarity against a backdrop of dissimilar examples.",
     "intuition": {
-      "analogy": "Contrastive learning is a sorting game: place genuine variants of the same item close together without piling every item into one corner. InfoNCE raises the similarity of positives relative to negatives; temperature controls how sharply the loss concentrates on the hardest comparisons.",
-      "analogyLimit": "A lower contrastive loss can come from a shortcut in the views, not from recovery of the intended invariant.",
-      "text": "InfoNCE raises the similarity of positives relative to negatives; temperature controls how sharply the loss concentrates on the hardest comparisons."
+      "analogy": "Imagine trying to pick your friend out of a crowd. If the crowd consists of people who look nothing like your friend (easy negatives), it's simple. If the crowd consists of people wearing identical clothes to your friend (hard negatives), you have to look much closer at subtle facial features.",
+      "analogyLimit": "The analogy implies conscious effort, but in InfoNCE, the temperature parameter mathematically reweights the loss to focus gradients on those 'hard negatives' automatically.",
+      "text": "The InfoNCE (Information Noise-Contrastive Estimation) loss frames contrastive learning as a classification problem: given an anchor, can the model correctly identify the positive example among a set of negative examples? It achieves this by pulling the anchor and positive representation together while pushing the anchor away from all negative representations in the batch.\n\nCrucially, this is modulated by the temperature parameter ($\\tau$). Temperature controls how sharply the model differentiates between similarities. A low temperature amplifies small differences in similarity, effectively forcing the model to focus its learning capacity on the 'hardest' negatives—those that are currently closest to the anchor but shouldn't be. A high temperature softens these differences, leading to a more uniform push against all negatives."
     },
     "toyExample": {
-      "description": "Give each item two legitimate views and several near-duplicate negatives. Sweep temperature and inspect when the loss starts punishing semantically valid neighbours.",
+      "description": "Let's calculate the InfoNCE softmax probabilities for an anchor $z_a$, a positive $z_p$, and three negatives $z_{n1}, z_{n2}, z_{n3}$. Assume similarities: $sim(a, p) = 0.9$, $sim(a, n1) = 0.3$, $sim(a, n2) = 0.4$, $sim(a, n3) = 0.2$.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what infonce and temperature should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Calculate exponentiated similarities at $\\tau=1.0$.",
+          "result": "$exp(0.9)=2.46$, $exp(0.3)=1.35$, $exp(0.4)=1.49$, $exp(0.2)=1.22$.",
+          "insight": "The values are relatively close together."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Calculate probability of selecting the positive at $\\tau=1.0$.",
+          "result": "$P(positive) = 2.46 / (2.46 + 1.35 + 1.49 + 1.22) = 2.46 / 6.52 = 37.8\\%$.",
+          "insight": "The model finds the task difficult and distributes probability mass broadly."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Calculate exponentiated similarities at a low temperature, $\\tau=0.1$.",
+          "result": "$exp(0.9/0.1)=exp(9)=8103$, $exp(3)=20$, $exp(4)=55$, $exp(2)=7.4$.",
+          "insight": "The differences are massively amplified."
+        },
+        {
+          "step": 4,
+          "action": "Calculate probability of selecting the positive at $\\tau=0.1$.",
+          "result": "$P(positive) = 8103 / (8103 + 20 + 55 + 7.4) = 8103 / 8185.4 = 99.0\\%$.",
+          "insight": "The model focuses intensely on the positive pair and the hardest negative (score 55), ignoring the easy negative (score 7.4). The task becomes 'easier' for the classification objective, but gradients focus on the hardest mistakes."
         }
       ]
     },
     "visual": {
       "id": "contrastive-temp",
-      "question": "Which assumption behind infonce and temperature changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "question": "How does temperature change the loss landscape?",
+      "description": "Visualizations of the softmax distribution over similarities at different temperatures, showing how low temperature creates a spiky distribution focused on the maximum values."
     },
     "technical": {
-      "text": "InfoNCE raises the similarity of positives relative to negatives; temperature controls how sharply the loss concentrates on the hardest comparisons. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The InfoNCE loss is essentially the categorical cross-entropy loss for identifying the positive sample. The temperature parameter scales the logits before the softmax operation.",
+      "definitions": [
+        "InfoNCE: A loss function that optimizes the mutual information between representations of positive pairs.",
+        "Temperature ($\\tau$): A scalar hyperparameter that adjusts the sharpness of the softmax distribution over similarities."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L_{\\mathrm{NCE}}=-\\log\\frac{e^{s(z,z^+)/\\tau}}{\\sum_j e^{s(z,z_j)/\\tau}}",
+        "id": "eq-infonce",
+        "label": "InfoNCE Loss",
+        "latex": "\\mathcal{L} = -\\log \\frac{\\exp(\\text{sim}(z_i, z_j) / \\tau)}{\\sum_{k=1}^{2N} \\mathbb{1}_{[k \\neq i]} \\exp(\\text{sim}(z_i, z_k) / \\tau)}",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "\\text{sim}(u, v)": "Cosine similarity between u and v",
+          "\\tau": "Temperature parameter",
+          "z_i": "Anchor representation",
+          "z_j": "Positive representation",
+          "z_k": "Other representations in the batch (negatives)"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. InfoNCE raises the similarity of positives relative to negatives; temperature controls how sharply the loss concentrates on the hardest comparisons.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A lower contrastive loss can come from a shortcut in the views, not from recovery of the intended invariant."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What prevents collapse?",
-        "methods": [
-          {
-            "name": "InfoNCE",
-            "answer": "InfoNCE: negatives"
-          },
-          {
-            "name": "VICReg",
-            "answer": "VICReg: variance and covariance terms"
-          },
-          {
-            "name": "Supervised contrastive",
-            "answer": "Supervised contrastive: class positives"
-          }
-        ],
-        "practicalImplication": "The positive-pair definition is usually the highest-leverage choice."
+        "plainExplanation": "It calculates the negative log probability that the positive pair is selected from all possible pairs in the batch, based on their exponentiated similarities scaled by temperature.",
+        "whyNeeded": "It provides a tractable way to maximize a lower bound on mutual information while preventing representation collapse.",
+        "ifRemoved": "We would lack a mechanism to push negative examples apart, leading to a trivial solution where all representations map to the same vector.",
+        "encourages": "High similarity for positive pairs and low similarity for negative pairs, relative to the batch.",
+        "doesNotGuarantee": "It doesn't guarantee good representations if the batch size is too small or if negatives are poorly chosen."
       }
     ],
     "evidence": [
       {
-        "claim": "InfoNCE raises the similarity of positives relative to negatives; temperature controls how sharply the loss concentrates on the hardest comparisons.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Temperature controls the penalty on hard negative samples.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "SimCLR, Chen et al. 2020",
+        "section": "Section 4.1",
+        "verified": true,
+        "paraphrase": "An appropriate temperature is crucial; setting it too low can cause numerical instability and over-focus on noisy hard negatives, while setting it too high reduces the effectiveness of the contrastive task."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Temperature Extremes",
+        "mechanism": "Setting $\\tau$ too high or too low.",
+        "symptom": "Too low: gradient explosion, unstable training, over-fitting to noise. Too high: slow convergence, weak representations, poor downstream performance.",
+        "diagnosticTest": "Monitor the InfoNCE loss and gradient norms. If gradients explode, $\\tau$ might be too low. If loss plateaus quickly at a high value, $\\tau$ might be too high.",
+        "mitigation": "Tune $\\tau$ carefully, typically starting around 0.1 for normalized representations.",
+        "setconcaRelevance": "In SetConCA, finding the right temperature will dictate how aggressively the model coordinates fine-grained sparse features across sets."
       }
     ],
     "setconcaConnection": {
-      "relevance": "InfoNCE and temperature determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "InfoNCE is the likely objective function for coordinating set-level representations.",
+      "whichPart": "Contrastive Loss Function",
+      "whichDesignChoice": "Selecting the specific formulation and temperature hyperparameter.",
+      "proposedExperiment": "Sweep the temperature parameter when training SetConCA and measure the impact on the sparsity and interpretability of the resulting SAE features."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that infonce and temperature improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you increase the batch size in InfoNCE without changing the temperature, does the classification task become harder or easier?",
+        "reveal": "Harder. There are more negative samples in the denominator, increasing the chance of encountering hard negatives and lowering the baseline probability of guessing the positive pair correctly."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain infonce and temperature to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain how a low temperature (e.g., 0.05) acts as an implicit 'hard negative miner' in the InfoNCE loss.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Explains that low temperature amplifies differences in similarity scores.",
+          "Notes that the softmax function becomes highly skewed.",
+          "Concludes that gradients are disproportionately driven by the negatives that have the highest similarity to the anchor."
+        ],
+        "badVersion": "Low temperature makes the loss look at hard negatives more.",
+        "goodVersion": "By dividing similarities by a small temperature value before the exponential, small differences in similarity become large differences in exponentiated values. The softmax normalizes this, allocating nearly all the probability mass (and thus the gradient signal) to the positive pair and the few negatives that are closest to the anchor. This effectively focuses the learning exclusively on the hardest mistakes."
       }
-    ],
-    "nextLesson": {
-      "id": "p06-l03",
-      "bridge": "Next: Alignment and uniformity. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p06-l03",
+    "text": "InfoNCE seems complex, but it can be elegantly broken down into two distinct geometric forces. Next, we will explore Alignment and Uniformity to understand exactly what InfoNCE is doing to the representation space."
   }
 }

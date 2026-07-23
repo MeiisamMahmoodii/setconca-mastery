@@ -4,161 +4,157 @@
   "phaseIndex": 0,
   "lessonIndex": 3,
   "title": "Representations, features, and concepts",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 30,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p00-l02"
-  ],
+  "prerequisites": ["p00-l02"],
   "learningObjectives": [
-    "Explain representations, features, and concepts in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Define representation, feature, and concept rigorously.",
+    "Understand that a feature is a direction in activation space.",
+    "Explain the methodology of linear probing.",
+    "Recognize that 'information presence' does not equal 'feature extraction'."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A representation is a vector state; a feature is a direction or function that detects a recurring property; a concept is the human-level hypothesis attached to that feature. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "The field of mechanistic interpretability is plagued by sloppy terminology. If we confuse what the model actually computes with how we humans interpret it, we will draw false conclusions.\n\nThis lesson enforces strict definitional boundaries between representations (the raw vectors), features (the mathematical patterns the model uses), and concepts (the human labels we attach to them). Understanding these boundaries is essential for SetConCA, because SetConCA aims to build a bridge between abstract human concepts and concrete model features."
     },
-    "bridgeFrom": "p00-l02",
+    "bridgeFrom": "We now know activation vectors map out a context-aware space.",
     "intuition": {
-      "analogy": "A map can store the same city with coordinates, pixels, or roads. A representation is the encoding; a feature is a useful direction through that encoding.",
-      "analogyLimit": "A label is an interpretation of a pattern until interventions show that changing the feature changes the target behavior.",
-      "text": "A representation is a vector state; a feature is a direction or function that detects a recurring property; a concept is the human-level hypothesis attached to that feature."
+      "analogy": "A physical map is a representation of a city. It preserves distances and topology but discards building textures, smells, and sounds. The map might happen to contain information about where all the restaurants are located (a feature). We might look at that and say, 'Ah, the map has a food concept'. But the map itself didn't intend to encode a philosophical idea of 'food'; it just encoded coordinates that happen to be linearly separable if you draw a line through the restaurant district.",
+      "analogyLimit": "A physical map is 2D and features are easily visible spatial clusters. In a neural network, the representation is high-dimensional, and features are distributed directions that can't be 'seen' without mathematical probes.",
+      "text": "Let's formalize our terms.\n\nA representation is the full, massive activation vector. It is a compressed summary of the input text, optimized purely to help the model predict the next token. It doesn't inherently 'care' about human logic.\n\nA feature is a specific, robust, linearly definable property within that representation space. Geometrically, a feature is a specific direction (a vector). If you move along that direction, a specific property of the input increases. The linear representation hypothesis posits that neural networks naturally encode important variables as linear directions.\n\nA concept is a human cognitive construct. It's the label we apply. 'Capital cities' is a concept. We often search for features that correspond cleanly to our concepts. Sometimes we succeed! But just because we can train a classifier to decode a concept from a representation does NOT mean the model has dedicated a specific feature to that concept."
     },
     "toyExample": {
-      "description": "Track one token through two contexts and compare its activation at the same layer. The changing vector is the object the later lessons will analyze.",
+      "description": "We will use a linear probe to see if a 4-dimensional activation space contains information about the concept 'is a capital city'.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what representations, features, and concepts should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Take activations for 'Paris': [2, 1, 0, -1], 'London': [1.5, 1, 0.5, -0.5], 'Dog': [-1, 0, -2, 1], 'Cat': [-1.5, -0.5, -1, 1.5].",
+          "result": "Activations collected.",
+          "insight": "We have representations for capital cities and animals."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Train a simple linear classifier (probe) with weights W = [1, 0, 0, 0]. Compute dot product (W dot activation).",
+          "result": "Paris: 2. London: 1.5. Dog: -1. Cat: -1.5.",
+          "insight": "The first dimension alone cleanly separates capitals from animals. The information is decodable."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Is this a 'capital city' feature? Check the activations for 'New York': [2, -1, 1, -1]. Probe gives: 2.",
+          "result": "New York scores high, but it is not a capital.",
+          "insight": "The probe actually found a 'major human population center' feature, not a 'capital city' feature. We confused decodable information with a dedicated feature."
         }
       ]
     },
     "visual": {
-      "id": "vector-space",
-      "question": "Which assumption behind representations, features, and concepts changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "linear-probe",
+      "question": "How do we find features in a representation space?",
+      "description": "A 3D scatter plot of activations. A 2D plane (the linear probe) is drawn through the space, perfectly separating blue dots (concept A) from red dots (concept B). The normal vector to this plane represents the feature direction."
     },
     "technical": {
-      "text": "A representation is a vector state; a feature is a direction or function that detects a recurring property; a concept is the human-level hypothesis attached to that feature. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "A representation is a vector h in R^d. A feature is formalized as a direction vector v in R^d. The strength of the feature f(x) in a representation h is the projection: f(x) = h dot v.\n\nWe test for the presence of concepts using linear probing. Given a dataset of activations {h_i} and conceptual labels {y_i}, we train a linear classifier to predict y from h. If the classifier achieves high accuracy, we say the representation contains information about the concept. \n\nHowever, [Warning]: A representation can technically store information about a concept without making it causally efficacious. 'Contains information' (decodability) \u2260 'uses information' (causal mechanism). Furthermore, because neural networks are trained on highly correlated data, a probe for concept A might actually be detecting highly-correlated concept B (e.g., probing for 'capital city' but actually finding 'large population').",
+      "definitions": [
+        {
+          "term": "Representation",
+          "definition": "The dense activation vector that summarizes the current state."
+        },
+        {
+          "term": "Feature",
+          "definition": "A meaningful direction (or subspace) within the representation space."
+        },
+        {
+          "term": "Concept",
+          "definition": "A human interpretable semantic category or property."
+        },
+        {
+          "term": "Linear Probing",
+          "definition": "Training a linear classifier on frozen network activations to test if information is linearly decodable."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "x\\approx\\sum_i z_i d_i",
+        "id": "eq-linear-probe",
+        "label": "Linear Probe Projection",
+        "latex": "p = \\sigma(w \\cdot h + b)",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "p": "the predicted probability that the concept is present",
+          "w": "the learned weight vector (the feature direction)",
+          "h": "the activation vector (representation)",
+          "b": "bias term",
+          "\\sigma": "sigmoid function"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A representation is a vector state; a feature is a direction or function that detects a recurring property; a concept is the human-level hypothesis attached to that feature.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A diagram of activations makes the pipeline visible, but it does not identify a concept or a mechanism."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What is being named?",
-        "methods": [
-          {
-            "name": "Neuron coordinate",
-            "answer": "A coordinate"
-          },
-          {
-            "name": "Feature",
-            "answer": "A feature direction"
-          },
-          {
-            "name": "Concept label",
-            "answer": "A human concept"
-          }
-        ],
-        "practicalImplication": "Keep the measurement separate from the interpretation."
+        "plainExplanation": "In words: We take the dot product of the activation with a learned direction. If the result is high, the concept is predicted to be present.",
+        "whyNeeded": "It provides a mathematically rigorous way to test if information is linearly accessible.",
+        "ifRemoved": "Without probing, we would have to rely on visual inspection or non-linear decoders, which don't tell us if the model itself can easily read the information.",
+        "encourages": "The assumption that models use linear representations.",
+        "doesNotGuarantee": "That the model actually USES this specific direction for its own downstream computation."
       }
     ],
     "evidence": [
       {
-        "claim": "A representation is a vector state; a feature is a direction or function that detects a recurring property; a concept is the human-level hypothesis attached to that feature.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Features in language models are often linearly represented as directions in activation space.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "park-2023-linear-representation",
+        "section": "The Linear Representation Hypothesis",
+        "verified": true,
+        "paraphrase": "Park et al. and others argue that neural networks naturally converge on linear representations for important features because linear transformations are easy for subsequent layers to read and compute with."
+      },
+      {
+        "claim": "Features can be recovered as sparse directions.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "cunningham-2023-sae",
+        "section": "Sparse Autoencoders",
+        "verified": true,
+        "paraphrase": "Cunningham et al. demonstrated that Sparse Autoencoders can identify meaningful, interpretable feature directions within complex representations."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The Probing Fallacy",
+        "mechanism": "Assuming that because a concept is decodable, the model explicitly represents and uses that concept.",
+        "symptom": "Training a probe for 'is prime number', getting 90% accuracy, and declaring the model understands primes.",
+        "diagnosticTest": "Perform causal interventions (activation patching). If you change the activation along the probe direction, does the model's output change predictably?",
+        "mitigation": "Always follow up probing with causal interventions to verify the model actually uses the feature.",
+        "setconcaRelevance": "SetConCA seeks to find features that are not just decodable, but fundamentally aligned with the causal structure of the data."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Representations, features, and concepts determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA bridges the gap between Concepts and Features.",
+      "whichPart": "Objective Function",
+      "whichDesignChoice": "Standard SAEs find arbitrary features based on data distribution. SetConCA uses groups of tokens (sets) that we humans know share a Concept, and forces the model to align its discovered Features with that Concept. It explicitly guides feature discovery using conceptual grouping.",
+      "proposedExperiment": "Train a standard SAE and a SetConCA on a dataset. Then use a linear probe to see which method's learned features map more cleanly to human-labeled concepts."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that representations, features, and concepts improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you train a linear probe to detect 'gender' from representations of professions, and it gets 99% accuracy, does this mean the model has a dedicated 'gender feature'?",
+        "reveal": "Not necessarily. The model might just have a 'statistical co-occurrence' feature, or gender might be heavily correlated with other features (like historical data biases). Decodability does not prove explicit feature existence."
+      },
+      {
+        "type": "computation",
+        "prompt": "Feature direction v = [1, 0]. Token A = [2, 2]. Token B = [-1, 5]. Which token activates the feature more?",
+        "reveal": "Token A projection: [2, 2] dot [1, 0] = 2. Token B projection: [-1, 5] dot [1, 0] = -1. Token A activates the feature more."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain representations, features, and concepts to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Why is it dangerous to equate a human 'concept' with a model 'feature' based purely on linear probing results?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Defines the difference between concept (human) and feature (model).",
+          "Explains that probes can pick up on spurious correlations.",
+          "Mentions that 'decodable' does not mean 'used by the model'."
+        ],
+        "badVersion": "Because linear probes aren't very accurate and you need a deep neural net to probe properly.",
+        "goodVersion": "Linear probing only proves that information is geometrically separable. A human concept (like 'dangerous') might be heavily correlated in the training data with a specific model feature (like 'sharp edges'). The probe will easily decode 'dangerous' by latching onto the 'sharp edges' feature. If we declare we found the 'dangerous concept', we will be wrong when the model encounters a non-dangerous sharp object."
       }
-    ],
-    "nextLesson": {
-      "id": "p00-l04",
-      "bridge": "Next: Why neurons are not concepts. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p00-l04",
+    "text": "If features are directions in space, and our vector space is made of individual coordinates (neurons), why can't we just look at one neuron to find one feature? The next lesson explains the devastating problem of superposition."
   }
 }

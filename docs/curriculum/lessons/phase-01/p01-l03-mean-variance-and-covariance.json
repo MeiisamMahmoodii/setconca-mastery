@@ -3,162 +3,125 @@
   "phase": "Geometry of representations",
   "phaseIndex": 1,
   "lessonIndex": 3,
-  "title": "Mean, variance, and covariance",
+  "title": "Mean, Variance, and Covariance",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p01-l02"
-  ],
+  "prerequisites": ["p01-l02"],
   "learningObjectives": [
-    "Explain mean, variance, and covariance in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand statistics of vector collections",
+    "Compute mean, variance, covariance",
+    "Understand that zero covariance does not mean independence"
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "The mean locates a cloud, variance measures spread along one coordinate, and covariance records whether two coordinates move together. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "To analyze large sets of activations, we need statistical tools to summarize their distributions and relationships."
     },
-    "bridgeFrom": "p01-l02",
+    "bridgeFrom": "Comparing pairs of vectors",
     "intuition": {
-      "analogy": "Imagine a sheet of graph paper laid over a cloud of points. Rotating the paper changes the coordinates, not the points themselves. The mean locates a cloud, variance measures spread along one coordinate, and covariance records whether two coordinates move together.",
-      "analogyLimit": "Geometric summaries depend on centering, normalization, and the metric. A clean plot can still merge causes.",
-      "text": "The mean locates a cloud, variance measures spread along one coordinate, and covariance records whether two coordinates move together."
+      "analogy": "Mean is the center of gravity. Variance is how spread out the cloud is. Covariance is whether the cloud tilts diagonally.",
+      "analogyLimit": "Covariance only captures linear relationships.",
+      "text": "Statistics of vector collections. Cov=0 does NOT mean independent. Preview: X~Uniform(-1,1), Y=X² has Cov=0 but Y is determined by X."
     },
     "toyExample": {
-      "description": "Draw a small cloud of points, rotate an axis through it, and compare the projection spread with the residual error.",
+      "description": "Compute stats for 5 points (1,2),(3,4),(2,3),(4,5),(5,6).",
       "steps": [
-        {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what mean, variance, and covariance should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
-        },
-        {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
-        },
-        {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
-        }
+        {"step": 1, "action": "Compute Mean", "result": "Mean=(3,4)", "insight": "Center of the data."},
+        {"step": 2, "action": "Compute Variance", "result": "Var(X)=2.0, Var(Y)=2.0", "insight": "Spread along each axis."},
+        {"step": 3, "action": "Compute Covariance", "result": "Cov(X,Y)=2.0, Corr=1.0, Cov matrix=[[2,2],[2,2]]", "insight": "Perfect positive linear relationship."}
       ]
     },
     "visual": {
       "id": "scatter-covariance",
-      "question": "How does a tilted cloud create covariance, and why does centering matter before measuring it?",
-      "description": "Adjust the scatter cloud. Read the mean, spread, and covariance ellipse as separate geometric facts."
+      "question": "How does covariance affect the scatter plot?",
+      "description": "Scatter plots showing positive, negative, and zero covariance."
     },
     "technical": {
-      "text": "The mean locates a cloud, variance measures spread along one coordinate, and covariance records whether two coordinates move together. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Covariance measures linear joint variability. Zero covariance implies no linear correlation, but non-linear dependencies can still exist.",
+      "definitions": [
+        {"term": "Covariance matrix", "definition": "A matrix containing covariances between all pairs of dimensions."}
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathrm{Var}(w^\\top x)=w^\\top\\Sigma w",
-        "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
-        },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. The mean locates a cloud, variance measures spread along one coordinate, and covariance records whether two coordinates move together.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Geometric summaries depend on centering, normalization, and the metric. A clean plot can still merge causes."
-      }
-    ],
-    "methodComparison": [
+        "id": "eq-1",
+        "label": "Mean",
+        "latex": "E[X]",
+        "symbols": { "X": "random variable" },
+        "plainExplanation": "Expected value or average.",
+        "whyNeeded": "To find the center.",
+        "ifRemoved": "Cannot center data.",
+        "encourages": "Centering.",
+        "doesNotGuarantee": "Data is symmetric."
+      },
       {
-        "question": "Which property is preserved?",
-        "methods": [
-          {
-            "name": "Distance",
-            "answer": "Euclidean distance"
-          },
-          {
-            "name": "Cosine",
-            "answer": "Angular direction"
-          },
-          {
-            "name": "Variance",
-            "answer": "Variance under projection"
-          }
-        ],
-        "practicalImplication": "Different geometric choices answer different questions."
+        "id": "eq-2",
+        "label": "Variance",
+        "latex": "Var(X)=E[(X-\\mu)^2]",
+        "symbols": { "X": "random variable", "\\mu": "mean" },
+        "plainExplanation": "Average squared deviation from mean.",
+        "whyNeeded": "Measure spread.",
+        "ifRemoved": "Cannot quantify scale.",
+        "encourages": "Scale awareness.",
+        "doesNotGuarantee": "Bounds on outliers."
+      },
+      {
+        "id": "eq-3",
+        "label": "Covariance",
+        "latex": "Cov(X,Y)=E[(X-\\mu_x)(Y-\\mu_y)]",
+        "symbols": { "X": "var 1", "Y": "var 2" },
+        "plainExplanation": "Measure of joint variability.",
+        "whyNeeded": "To find linear relationships.",
+        "ifRemoved": "Cannot do PCA.",
+        "encourages": "Finding correlations.",
+        "doesNotGuarantee": "Independence when zero."
       }
     ],
     "evidence": [
       {
-        "claim": "The mean locates a cloud, variance measures spread along one coordinate, and covariance records whether two coordinates move together.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Cov=0 does not mean independent",
+        "claimType": "paper_finding",
+        "label": "[Non-linear dependence]",
+        "sourceId": "stats",
+        "section": "1",
+        "verified": true,
+        "paraphrase": "Variables can have perfect non-linear dependence while having zero covariance."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Assuming independence from zero covariance",
+        "mechanism": "Confusing un-correlated with independent.",
+        "symptom": "Missing non-linear structures.",
+        "diagnosticTest": "Plot the variables.",
+        "mitigation": "Use mutual information or other metrics.",
+        "setconcaRelevance": "Activations often have non-linear dependencies."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Mean, variance, and covariance determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "Understanding activation distributions.",
+      "whichPart": "Data preprocessing.",
+      "whichDesignChoice": "Why linear decorrelation is insufficient.",
+      "proposedExperiment": "Measure mutual information vs correlation."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that mean, variance, and covariance improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "computation",
+        "prompt": "What is the mean of (1,2) and (3,4)?",
+        "reveal": "(2,3)"
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain mean, variance, and covariance to a colleague, then name one thing the method cannot establish by itself.",
-        "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+        "prompt": "Give an example of zero covariance with full dependence.",
+        "rubric": ["Must mention a symmetric non-linear function."],
+        "badVersion": "When they are random.",
+        "goodVersion": "X uniformly distributed around 0, Y = X^2. They are perfectly dependent but covariance is zero."
       }
-    ],
-    "nextLesson": {
-      "id": "p01-l04",
-      "bridge": "Next: Projections, eigenvectors, and SVD. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p01-l04",
+    "text": "Now we use covariance matrices to find principal directions."
   }
 }

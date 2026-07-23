@@ -3,162 +3,125 @@
   "phase": "Geometry of representations",
   "phaseIndex": 1,
   "lessonIndex": 4,
-  "title": "Projections, eigenvectors, and SVD",
+  "title": "Projections, Eigenvectors, and SVD",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p01-l03"
-  ],
+  "prerequisites": ["p01-l03"],
   "learningObjectives": [
-    "Explain projections, eigenvectors, and svd in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand projections onto vectors",
+    "Understand eigenvectors of a matrix",
+    "Understand Singular Value Decomposition (SVD)",
+    "Connect data variance to projection through SVD"
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Projection keeps the part of a vector along a chosen direction. Eigenvectors and SVD give useful directions for transforming or compressing a whole dataset. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "BIG lesson. Three connected concepts. These form the linear algebraic foundation for dimensionality reduction and understanding representation geometry."
     },
-    "bridgeFrom": "p01-l03",
+    "bridgeFrom": "Covariance",
     "intuition": {
-      "analogy": "Imagine a sheet of graph paper laid over a cloud of points. Rotating the paper changes the coordinates, not the points themselves. Projection keeps the part of a vector along a chosen direction. Eigenvectors and SVD give useful directions for transforming or compressing a whole dataset.",
-      "analogyLimit": "Geometric summaries depend on centering, normalization, and the metric. A clean plot can still merge causes.",
-      "text": "Projection keeps the part of a vector along a chosen direction. Eigenvectors and SVD give useful directions for transforming or compressing a whole dataset."
+      "analogy": "Projection is like casting a shadow. Eigenvectors are directions that don't get knocked off course by a transformation. SVD is separating a transformation into rotation, stretching, and another rotation.",
+      "analogyLimit": "High dimensional spaces have many orthogonal directions that are hard to visualize.",
+      "text": "SVD connects data to variance to projection."
     },
     "toyExample": {
-      "description": "Draw a small cloud of points, rotate an axis through it, and compare the projection spread with the residual error.",
+      "description": "Projections and Eigenvectors.",
       "steps": [
-        {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what projections, eigenvectors, and svd should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
-        },
-        {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
-        },
-        {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
-        }
+        {"step": 1, "action": "Projection: v=[3,4], u=[1,0]", "result": "proj=[3,0], residual=[0,4]", "insight": "Splits a vector into parallel and perpendicular components."},
+        {"step": 2, "action": "Eigenvectors: C=[[2,1],[1,2]]", "result": "λ₁=3, λ₂=1. v₁=[1,1]/√2, v₂=[1,-1]/√2", "insight": "Directions of pure scaling."}
       ]
     },
     "visual": {
       "id": "eigen-stretch",
-      "question": "Why do eigenvectors keep their direction under a matrix while ordinary directions rotate?",
-      "description": "Change the transformation and compare an eigenvector with a non-eigenvector before connecting the result to SVD and PCA."
+      "question": "What happens to a circle under a linear transformation?",
+      "description": "A circle stretches into an ellipse along its eigenvectors."
     },
     "technical": {
-      "text": "Projection keeps the part of a vector along a chosen direction. Eigenvectors and SVD give useful directions for transforming or compressing a whole dataset. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "SVD: X=UΣV^T. FVU: ||X-X̂||²/||X||² measures the fraction of variance unexplained by a low-rank approximation.",
+      "definitions": [
+        {"term": "SVD", "definition": "Singular Value Decomposition."}
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathrm{Var}(w^\\top x)=w^\\top\\Sigma w",
-        "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
-        },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Projection keeps the part of a vector along a chosen direction. Eigenvectors and SVD give useful directions for transforming or compressing a whole dataset.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Geometric summaries depend on centering, normalization, and the metric. A clean plot can still merge causes."
-      }
-    ],
-    "methodComparison": [
+        "id": "eq-1",
+        "label": "Projection",
+        "latex": "proj_u(v) = (\\frac{v \\cdot u}{||u||^2})u",
+        "symbols": { "u": "direction", "v": "vector" },
+        "plainExplanation": "Vector v cast onto direction u.",
+        "whyNeeded": "To find component of v along u.",
+        "ifRemoved": "Cannot decompose vectors.",
+        "encourages": "Orthogonal decomposition.",
+        "doesNotGuarantee": "u is meaningful."
+      },
       {
-        "question": "Which property is preserved?",
-        "methods": [
-          {
-            "name": "Distance",
-            "answer": "Euclidean distance"
-          },
-          {
-            "name": "Cosine",
-            "answer": "Angular direction"
-          },
-          {
-            "name": "Variance",
-            "answer": "Variance under projection"
-          }
-        ],
-        "practicalImplication": "Different geometric choices answer different questions."
+        "id": "eq-2",
+        "label": "Eigenvector",
+        "latex": "Cv = \\lambda v",
+        "symbols": { "C": "matrix", "v": "eigenvector", "\\lambda": "eigenvalue" },
+        "plainExplanation": "Vector whose direction is unchanged by C.",
+        "whyNeeded": "To find principal axes of transformation.",
+        "ifRemoved": "Cannot diagonalize matrices.",
+        "encourages": "Finding invariant directions.",
+        "doesNotGuarantee": "Eigenvectors represent true causal factors."
+      },
+      {
+        "id": "eq-3",
+        "label": "Fraction of Variance Unexplained (FVU)",
+        "latex": "\\frac{||X-\\hat{X}||^2}{||X||^2}",
+        "symbols": { "X": "original", "\\hat{X}": "reconstruction" },
+        "plainExplanation": "Ratio of squared error to total squared norm.",
+        "whyNeeded": "Evaluate reconstruction quality.",
+        "ifRemoved": "Cannot quantify information loss.",
+        "encourages": "Minimizing reconstruction error.",
+        "doesNotGuarantee": "Reconstructed features are interpretable."
       }
     ],
     "evidence": [
       {
-        "claim": "Projection keeps the part of a vector along a chosen direction. Eigenvectors and SVD give useful directions for transforming or compressing a whole dataset.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "SVD finds optimal low-rank approximations",
+        "claimType": "paper_finding",
+        "label": "[Eckart-Young Theorem]",
+        "sourceId": "math",
+        "section": "1",
+        "verified": true,
+        "paraphrase": "Truncated SVD provides the best low-rank approximation in terms of Frobenius norm."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Equating eigenvectors with concepts",
+        "mechanism": "Assuming directions of max variance are independent concepts.",
+        "symptom": "Eigenvectors mix multiple distinct features.",
+        "diagnosticTest": "Check if features are orthogonal in reality.",
+        "mitigation": "Use sparse dictionary learning instead.",
+        "setconcaRelevance": "Motivates moving beyond SVD/PCA."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Projections, eigenvectors, and SVD determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SVD is a baseline.",
+      "whichPart": "Dimensionality reduction.",
+      "whichDesignChoice": "Why we need non-orthogonal methods.",
+      "proposedExperiment": "Compare SVD components vs SetConCA features."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that projections, eigenvectors, and svd improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "computation",
+        "prompt": "What is the projection of [3,4] onto [1,0]?",
+        "reveal": "[3,0]"
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain projections, eigenvectors, and svd to a colleague, then name one thing the method cannot establish by itself.",
-        "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+        "prompt": "What does an eigenvalue represent for a covariance matrix?",
+        "rubric": ["Must mention variance."],
+        "badVersion": "A number.",
+        "goodVersion": "It represents the amount of variance in the dataset along the corresponding eigenvector direction."
       }
-    ],
-    "nextLesson": {
-      "id": "p01-l05",
-      "bridge": "Next: PCA: what it reveals and what it hides. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p01-l05",
+    "text": "Now we apply these concepts to PCA."
   }
 }

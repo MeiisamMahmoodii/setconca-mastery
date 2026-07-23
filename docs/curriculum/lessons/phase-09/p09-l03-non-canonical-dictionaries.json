@@ -4,159 +4,159 @@
   "phaseIndex": 9,
   "lessonIndex": 3,
   "title": "Non-canonical dictionaries",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 35,
   "status": "complete",
   "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
+    "Empirical Finding",
+    "Conceptual Trap",
+    "Warning",
+    "Hypothesis"
   ],
   "prerequisites": [
     "p09-l02"
   ],
   "learningObjectives": [
-    "Explain non-canonical dictionaries in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand the findings from Leask et al. 2025 (Non-canonical units).",
+    "Explain why two SAEs trained with different seeds produce different features despite similar reconstruction quality.",
+    "Recognize that an SAE dictionary is one possible decomposition, not the 'ground truth' of the model's internal structure.",
+    "Formulate language to describe SAE findings accurately without claiming canonicality.",
+    "Assess the SetConCA hypothesis regarding how additional view constraints might reduce the solution space and increase canonicality."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Different training seeds can find different sparse dictionaries with similar reconstruction and sparsity, so an SAE basis should not be treated as the unique ground truth. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "A fundamental goal of mechanistic interpretability is to reverse-engineer neural networks into understandable, atomic units. Early enthusiasm for SAEs rested on the hope that they would discover the *canonical* basis of the model—the true, objective set of concepts the network uses. This lesson dismantles that assumption. By examining what happens when you train the exact same SAE architecture on the exact same data, changing only the random seed, we discover a sobering reality: the resulting dictionaries are often wildly different. Understanding non-canonicality is crucial to avoid epistemological errors when making claims about what a model 'knows' based on an SAE feature."
     },
     "bridgeFrom": "p09-l02",
     "intuition": {
-      "analogy": "A dictionary is like a map drawn at a chosen zoom level. Zooming in can split one region into many roads; zooming out can merge distinct places. Different training seeds can find different sparse dictionaries with similar reconstruction and sparsity, so an SAE basis should not be treated as the unique ground truth.",
-      "analogyLimit": "A feature inventory is resolution-dependent. A label can be useful without being an atomic or canonical unit.",
-      "text": "Different training seeds can find different sparse dictionaries with similar reconstruction and sparsity, so an SAE basis should not be treated as the unique ground truth."
+      "analogy": "Imagine two teams of archaeologists excavating the exact same site. Both teams create comprehensive catalogs of the artifacts they find. However, they categorize them completely differently—Team A groups objects by material (bronze, clay, wood), while Team B groups them by function (weapons, tools, religious items). Both catalogs 'explain' the site perfectly well. Neither is objectively 'correct' or 'incorrect'; they represent different valid decompositions of the same underlying reality.",
+      "analogyLimit": "Unlike archaeologists who might eventually agree on a unified ontology, SAEs are trapped in high-dimensional continuous spaces where infinitely many rotations or splits can achieve nearly identical loss.",
+      "text": "Two SAEs trained with different seeds find different features while achieving similar reconstruction quality. The dictionary is not a canonical decomposition of the model's computation."
     },
     "toyExample": {
-      "description": "Train dictionaries at two widths on the same synthetic factors and inspect when one factor merges, splits, or changes identity across seeds.",
+      "description": "We train SAE-1 and SAE-2 on identical data, with identical hyperparameters, but different initialization seeds.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what non-canonical dictionaries should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "action": "Train multiple SAEs",
+          "result": "Both SAEs converge to nearly identical Loss, FVU, and L0 sparsity metrics.",
+          "insight": "Macroscopically, both models have 'solved' the optimization problem equally well."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "action": "Measure Feature Correspondence",
+          "result": "We calculate the maximum cosine similarity for each feature in SAE-1 against all features in SAE-2.",
+          "insight": "We expect a 1-to-1 mapping if the features are canonical ground truth."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "action": "Analyze the Results",
+          "result": "Many features in SAE-1 have NO close match (e.g., cosine similarity > 0.8) in SAE-2. The dictionaries are fundamentally different.",
+          "insight": "The solution space contains multiple, equally valid, but geometrically distinct dictionaries. The features are non-canonical."
         }
       ]
     },
     "visual": {
-      "id": "absorption-demo",
-      "question": "Which assumption behind non-canonical dictionaries changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "non-canonical-matching",
+      "question": "How do we visualize the lack of feature correspondence across seeds?",
+      "description": "Plot a histogram of the maximum cosine similarity scores between features of SAE-1 and SAE-2. A canonical dictionary would show a massive spike near 1.0 (perfect matches). A non-canonical dictionary shows a broad distribution, with a significant fraction of features having maximum similarities below 0.6."
     },
     "technical": {
-      "text": "Different training seeds can find different sparse dictionaries with similar reconstruction and sparsity, so an SAE basis should not be treated as the unique ground truth. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The lack of canonicality implies the optimization landscape of the SAE objective (Reconstruction Loss + L1 Sparsity) is highly non-convex with many functionally equivalent local minima. Because the intrinsic dimension of the data manifold is lower than the dictionary capacity, there are numerous ways to pack sparse vectors to span that manifold. Depending on the random initialization and batch ordering, the optimization trajectory settles into different configurations of 'split' and 'absorbed' features."
     },
     "mathematics": [
       {
-        "equation": "x\\approx\\sum_i z_i d_i",
+        "equation": "X \\approx D_1 Z_1 \\approx D_2 Z_2",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "X": "Model activations",
+          "D_1, Z_1": "Dictionary and latents from Seed 1",
+          "D_2, Z_2": "Dictionary and latents from Seed 2"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Different training seeds can find different sparse dictionaries with similar reconstruction and sparsity, so an SAE basis should not be treated as the unique ground truth.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A feature inventory is resolution-dependent. A label can be useful without being an atomic or canonical unit."
+        "explanation": "Both dictionaries reconstruct X equally well, but the basis vectors in $D_1$ are not just permutations of $D_2$. They represent entirely different bases.",
+        "whyNeeded": "Formalizes the concept that multiple distinct factorizations exist for the same reconstruction fidelity.",
+        "ifRemoved": "We might incorrectly assume that differences are due to poor convergence rather than fundamental geometric ambiguity.",
+        "encourages": "Ensembling features across seeds or seeking additional constraints to restrict the solution space.",
+        "doesNotGuarantee": "This does NOT mean SAEs are useless; it just means individual features are arbitrary representations of a valid subspace, not atomic reality."
       }
     ],
     "methodComparison": [
       {
-        "question": "What changes with capacity or seed?",
+        "question": "How do different architectures address non-canonicality?",
         "methods": [
           {
-            "name": "Absorption",
-            "answer": "Absorption: factors merge"
+            "name": "Standard SAE",
+            "answer": "Highly sensitive to seeds. Features are non-canonical."
           },
           {
-            "name": "Splitting",
-            "answer": "Splitting: factors divide"
+            "name": "Top-K SAE",
+            "answer": "Can change the optimization dynamics, but empirical evidence suggests they are still non-canonical."
           },
           {
-            "name": "Non-canonicality",
-            "answer": "Non-canonicality: bases differ"
+            "name": "SetConCA (Hypothesis)",
+            "answer": "Adding cross-view constraints reduces the degrees of freedom. The solution space of consistent decompositions should be smaller, leading to more canonical (seed-stable) features."
           }
         ],
-        "practicalImplication": "None of these can be diagnosed from a single run."
+        "practicalImplication": "Interpretability researchers must stop saying 'the model has feature X'. Instead, say 'this specific SAE run found direction X, which correlates with concept C'."
       }
     ],
     "evidence": [
       {
-        "claim": "Different training seeds can find different sparse dictionaries with similar reconstruction and sparsity, so an SAE basis should not be treated as the unique ground truth.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "SAE features are not canonical; different seeds yield dictionaries with low feature-to-feature correspondence.",
+        "claimType": "Empirical Finding",
+        "sourceId": "Leask et al. 2025 (Non-canonical units)",
+        "section": "Cross-seed matching results",
+        "verified": true,
+        "note": "The authors trained multiple SAEs and measured feature correspondence. They found that a significant percentage of features had no reliable match across seeds, proving that SAEs do not uncover a single, objective 'true' basis."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The Reification Fallacy",
+        "mechanism": "Treating an abstract model (a specific SAE feature) as if it were a concrete, physical reality within the neural network.",
+        "symptom": "Basing a massive safety-critical intervention on a single feature, assuming it is the *only* way the model represents that dangerous concept.",
+        "diagnosticTest": "Check if the intervention holds across multiple SAE seeds. If the feature doesn't exist in seed 2, the intervention strategy is brittle.",
+        "mitigation": "Always validate findings across multiple SAE seeds. Use the phrase 'this SAE run found direction X' instead of 'the model has feature X'.",
+        "setconcaRelevance": "SetConCA must be evaluated on its cross-seed stability to prove it solves this issue."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Non-canonical dictionaries determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA’s multi-view architecture acts as a strong regularizer. We hypothesize this regularization reduces the volume of equivalent local minima.",
+      "whichPart": "The cross-view consistency loss.",
+      "whichDesignChoice": "Evaluating cross-seed maximum cosine similarity between SetConCA runs compared to standard SAE runs.",
+      "whichFailure": "If SetConCA is just as non-canonical as standard SAEs, the multi-view assumption failed to constrain the basis.",
+      "whichExperiment": "Train 3 standard SAEs and 3 SetConCA models on identical data. Compute the cross-seed feature matching rate. SetConCA should demonstrate a significantly higher percentage of features with matches > 0.9 cosine similarity.",
+      "alternativeExplanation": "SetConCA might just be converging to trivial, dense representations that easily match, so this must be evaluated at matched FVU and Sparsity."
     },
     "exercises": [
       {
         "type": "diagnose",
-        "prompt": "A paper claims that non-canonical dictionaries improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "prompt": "A researcher publishes a paper claiming: 'We have discovered the definitive deception neuron in Llama-3, represented by Feature 4092 in our SAE.' How do you critique this claim?",
+        "reveal": "Critique based on non-canonicality. The feature is just one possible decomposition found by that specific seed. It is highly likely another SAE run would not find Feature 4092, but rather a combination of other features that represent deception differently."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain non-canonical dictionaries to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the concept of non-canonical dictionaries using the archaeologist analogy. What is the key implication for how we talk about SAE features?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
+          "Uses the archaeologist analogy correctly (different categorizations of the same underlying data).",
+          "Explains that different random seeds lead to different SAE dictionaries despite similar loss.",
+          "Concludes that features are not ground-truth atomic units.",
+          "States we must change our language to 'this SAE found a direction' rather than 'the model contains this feature'."
         ]
       }
     ],
     "nextLesson": {
       "id": "p09-l04",
-      "bridge": "Next: Automated interpretability and metric validity. The next idea reuses this lesson's representation and makes a new assumption explicit."
+      "bridge": "Next: Automated interpretability and metric validity. Now that we know features split, absorb, and vary by seed, how on earth do we measure if one SAE is actually better than another? We will look at why current metrics are deeply flawed."
     },
     "researchWorksheet": {
       "fields": [
         {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
+          "key": "leask_finding",
+          "label": "Leask 2025 Finding",
+          "prompt": "Summarize the core empirical finding of 'Non-canonical units' regarding cross-seed matching."
         },
         {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
+          "key": "setconca_hyp",
+          "label": "SetConCA Hypothesis",
+          "prompt": "Why theoretically should SetConCA produce more canonical features than a standard SAE?"
         }
       ]
     }

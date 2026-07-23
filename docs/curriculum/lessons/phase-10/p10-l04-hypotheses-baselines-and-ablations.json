@@ -4,161 +4,134 @@
   "phaseIndex": 10,
   "lessonIndex": 4,
   "title": "Hypotheses, baselines, and ablations",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 30,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p10-l03"
-  ],
+  "prerequisites": ["p10-l03"],
   "learningObjectives": [
-    "Explain hypotheses, baselines, and ablations in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Translate theoretical expectations into falsifiable research hypotheses.",
+    "Select appropriate baselines to contextualize SetConCA's performance.",
+    "Design ablations to isolate the specific contributions of the SetConCA architecture.",
+    "Define kill criteria that would invalidate the research direction."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A research hypothesis should predict a directional change on a named metric, against a matched baseline, and specify what result would count as failure. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "A good idea is not enough; it must be rigorously tested against the state-of-the-art. In this lesson, we structure a formal research program. We transform our intuitions into formal hypotheses, identify the exact baselines we must beat, design ablations to prove *why* we beat them, and set objective 'kill criteria' that dictate when we should abandon the project."
     },
-    "bridgeFrom": "p10-l03",
+    "bridgeFrom": "We've run the toy experiment and established our expectations. Now we scale this into a full scientific inquiry.",
     "intuition": {
-      "analogy": "A toy experiment is a wind tunnel: simplified enough to know the ground truth, but rich enough that the method can fail for the same kinds of reasons it might fail in practice. A research hypothesis should predict a directional change on a named metric, against a matched baseline, and specify what result would count as failure.",
-      "analogyLimit": "The toy model tests a mechanism under controlled assumptions. It does not predict a gain on language-model activations until that experiment is run.",
-      "text": "A research hypothesis should predict a directional change on a named metric, against a matched baseline, and specify what result would count as failure."
+      "analogy": "A courtroom trial.",
+      "analogyLimit": "Scientific truth is continuous and statistical, not a binary verdict.",
+      "text": "Think of a research paper as a courtroom trial. The hypothesis is your claim (SetConCA is better). The baselines are the opposing counsel's best arguments (TopK, Gated SAEs). The ablations are your cross-examination, proving that your specific mechanism (the contrastive loss) is the *only* reason for the improvement. The kill criteria are the judge's rules for throwing out the case entirely."
     },
     "toyExample": {
-      "description": "Sample known latent concepts, render several noisy partial views per concept, and compare a pointwise SAE with a set-coordinated variant under equal capacity and compute.",
+      "description": "Structuring the experimental results.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what hypotheses, baselines, and ablations should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "State H1: SetConCA features have higher concept purity.",
+          "result": "Requires a metric (purity) and a control (matched FVU).",
+          "insight": "Hypotheses must be specific and measurable."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Select baselines: TopK SAE, Gated SAE, Temporal SAE, ConCA.",
+          "result": "Provides context. If we beat TopK but lose to ConCA, the claim must change.",
+          "insight": "Baselines define the boundary of the contribution."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Design ablations: β=0, γ=0, random sets, mean pooling.",
+          "result": "Isolates the active ingredients of the architecture.",
+          "insight": "Ablations prove the mechanism, not just the outcome."
         }
       ]
     },
     "visual": {
-      "id": "setconca-lab",
-      "question": "Which assumption behind hypotheses, baselines, and ablations changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "research-matrix",
+      "question": "How do hypotheses, baselines, and ablations interlock?",
+      "description": "A matrix diagram linking each hypothesis (H1-H5) to the specific baseline it challenges and the ablation that supports its mechanistic claim."
     },
     "technical": {
-      "text": "A research hypothesis should predict a directional change on a named metric, against a matched baseline, and specify what result would count as failure. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The research program hinges on five core hypotheses:\n\nH1: SetConCA features have higher concept purity than TopK SAE features at matched FVU.\nH2: SetConCA features show higher cross-seed matching at matched sparsity.\nH3: SetConCA features produce more successful steering interventions.\nH4: The contrastive loss is necessary (removing it degrades H1-H3).\nH5: The set encoder matters (replacing attention with mean pooling degrades H1-H3).",
+      "definitions": [
+        "Baseline: A standard, widely accepted method used as a point of comparison (e.g., TopK SAEs - Gao et al. 2024).",
+        "Ablation: The systematic removal of a component of a model to determine its contribution to the overall performance.",
+        "Kill Criteria: Pre-defined conditions under which the research hypotheses are considered comprehensively falsified, prompting a pivot or abandonment."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L=\\mathcal L_{\\mathrm{recon}}+\\lambda_s\\mathcal L_{\\mathrm{sparse}}+\\lambda_c\\mathcal L_{\\mathrm{set}}",
+        "id": "eq-4",
+        "label": "Matched FVU Constraint",
+        "latex": "\\text{FVU}_{\\text{SetConCA}} \\approx \\text{FVU}_{\\text{Baseline}} \\implies \\text{Compare}(\\text{Purity})",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "\\text{FVU}": "Fraction of Variance Unexplained"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A research hypothesis should predict a directional change on a named metric, against a matched baseline, and specify what result would count as failure.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "The toy model tests a mechanism under controlled assumptions. It does not predict a gain on language-model activations until that experiment is run."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What must be held fixed?",
-        "methods": [
-          {
-            "name": "Pointwise SAE",
-            "answer": "Pointwise SAE: no set signal"
-          },
-          {
-            "name": "SetConCA",
-            "answer": "SetConCA: coordination term"
-          },
-          {
-            "name": "Term ablation",
-            "answer": "Ablation: remove one term"
-          }
-        ],
-        "practicalImplication": "The ablation identifies which added component caused a gain."
+        "plainExplanation": "Comparisons of interpretability are only valid if both models are equally good at reconstructing the original activations.",
+        "whyNeeded": "To prevent comparing a highly interpretable but useless model to a less interpretable but highly accurate one.",
+        "ifRemoved": "The research claim becomes meaningless, comparing apples to oranges.",
+        "encourages": "Rigorous, apples-to-apples evaluation along the Pareto frontier.",
+        "doesNotGuarantee": "That the matching process itself isn't biased by hyperparameter choices."
       }
     ],
     "evidence": [
       {
-        "claim": "A research hypothesis should predict a directional change on a named metric, against a matched baseline, and specify what result would count as failure.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
+        "claim": "SetConCA features have higher concept purity than TopK SAE features at matched FVU.",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "research-program",
+        "section": "hypotheses",
         "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "paraphrase": "SetConCA isolates concepts better without sacrificing reconstruction quality."
+      },
+      {
+        "claim": "SetConCA features produce more successful steering interventions.",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "research-program",
+        "section": "hypotheses",
+        "verified": false,
+        "paraphrase": "The learned features are causally more aligned with the model's behavior."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Baseline Inequality",
+        "mechanism": "The baseline model is undertuned compared to the novel method.",
+        "symptom": "SetConCA artificially looks better because the TopK SAE wasn't trained optimally.",
+        "diagnosticTest": "Ensure baselines reach established performance benchmarks from the literature.",
+        "mitigation": "Use standardized training loops and hyperparameter sweeps for both models.",
+        "setconcaRelevance": "Critical for paper acceptance. Reviewers will instantly reject unfair baseline comparisons."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Hypotheses, baselines, and ablations determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "This frames the entire narrative for publishing SetConCA.",
+      "whichPart": "Experimental Design.",
+      "whichDesignChoice": "Structuring the evaluation to cleanly isolate the contrastive mechanism.",
+      "proposedExperiment": "Run the full suite of ablations (β=0, γ=0, random sets, mean pooling) across varied set sizes (2-20) and report metrics."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that hypotheses, baselines, and ablations improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you ablate the contrastive loss (β=0) and SetConCA still heavily outperforms the TopK baseline, what does that imply?",
+        "reveal": "It implies the improvement is coming entirely from the alignment loss (γ) or some hidden architectural bias (like the set encoder acting as a regularizer), falsifying the hypothesis that contrastive learning is the key driver."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain hypotheses, baselines, and ablations to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain one of the kill criteria for SetConCA. Why is it fatal to the project?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies a specific kill criterion (e.g., worse than TopK at all FVU levels, not reproducible across seeds, driven entirely by set size).",
+          "Explains why this invalidates the core mechanism or usefulness of the method."
+        ],
+        "badVersion": "If it doesn't work, we stop.",
+        "goodVersion": "One kill criterion is 'Results are driven entirely by set size, not set composition'. If we find that simply grouping random tokens into sets of 5 improves performance as much as semantic grouping, then our core theory—that semantic contrastive learning isolates concepts—is totally false. The model is just benefiting from a statistical regularizer, meaning 'SetConCA' as a semantic tool is a failure."
       }
-    ],
-    "nextLesson": {
-      "id": "p10-l05",
-      "bridge": "Next: Writing the research claim without overclaiming. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p10-l05",
+    "text": "With the experiments defined and (hypothetically) run, we arrive at the final challenge: writing the result. In the final lesson, we learn how to state scientific claims honestly, without overclaiming."
   }
 }

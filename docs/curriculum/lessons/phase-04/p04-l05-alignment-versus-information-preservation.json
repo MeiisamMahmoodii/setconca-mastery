@@ -4,161 +4,128 @@
   "phaseIndex": 4,
   "lessonIndex": 5,
   "title": "Alignment versus information preservation",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 35,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
     "p04-l04"
   ],
   "learningObjectives": [
-    "Explain alignment versus information preservation in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Identify the fundamental trade-off between aligning representations and preserving original information.",
+    "Analyze how different multi-view methods navigate this trade-off.",
+    "Explain the 'Shortcut Alignment' failure mode.",
+    "Evaluate the implications of this trade-off for designing representations in LLMs (e.g., SetConCA)."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Forcing two representations to agree can erase view-specific signal. Reconstruction and private-latent controls tell you whether alignment is buying agreement by throwing information away. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "The entire field of multi-view representation learning is defined by a central, inescapable tension: the trade-off between alignment and information preservation.\n\nIf your only goal is to make View 1 and View 2 perfectly aligned (correlation = 1.0), the easiest way for a neural network to achieve this is to throw away almost all information and output a single, identical, trivial constant for both views. You achieve perfect alignment, but you preserve zero information about the data. On the other extreme, if you perfectly preserve all information (e.g., a pure autoencoder), the representations remain highly entangled with view-specific private details, and no meaningful alignment occurs.\n\nEvery successful multi-view method is a specific compromise between these two extremes. Understanding this trade-off is critical for diagnosing model failures. When a multi-view model fails, it is almost always because it has fallen off this tightrope, either suffering from representation collapse (too much alignment) or failing to disentangle the shared concept (too much preservation)."
     },
-    "bridgeFrom": "p04-l04",
+    "bridgeFrom": "We explored various models\u2014CCA, Deep CCA, DCCAE, VCCA. Now we unify them by viewing them all as different solutions to the same fundamental trade-off.",
     "intuition": {
-      "analogy": "Two cameras can film the same event from different angles. What both cameras see is shared; their lighting, occlusion, and viewpoint are private. Forcing two representations to agree can erase view-specific signal. Reconstruction and private-latent controls tell you whether alignment is buying agreement by throwing information away.",
-      "analogyLimit": "Correlation identifies agreement, not necessarily cause. A shared nuisance can look just as attractive as a shared concept.",
-      "text": "Forcing two representations to agree can erase view-specific signal. Reconstruction and private-latent controls tell you whether alignment is buying agreement by throwing information away."
+      "analogy": "Packing for a trip with a friend.",
+      "analogyLimit": "Information preservation is about keeping the ability to reconstruct, not just physical items.",
+      "text": "You and a friend are packing for a trip (View 1 and View 2). You want your suitcases to be as similar as possible (Alignment) so you can share items easily.\n\nExtreme Alignment: You both throw away everything except one identical toothbrush. Your suitcases are perfectly aligned! But you've lost all the useful items (clothes, shoes) you actually need for the trip (Loss of Information Preservation).\n\nExtreme Preservation: You both pack absolutely everything you own. You have all the information, but your suitcases are completely different and disorganized (Failure to Align).\n\nThe goal of a good multi-view model is to pack the suitcases such that the shared essentials are perfectly matched and easy to find, while still retaining enough private items to reconstruct your original wardrobe if needed."
     },
     "toyExample": {
-      "description": "Create two views with one shared factor and one private factor. Increase private signal and watch an alignment-only objective ignore it.",
+      "description": "The consequence of aggressive alignment.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what alignment versus information preservation should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "View 1 encodes [Concept, Font_Style]. View 2 encodes [Concept, Background_Color].",
+          "result": "The target shared information is 'Concept'.",
+          "insight": "This is what we want to align."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Apply an aggressive Deep CCA model.",
+          "result": "The model perfectly aligns the 'Concept' but completely erases 'Font_Style' and 'Background_Color'.",
+          "insight": "This is fine if we ONLY care about the concept."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Attempt to use the learned representation to reconstruct the original images.",
+          "result": "Reconstruction fails completely.",
+          "insight": "Because we optimized solely for alignment, the information needed to preserve the original views was destroyed."
         }
       ]
     },
     "visual": {
-      "id": "cca-shared-noise",
-      "question": "Which assumption behind alignment versus information preservation changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "alignment-preservation-tradeoff",
+      "question": "Where do Deep CCA and DCCAE sit on this curve?",
+      "description": "A Pareto frontier curve with 'Alignment (Correlation)' on the Y-axis and 'Information Preservation (Reconstruction)' on the X-axis. Methods must choose a point on or near this curve."
     },
     "technical": {
-      "text": "Forcing two representations to agree can erase view-specific signal. Reconstruction and private-latent controls tell you whether alignment is buying agreement by throwing information away. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The objective function in models like DCCAE explicitly materializes this trade-off: L = -corr(f(x1), g(x2)) + \u03bb1 * MSE(x1, u(f(x1))) + \u03bb2 * MSE(x2, v(g(x2))). The hyperparameters \u03bb1 and \u03bb2 control the exact position on the Pareto frontier between maximizing the CCA term (alignment) and minimizing the MSE term (preservation).",
+      "definitions": [
+        "Alignment: The degree to which representations of different views of the same object are brought close together or made highly correlated in the latent space.",
+        "Information Preservation: The degree to which the learned representation retains the structural and statistical properties of the original input data, often measured by reconstruction error."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\max_{u,v}\\;\\mathrm{corr}(u^\\top X,v^\\top Y)",
+        "id": "eq-6",
+        "label": "Trade-off Objective (e.g., DCCAE)",
+        "latex": "\\mathcal{L} = -\\text{corr}(z_1, z_2) + \\lambda \\big( \\text{recon\\_loss}(x_1) + \\text{recon\\_loss}(x_2) \\big)",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "\\lambda": "Trade-off hyperparameter",
+          "z_1, z_2": "Latent representations"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Forcing two representations to agree can erase view-specific signal. Reconstruction and private-latent controls tell you whether alignment is buying agreement by throwing information away.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Correlation identifies agreement, not necessarily cause. A shared nuisance can look just as attractive as a shared concept."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What information is rewarded?",
-        "methods": [
-          {
-            "name": "CCA",
-            "answer": "CCA: shared correlation"
-          },
-          {
-            "name": "Reconstruction",
-            "answer": "Reconstruction: within-view fidelity"
-          },
-          {
-            "name": "Shared/private model",
-            "answer": "Shared/private model: both"
-          }
-        ],
-        "practicalImplication": "Alignment alone can discard valuable private signal."
+        "plainExplanation": "The loss function directly balances the desire to correlate the latents against the desire to reconstruct the inputs.",
+        "whyNeeded": "Allows engineers to tune the model based on downstream task requirements.",
+        "ifRemoved": "The model will collapse into one of the extremes (trivial alignment or pure autoencoding).",
+        "encourages": "A balanced representation.",
+        "doesNotGuarantee": "That the optimally balanced point isolates exactly the semantic concept desired."
       }
     ],
     "evidence": [
       {
-        "claim": "Forcing two representations to agree can erase view-specific signal. Reconstruction and private-latent controls tell you whether alignment is buying agreement by throwing information away.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Generalizing CCA to more than two views requires balancing pairwise alignments.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "1702.02519v2",
+        "section": "3. Deep Generalized CCA",
+        "verified": true,
+        "paraphrase": "Benton et al. (2017) introduced DGCCA, showing that as the number of views increases, the objective must be carefully formulated to find a single shared representation that balances alignment across all available views, preventing any single view from dominating the representation."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Shortcut Alignment (The Clever Hans Effect)",
+        "mechanism": "The model finds a trivial, non-semantic feature that happens to be shared across views (e.g., a watermark, a specific token length, a background artifact) and perfectly aligns on that instead of the difficult semantic concept.",
+        "symptom": "High alignment score during training, but catastrophic failure on OOD data or semantic probing tasks.",
+        "diagnosticTest": "Visualize the features that most strongly drive the correlation. Are they semantic, or are they artifacts?",
+        "mitigation": "Data augmentation to destroy shared artifacts; strong information preservation penalties (reconstruction losses) to force the model to represent the whole object.",
+        "setconcaRelevance": "Critical. If SetConCA views (activations from different contexts) share a syntactic structure (e.g., they are all at the end of a sentence), the model might align on 'end-of-sentence-ness' rather than the semantic concept."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Alignment versus information preservation determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "This trade-off is the core design challenge of SetConCA.",
+      "whichPart": "Objective Function / Evaluation",
+      "whichDesignChoice": "SetConCA must extract the core concept (alignment) without destroying the representation's geometry or its ability to interact with the rest of the language model (preservation).",
+      "proposedExperiment": "Sweep the trade-off hyperparameter in a multi-view model trained on LLM activations, and measure both concept classification accuracy (alignment metric) and next-token prediction loss (preservation metric)."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that alignment versus information preservation improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you set the reconstruction weight (lambda) to zero in DCCAE, what model do you recover, and what is its primary risk?",
+        "reveal": "You recover standard Deep CCA. Its primary risk is representation collapse or aggressively discarding task-relevant private information."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain alignment versus information preservation to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Describe 'Shortcut Alignment' and why a pure correlation objective is highly susceptible to it.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Defines shortcut alignment as aligning on non-semantic shared artifacts.",
+          "Explains that correlation objectives only care about matching signals, not their meaning.",
+          "Mentions that artifacts are often mathematically 'easier' to align than complex semantics."
+        ],
+        "badVersion": "Shortcut alignment is when the model learns too fast.",
+        "goodVersion": "Shortcut alignment occurs when a model achieves high correlation by latching onto trivial, non-semantic shared features, like a shared background color or identical syntax, rather than the intended semantic concept. A pure correlation objective is highly susceptible to this because it is mathematically 'blind' to semantics; it simply seeks the path of least resistance to maximize the objective function. Often, aligning simple artifacts requires less complex non-linear transformations than disentangling deep semantic meaning."
       }
-    ],
-    "nextLesson": {
-      "id": null,
-      "bridge": "This phase checkpoint now combines the ideas from the phase."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p05-l01",
+    "text": "We have thoroughly explored aligning two or more structured views. But what if our views don't have a fixed order? What if they are just an unordered bag of observations? Phase 5 introduces Set-based representations."
   }
 }

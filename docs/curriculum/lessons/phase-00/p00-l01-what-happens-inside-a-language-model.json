@@ -6,157 +6,135 @@
   "title": "What happens inside a language model?",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [],
   "learningObjectives": [
-    "Explain what happens inside a language model? in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand the basic input-output flow of a language model.",
+    "Comprehend the concept of the residual stream.",
+    "Explain how information accumulates layer by layer through attention and MLP blocks."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A language model repeatedly transforms a token representation, adding updates in a shared residual stream until the final vector supports a prediction. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Before we can understand how to extract meaning from artificial neural networks, we must first agree on a shared mental model of how these networks process information. Language models are not black boxes of inscrutable math; they are structured, deeply organized computational graphs.\n\nIn this curriculum, everything builds upon the concept of the residual stream. If you do not have a strong, intuitive grasp of how the residual stream works as the central memory of the model, later concepts like features, concepts, and SetConCA's coordination mechanisms will seem disconnected. This lesson establishes that foundation by tracing the exact path information takes as a language model runs."
     },
     "bridgeFrom": "The course opening",
     "intuition": {
-      "analogy": "A sentence is like a relay race: each layer reads the current baton, computes a small update, and passes the baton on. The useful object is the changing vector, not a single neuron.",
-      "analogyLimit": "Residual-stream diagrams make information flow inspectable, but an additive path is not by itself a causal explanation.",
-      "text": "A language model repeatedly transforms a token representation, adding updates in a shared residual stream until the final vector supports a prediction."
+      "analogy": "Imagine a relay race where each runner represents a layer in the neural network, and the baton is the residual stream vector. However, instead of simply passing the same baton, each runner inspects the baton, crafts a new piece of information based on what they read, and attaches it to the baton. As the race progresses, the baton grows heavier and more complex, carrying the accumulated contributions of every single runner who handled it.",
+      "analogyLimit": "In a real relay race, the baton physically grows and becomes harder to carry. In a neural network, the residual stream vector is a fixed size (e.g., a vector of 4096 dimensions), so layers must add their information by finding \"empty\" or unused directions in that high-dimensional space.",
+      "text": "A modern transformer-based language model is primarily an engine of accumulation. When a piece of text enters the model, it is converted into a vector\u2014a list of numbers. This vector begins its journey along the central pathway of the model, which we call the residual stream.\n\nThe residual stream is exactly what it sounds like: a continuous, flowing stream of numbers that passes from the very first layer of the network to the very last. It acts as the model's central memory buffer or communication channel. Every single calculation the model performs is either reading from this stream or writing to it.\n\nCrucially, the operation is additive. When a layer (composed of an Attention block and an MLP block) processes the current state of the residual stream, it does not destroy or overwrite what was already there. Instead, it computes an update\u2014a new vector representing new insights or refinements\u2014and simply adds that update to the existing stream. By the time the vector reaches the end of the model, it is the mathematical sum of the initial input and every single update made by every layer along the way."
     },
     "toyExample": {
-      "description": "Track one token through two contexts and compare its activation at the same layer. The changing vector is the object the later lessons will analyze.",
+      "description": "We will compute how the representation of the token 'Paris' evolves as it passes through the first two layers of a simplified model.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what what happens inside a language model? should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Start with the initial embedding for 'Paris' at layer 0: [0.8, 0.6, -0.4].",
+          "result": "Layer 0 residual stream = [0.8, 0.6, -0.4]",
+          "insight": "This is the base representation before any context or processing is applied."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Layer 1 Attention processes the stream and outputs [0.1, 0.3, 0.0]. Layer 1 MLP processes the stream and outputs [0.0, -0.1, 0.2]. Add these to the current stream.",
+          "result": "Layer 1 residual stream = [0.8, 0.6, -0.4] + [0.1, 0.3, 0.0] + [0.0, -0.1, 0.2] = [0.9, 0.8, -0.2]",
+          "insight": "The representation has been updated, but the original embedding's influence is still present."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Layer 2 Attention adds [0.2, 0.0, -0.1], and Layer 2 MLP adds [-0.1, 0.1, 0.0].",
+          "result": "Layer 2 residual stream = [0.9, 0.8, -0.2] + [0.2, 0.0, -0.1] + [-0.1, 0.1, 0.0] = [1.0, 0.9, -0.3]",
+          "insight": "Information strictly accumulates. The final state is the sum of the initial embedding and all 4 sublayer updates."
         }
       ]
     },
     "visual": {
-      "id": "vector-space",
-      "question": "Which assumption behind what happens inside a language model? changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "residual-stream",
+      "question": "How does information travel through the layers of a transformer?",
+      "description": "You see a vertical spine representing the residual stream. At each step, a block branches off, performs a calculation, and merges its result back into the main spine with a '+' symbol. Try toggling layers on and off to see how the final vector is just the sum of all active branches."
     },
     "technical": {
-      "text": "A language model repeatedly transforms a token representation, adding updates in a shared residual stream until the final vector supports a prediction. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The transformer architecture fundamentally relies on residual connections (also known as skip connections). Let the residual stream dimension be d_model. For a given token at a given sequence position, the state of the residual stream before layer l is a vector h_{l-1} in R^{d_model}.\n\nA standard transformer layer consists of two sublayers: a multi-head self-attention (MHSA) sublayer and a multi-layer perceptron (MLP) sublayer. The residual stream is updated sequentially. First, the attention sublayer reads h_{l-1}, computes an update, and adds it back to the stream: h'_{l-1} = h_{l-1} + MHSA(h_{l-1}). Next, the MLP sublayer reads this new state, computes its own update, and adds it back: h_l = h'_{l-1} + MLP(h'_{l-1}).\n\nBecause all operations that write to the residual stream are linear additions, we can think of the entire network as a linear combination of independent paths. The final output of the network, before being projected into the vocabulary space, is exactly equal to the initial token embedding plus the sum of the outputs of every attention head and every MLP across all layers.",
+      "definitions": [
+        {
+          "term": "Residual Stream",
+          "definition": "The central pathway in a transformer model where the main representation is stored and updated. It is a vector space of dimension d_model."
+        },
+        {
+          "term": "Residual Connection",
+          "definition": "An architectural pattern where the input to a function is added to the output of that function, i.e., f(x) + x, rather than replacing it."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "x_{l+1}=x_l+\\Delta_l(x_l)",
+        "id": "eq-1",
+        "label": "Residual Stream Accumulation",
+        "latex": "h_l = h_{l-1} + \\text{Attn}_l(h_{l-1}) + \\text{MLP}_l(h_{l-1})",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "h_l": "the residual stream vector at layer l",
+          "h_{l-1}": "the residual stream vector from the previous layer",
+          "Attn_l": "the attention sublayer's output at layer l",
+          "MLP_l": "the MLP sublayer's output at layer l"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A language model repeatedly transforms a token representation, adding updates in a shared residual stream until the final vector supports a prediction.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A diagram of activations makes the pipeline visible, but it does not identify a concept or a mechanism."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What is being named?",
-        "methods": [
-          {
-            "name": "Neuron coordinate",
-            "answer": "A coordinate"
-          },
-          {
-            "name": "Feature",
-            "answer": "A feature direction"
-          },
-          {
-            "name": "Concept label",
-            "answer": "A human concept"
-          }
-        ],
-        "practicalImplication": "Keep the measurement separate from the interpretation."
+        "plainExplanation": "In words: the new representation equals the old representation PLUS what attention adds PLUS what the MLP adds. Nothing is thrown away \u2014 everything accumulates.",
+        "whyNeeded": "This additive structure is what makes residual stream analysis possible. Because updates ADD rather than REPLACE, we can decompose the stream into contributions.",
+        "ifRemoved": "Without the residual connection, each layer would completely overwrite the previous representation, making it impossible to track how information accumulates.",
+        "encourages": "Linear decomposition of the residual stream into per-layer and per-head contributions.",
+        "doesNotGuarantee": "That individual contributions are interpretable or that the decomposition reveals causal mechanisms."
       }
     ],
     "evidence": [
       {
-        "claim": "A language model repeatedly transforms a token representation, adding updates in a shared residual stream until the final vector supports a prediction.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "The residual stream can be understood as a central communication channel where heads and layers read and write information independently.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "elhage-2021-transformer-circuits",
+        "section": "A Mathematical Framework for Transformer Circuits",
+        "verified": true,
+        "paraphrase": "Elhage et al. (2021) established the residual stream framework, showing that the transformer architecture is fundamentally a sequence of linear additions, allowing us to decompose the network's behavior into independent, understandable components."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Basis Meaning Fallacy",
+        "mechanism": "Assuming that specific coordinates (neurons) in the residual stream vector have fixed, interpretable meanings across layers or contexts.",
+        "symptom": "Looking at coordinate 42 of the residual stream and declaring it 'the pluralization neuron'.",
+        "diagnosticTest": "Check if the same coordinate responds to entirely unrelated concepts in different contexts (it usually does).",
+        "mitigation": "Analyze the residual stream in terms of directions (linear combinations of coordinates) rather than individual basis coordinates.",
+        "setconcaRelevance": "SetConCA analyzes representations in the residual stream. Avoiding this fallacy is why SetConCA uses dictionary learning (SAEs) to find meaningful directions, rather than looking at individual coordinates."
       }
     ],
     "setconcaConnection": {
-      "relevance": "What happens inside a language model? determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA operates on residual stream activations at specific layers.",
+      "whichPart": "Data Extraction",
+      "whichDesignChoice": "Understanding the accumulative nature of the residual stream is essential for choosing WHICH layer to analyze. SetConCA typically focuses on middle or late-middle layers where high-level concepts have accumulated, but before they are transformed into final output predictions.",
+      "proposedExperiment": "Train SetConCA on residual stream activations from layer 5 vs layer 25 of a model, and compare the quality of the learned concepts."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that what happens inside a language model? improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you completely zero out the output of the MLP in layer 2, will the model still be able to use the initial token embedding in layer 3?",
+        "reveal": "Yes. Because of the residual connection, the initial token embedding passes directly through layer 2 and is added to whatever remains. Zeroing the MLP only removes that specific update, not the accumulated history."
+      },
+      {
+        "type": "computation",
+        "prompt": "Given h_0 = [1, 2], Attn_1(h_0) = [-1, 0], MLP_1(h_0) = [0, 1], compute h_1.",
+        "reveal": "h_1 = h_0 + Attn_1 + MLP_1 = [1, 2] + [-1, 0] + [0, 1] = [0, 3]."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain what happens inside a language model? to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Why is the additive nature of the residual stream crucial for mechanistic interpretability?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Mentions that addition is a linear operation.",
+          "Explains that this allows decomposition of the final state into independent contributions."
+        ],
+        "badVersion": "Because addition is mathematically simpler than multiplication, making the model faster to train.",
+        "goodVersion": "The additive nature means that the final representation is literally the sum of all previous updates. Because addition is linear, we can decompose the final vector and trace exactly how much 'credit' goes to each specific attention head or MLP layer for a particular behavior."
       }
-    ],
-    "nextLesson": {
-      "id": "p00-l02",
-      "bridge": "Next: Tokens, layers, and activations. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p00-l02",
+    "text": "Now we know activations accumulate in the residual stream \u2014 but what IS an activation vector? How does text become a list of numbers in the first place? The next lesson explores tokens, embeddings, and activation spaces."
   }
 }

@@ -9,7 +9,13 @@
     "file": "1404.1100v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p01-l01",
+      "p01-l02",
+      "p01-l03",
+      "p01-l04",
+      "p01-l05"
+    ],
     "tier": "background",
     "summary": "Foundation for comparing SAE reconstruction with PCA baselines. Good reconstruction alone does not demonstrate interpretability."
   },
@@ -23,7 +29,18 @@
     "file": "1404.2986v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p01-l01",
+      "p01-l02",
+      "p01-l03",
+      "p01-l04",
+      "p01-l05",
+      "p02-l01",
+      "p02-l02",
+      "p02-l03",
+      "p02-l04",
+      "p02-l05"
+    ],
     "tier": "background",
     "summary": "Directly relevant to Concept Component Analysis (ConCA), which treats activations as mixtures of concept components."
   },
@@ -37,7 +54,18 @@
     "file": "1711.02391v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p01-l01",
+      "p01-l02",
+      "p01-l03",
+      "p01-l04",
+      "p01-l05",
+      "p04-l01",
+      "p04-l02",
+      "p04-l03",
+      "p04-l04",
+      "p04-l05"
+    ],
     "tier": "background",
     "summary": "After this: PCA preserves within-view variance; ICA recovers independent sources; CCA recovers cross-view correlation. Core baseline for multi-view SetConCA."
   },
@@ -51,7 +79,13 @@
     "file": "1312.5663v2.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p03-l01",
+      "p03-l02",
+      "p03-l03",
+      "p03-l04",
+      "p03-l05"
+    ],
     "tier": "background",
     "summary": "Clearest bridge from classical sparse coding to modern TopK SAEs."
   },
@@ -65,7 +99,10 @@
     "file": "1312.6114v11.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p03-l08",
+      "p04-l09"
+    ],
     "tier": "background",
     "summary": "Background for Gaussian set representations and product-of-experts aggregation."
   },
@@ -79,7 +116,13 @@
     "file": "andrew13.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p04-l01",
+      "p04-l02",
+      "p04-l03",
+      "p04-l04",
+      "p04-l05"
+    ],
     "tier": "background",
     "summary": "Nonlinear extension of CCA — precursor to coordinating SAE views."
   },
@@ -93,7 +136,13 @@
     "file": "1602.01024v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p04-l01",
+      "p04-l02",
+      "p04-l03",
+      "p04-l04",
+      "p04-l05"
+    ],
     "tier": "background",
     "summary": "Central difficulty: coordinate across views without destroying activation information."
   },
@@ -107,7 +156,13 @@
     "file": "1610.03454v3.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p04-l01",
+      "p04-l02",
+      "p04-l03",
+      "p04-l04",
+      "p04-l05"
+    ],
     "tier": "background",
     "summary": "Directly relevant to probabilistic multi-view SetConCA experiments."
   },
@@ -121,7 +176,13 @@
     "file": "1702.02519v2.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p04-l01",
+      "p04-l02",
+      "p04-l03",
+      "p04-l04",
+      "p04-l05"
+    ],
     "tier": "background",
     "summary": "Conceptual motivation for multi-view SetConCA."
   },
@@ -135,7 +196,13 @@
     "file": "1703.06114v3.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p05-l01",
+      "p05-l02",
+      "p05-l03",
+      "p05-l04",
+      "p05-l05"
+    ],
     "tier": "background",
     "summary": "Essential for aggregating multiple activation views into one concept code."
   },
@@ -149,7 +216,13 @@
     "file": "1606.02185v2.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p05-l01",
+      "p05-l02",
+      "p05-l03",
+      "p05-l04",
+      "p05-l05"
+    ],
     "tier": "background",
     "summary": "What should a set code represent for a group of related activations?"
   },
@@ -163,7 +236,13 @@
     "file": "1810.00825v3.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p05-l01",
+      "p05-l02",
+      "p05-l03",
+      "p05-l04",
+      "p05-l05"
+    ],
     "tier": "background",
     "summary": "When set meaning cannot be recovered from simple mean pooling."
   },
@@ -177,7 +256,13 @@
     "file": "selby22a.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p05-l01",
+      "p05-l02",
+      "p05-l03",
+      "p05-l04",
+      "p05-l05"
+    ],
     "tier": "background",
     "summary": "Optional advanced reading for cross-set relationships."
   },
@@ -191,7 +276,13 @@
     "file": "1807.03748v2.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p06-l01",
+      "p06-l02",
+      "p06-l03",
+      "p06-l04",
+      "p06-l05"
+    ],
     "tier": "background",
     "summary": "Conceptual foundation for contrastive coordination of SAE views."
   },
@@ -205,7 +296,13 @@
     "file": "2002.05709v3.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p06-l01",
+      "p06-l02",
+      "p06-l03",
+      "p06-l04",
+      "p06-l05"
+    ],
     "tier": "background",
     "summary": "Template for designing contrastive view generation."
   },
@@ -219,7 +316,13 @@
     "file": "2004.11362v5.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p06-l01",
+      "p06-l02",
+      "p06-l03",
+      "p06-l04",
+      "p06-l05"
+    ],
     "tier": "background",
     "summary": "Directly relevant to multi-view positives from the same semantic object."
   },
@@ -233,7 +336,13 @@
     "file": "2005.10242v10.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p06-l01",
+      "p06-l02",
+      "p06-l03",
+      "p06-l04",
+      "p06-l05"
+    ],
     "tier": "background",
     "summary": "Interpret positive/negative cosine and pos-minus-neg separation."
   },
@@ -247,7 +356,13 @@
     "file": "2105.04906v3.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p06-l01",
+      "p06-l02",
+      "p06-l03",
+      "p06-l04",
+      "p06-l05"
+    ],
     "tier": "background",
     "summary": "Useful regularisers when pure contrastive alignment damages reconstruction."
   },
@@ -261,7 +376,18 @@
     "file": "zimmermann21a.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p02-l01",
+      "p02-l02",
+      "p02-l03",
+      "p02-l04",
+      "p02-l05",
+      "p06-l01",
+      "p06-l02",
+      "p06-l03",
+      "p06-l04",
+      "p06-l05"
+    ],
     "tier": "background",
     "summary": "Optional: when does contrastive learning recover concepts vs retrieval geometry?"
   },
@@ -275,7 +401,13 @@
     "file": "1706.05806v2.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p08-l01",
+      "p08-l02",
+      "p08-l03",
+      "p08-l04",
+      "p08-l05"
+    ],
     "tier": "background",
     "summary": "Baseline for comparing SAE dictionaries across seeds and architectures."
   },
@@ -289,7 +421,13 @@
     "file": "1905.00414v4.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p08-l01",
+      "p08-l02",
+      "p08-l03",
+      "p08-l04",
+      "p08-l05"
+    ],
     "tier": "background",
     "summary": "Essential for comparing multi-view SetConCA against pointwise SAEs."
   },
@@ -303,7 +441,13 @@
     "file": "1909.03368v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p08-l01",
+      "p08-l02",
+      "p08-l03",
+      "p08-l04",
+      "p08-l05"
+    ],
     "tier": "background",
     "summary": "Do not over-interpret high probe accuracy on SAE features."
   },
@@ -317,7 +461,13 @@
     "file": "2003.12298v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p08-l01",
+      "p08-l02",
+      "p08-l03",
+      "p08-l04",
+      "p08-l05"
+    ],
     "tier": "background",
     "summary": "High probe accuracy ≠ accessible concept structure."
   },
@@ -331,7 +481,18 @@
     "file": null,
     "url": "https://transformer-circuits.pub/2021/framework/index.html",
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p00-l01",
+      "p00-l02",
+      "p00-l03",
+      "p00-l04",
+      "p00-l05",
+      "p07-l01",
+      "p07-l02",
+      "p07-l03",
+      "p07-l04",
+      "p07-l05"
+    ],
     "tier": "background",
     "summary": "Context for where SAE features live in the residual stream."
   },
@@ -345,7 +506,18 @@
     "file": "2209.pdf",
     "url": "https://transformer-circuits.pub/2022/toy_model/index.html",
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p00-l01",
+      "p00-l02",
+      "p00-l03",
+      "p00-l04",
+      "p00-l05",
+      "p07-l01",
+      "p07-l02",
+      "p07-l03",
+      "p07-l04",
+      "p07-l05"
+    ],
     "tier": "background",
     "summary": "Conceptual foundation for why SAEs are needed — SAEs are literally 'Approach 2: Finding an Overcomplete Basis' from this paper."
   },
@@ -359,7 +531,18 @@
     "file": "Bricken - 2023 - Towards Monosemanticity Decomposing Language Mode.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p00-l01",
+      "p00-l02",
+      "p00-l03",
+      "p00-l04",
+      "p00-l05",
+      "p07-l01",
+      "p07-l02",
+      "p07-l03",
+      "p07-l04",
+      "p07-l05"
+    ],
     "tier": "background",
     "summary": "First large-scale dictionary learning on LM activations."
   },
@@ -373,7 +556,23 @@
     "file": "2309.08600v3.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p00-l01",
+      "p00-l02",
+      "p00-l03",
+      "p00-l04",
+      "p00-l05",
+      "p03-l01",
+      "p03-l02",
+      "p03-l03",
+      "p03-l04",
+      "p03-l05",
+      "p07-l01",
+      "p07-l02",
+      "p07-l03",
+      "p07-l04",
+      "p07-l05"
+    ],
     "tier": "background",
     "summary": "Central academic SAE paper — core reference."
   },
@@ -387,7 +586,13 @@
     "file": "2605.29358v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p07-l01",
+      "p07-l02",
+      "p07-l03",
+      "p07-l04",
+      "p07-l05"
+    ],
     "tier": "background",
     "summary": "Scale alone does not guarantee canonical decomposition."
   },
@@ -401,7 +606,18 @@
     "file": "2406.04093v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p03-l01",
+      "p03-l02",
+      "p03-l03",
+      "p03-l04",
+      "p03-l05",
+      "p10-l01",
+      "p10-l02",
+      "p10-l03",
+      "p10-l04",
+      "p10-l05"
+    ],
     "tier": "background",
     "summary": "Main reference for TopK SAE training and evaluation."
   },
@@ -415,7 +631,13 @@
     "file": "2404.16014v2.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p03-l01",
+      "p03-l02",
+      "p03-l03",
+      "p03-l04",
+      "p03-l05"
+    ],
     "tier": "background",
     "summary": "Architecture choice affects feature quality at same sparsity."
   },
@@ -429,7 +651,13 @@
     "file": "2407.14435v3.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p03-l01",
+      "p03-l02",
+      "p03-l03",
+      "p03-l04",
+      "p03-l05"
+    ],
     "tier": "background",
     "summary": "Why L1 SAEs are no longer the default."
   },
@@ -443,7 +671,10 @@
     "file": "2412.06410v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p03-l02",
+      "p03-l07"
+    ],
     "tier": "background",
     "summary": "Flexible sparsity for heterogeneous activations."
   },
@@ -457,7 +688,10 @@
     "file": "2503.17547v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p03-l04",
+      "p09-l01"
+    ],
     "tier": "background",
     "summary": "Relevant to multi-granularity concept structure in SetConCA."
   },
@@ -471,7 +705,13 @@
     "file": "2405.08366v3.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p08-l01",
+      "p08-l02",
+      "p08-l03",
+      "p08-l04",
+      "p08-l05"
+    ],
     "tier": "background",
     "summary": "Required reading before proposing new SAE methods."
   },
@@ -485,7 +725,18 @@
     "file": "2409.14507v6.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p09-l01",
+      "p09-l02",
+      "p09-l03",
+      "p09-l04",
+      "p09-l05",
+      "p10-l01",
+      "p10-l02",
+      "p10-l03",
+      "p10-l04",
+      "p10-l05"
+    ],
     "tier": "background",
     "summary": "Challenges atomic concept assumption."
   },
@@ -499,7 +750,13 @@
     "file": "2502.04878v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p09-l01",
+      "p09-l02",
+      "p09-l03",
+      "p09-l04",
+      "p09-l05"
+    ],
     "tier": "background",
     "summary": "Critical for SetConCA research narrative."
   },
@@ -513,7 +770,18 @@
     "file": "2503.09532v4.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p08-l01",
+      "p08-l02",
+      "p08-l03",
+      "p08-l04",
+      "p08-l05",
+      "p09-l01",
+      "p09-l02",
+      "p09-l03",
+      "p09-l04",
+      "p09-l05"
+    ],
     "tier": "background",
     "summary": "Standard evaluation suite to replicate."
   },
@@ -527,7 +795,13 @@
     "file": "2605.18229v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p09-l01",
+      "p09-l02",
+      "p09-l03",
+      "p09-l04",
+      "p09-l05"
+    ],
     "tier": "background",
     "summary": "Read after SAEBench — calibrate metric trust."
   },
@@ -541,7 +815,13 @@
     "file": "2505.11756v2.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p09-l01",
+      "p09-l02",
+      "p09-l03",
+      "p09-l04",
+      "p09-l05"
+    ],
     "tier": "background",
     "summary": "Optional: dictionary width requirements."
   },
@@ -555,7 +835,13 @@
     "file": "2605.09887v1.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p09-l01",
+      "p09-l02",
+      "p09-l03",
+      "p09-l04",
+      "p09-l05"
+    ],
     "tier": "background",
     "summary": "Optional: layer-wise scaling constraints."
   },
@@ -569,7 +855,13 @@
     "file": "2511.05541v2.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p10-l01",
+      "p10-l02",
+      "p10-l03",
+      "p10-l04",
+      "p10-l05"
+    ],
     "tier": "background",
     "summary": "SetConCA generalises from temporal pairs to multi-view semantic objects."
   },
@@ -583,7 +875,18 @@
     "file": "2601.20420v2.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p02-l01",
+      "p02-l02",
+      "p02-l03",
+      "p02-l04",
+      "p02-l05",
+      "p10-l01",
+      "p10-l02",
+      "p10-l03",
+      "p10-l04",
+      "p10-l05"
+    ],
     "tier": "background",
     "summary": "Alternative decomposition framework — direct competitor/complement."
   },
@@ -597,7 +900,18 @@
     "file": "2311.04056v2.pdf",
     "url": null,
     "concepts": [],
-    "lessonIds": [],
+    "lessonIds": [
+      "p02-l01",
+      "p02-l02",
+      "p02-l03",
+      "p02-l04",
+      "p02-l05",
+      "p10-l01",
+      "p10-l02",
+      "p10-l03",
+      "p10-l04",
+      "p10-l05"
+    ],
     "tier": "background",
     "summary": "Theoretical foundation for multi-view concept identifiability."
   }

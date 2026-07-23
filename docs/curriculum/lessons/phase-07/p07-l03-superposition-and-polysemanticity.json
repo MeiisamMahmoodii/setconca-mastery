@@ -6,159 +6,110 @@
   "title": "Superposition and polysemanticity",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
     "p07-l02"
   ],
   "learningObjectives": [
-    "Explain superposition and polysemanticity in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand superposition and feature packing.",
+    "Understand polysemanticity."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Superposition allows more features than dimensions by placing feature directions non-orthogonally. A neuron can then respond to several unrelated features. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Superposition explains why individual neurons are hard to interpret."
     },
-    "bridgeFrom": "p07-l02",
+    "bridgeFrom": "From components, we look at the features they compute.",
     "intuition": {
-      "analogy": "Treat a transformer as a busy workshop with a shared workbench. Each component adds or reads a mark, but a mark is not an explanation until changing it changes the job's outcome. Superposition allows more features than dimensions by placing feature directions non-orthogonally. A neuron can then respond to several unrelated features.",
-      "analogyLimit": "A descriptive feature label is not a circuit. The explanation must survive causal intervention and negative controls.",
-      "text": "Superposition allows more features than dimensions by placing feature directions non-orthogonally. A neuron can then respond to several unrelated features."
+      "analogy": "Packing luggage.",
+      "analogyLimit": "Luggage has strict volume limits.",
+      "text": "More features than dimensions -> non-orthogonal packing.\nWorks because features are sparse (rarely co-active).\nPolysemanticity: single neuron responds to multiple features because it sits on multiple feature directions."
     },
     "toyExample": {
-      "description": "Choose a small behaviour, name a candidate feature path, then ablate or patch it while holding the prompt family fixed.",
+      "description": "Toy Models of Superposition.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what superposition and polysemanticity should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
-        },
-        {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
-        },
-        {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 1,
+          "action": "Analyze 2D space",
+          "result": "5 features at non-right angles.",
+          "insight": "d dimensions can store ~d² sparse features."
         }
       ]
     },
     "visual": {
       "id": "superposition-geometry",
-      "question": "Which assumption behind superposition and polysemanticity changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "question": "How are features packed?",
+      "description": "Visualizing non-orthogonal feature directions."
     },
     "technical": {
-      "text": "Superposition allows more features than dimensions by placing feature directions non-orthogonally. A neuron can then respond to several unrelated features. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Superposition arises from sparsity and high-dimensional geometry.",
+      "definitions": [
+        {
+          "term": "Polysemanticity",
+          "definition": "A neuron responding to multiple unrelated features."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "x_{l+1}=x_l+\\mathrm{Attn}_l(x_l)+\\mathrm{MLP}_l(x_l)",
-        "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
-        },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Superposition allows more features than dimensions by placing feature directions non-orthogonally. A neuron can then respond to several unrelated features.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A descriptive feature label is not a circuit. The explanation must survive causal intervention and negative controls."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What kind of claim is made?",
-        "methods": [
-          {
-            "name": "Correlation",
-            "answer": "Activation correlation"
-          },
-          {
-            "name": "Feature label",
-            "answer": "Feature description"
-          },
-          {
-            "name": "Circuit intervention",
-            "answer": "Causal circuit test"
-          }
-        ],
-        "practicalImplication": "Only the last tests whether the component contributes to the behaviour."
+        "id": "eq-3",
+        "label": "Feature limit",
+        "latex": "N \\approx d^2",
+        "symbols": {},
+        "plainExplanation": "Number of features scales with squared dimension.",
+        "whyNeeded": "Efficiency.",
+        "ifRemoved": "Model too large.",
+        "encourages": "Compression.",
+        "doesNotGuarantee": "Clean directions."
       }
     ],
     "evidence": [
       {
-        "claim": "Superposition allows more features than dimensions by placing feature directions non-orthogonally. A neuron can then respond to several unrelated features.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Superposition",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Elhage et al. 2022 (Toy Models of Superposition)",
+        "section": "Main",
+        "verified": true,
+        "paraphrase": "Models use superposition to store more features than dimensions."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Interference",
+        "mechanism": "Features co-occur.",
+        "symptom": "Hallucinations.",
+        "diagnosticTest": "Activate both.",
+        "mitigation": "Larger model.",
+        "setconcaRelevance": "High."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Superposition and polysemanticity determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "Fundamental problem.",
+      "whichPart": "Representations.",
+      "whichDesignChoice": "Dimension.",
+      "proposedExperiment": "Find polysemantic neurons."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that superposition and polysemanticity improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "computation",
+        "prompt": "Calculate max features.",
+        "reveal": "Show math."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain superposition and polysemanticity to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain superposition.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "More features than dimensions.",
+          "Sparsity."
+        ],
+        "badVersion": "It's a quantum thing.",
+        "goodVersion": "It's a compression technique."
       }
-    ],
-    "nextLesson": {
-      "id": "p07-l04",
-      "bridge": "Next: SAEs as overcomplete dictionaries. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p07-l04",
+    "text": "Next we look at SAEs."
   }
 }

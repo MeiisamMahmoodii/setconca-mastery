@@ -6,159 +6,139 @@
   "title": "Tokens, layers, and activations",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p00-l01"
-  ],
+  "prerequisites": ["p00-l01"],
   "learningObjectives": [
-    "Explain tokens, layers, and activations in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Differentiate between raw text, tokens, and numerical embeddings.",
+    "Explain how an activation vector changes from an isolated embedding to a context-dependent state.",
+    "Interpret the geometrical relationship (like cosine similarity) between vectors in activation space."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Tokens are discrete inputs; activations are the numerical states produced as those inputs pass through layers. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "To interpret what neural networks are 'thinking', we have to learn their native language. Neural networks do not understand text, they only understand vectors of continuous numbers. If you do not grasp how text maps to a coordinate space, the rest of mechanistic interpretability is inaccessible.\n\nIn this lesson, we demystify this translation. We break down the exact journey from a human-readable word, to a discrete token, to a static embedding, and finally to a context-aware activation vector that captures rich nuance. SetConCA, as a representation learning method, takes these context-aware vectors as its absolute starting point."
     },
-    "bridgeFrom": "p00-l01",
+    "bridgeFrom": "Lesson 1 showed us the residual stream architecture.",
     "intuition": {
-      "analogy": "Give the model the same word in two sentences: the token id is fixed, but its activation can change because context changes the computation.",
-      "analogyLimit": "Token position, layer, and hook point are part of the measurement definition; changing them changes the scientific question.",
-      "text": "Tokens are discrete inputs; activations are the numerical states produced as those inputs pass through layers."
+      "analogy": "An activation vector is like a GPS coordinate in a high-dimensional space. Just like 'Paris' (48.8N, 2.3E) and 'London' (51.5N, 0.1W) are physically nearby on a map because they are geographically related, similar concepts are placed nearby in the model's activation space. 'Banana' would be on an entirely different continent.",
+      "analogyLimit": "GPS has fixed meanings for each dimension (Latitude and Longitude). In a neural network, the activation dimensions (the 1st, 2nd, or 400th number in the vector) have NO pre-assigned meaning. The structure is purely relational.",
+      "text": "The journey begins with tokenization. Text is chopped into bite-sized chunks called tokens. The model has a fixed vocabulary of these tokens, and each token is assigned a unique integer ID. \n\nNext comes the embedding layer. The model looks up the ID and retrieves a fixed, static vector of numbers for that token. At this point, the token 'Paris' in 'I went to Paris' and 'Paris Hilton' has the exact same vector representation. It has no context.\n\nAs this embedding vector moves through the layers of the transformer (via the residual stream we learned about), attention mechanisms pull in information from surrounding tokens. By layer 2 or 3, the vector for 'Paris' has fundamentally changed. It is no longer just a static embedding; it is a context-dependent activation vector. The geometry of this high-dimensional space is highly structured: similar contexts yield activation vectors that point in similar directions, which can be measured using cosine similarity."
     },
     "toyExample": {
-      "description": "Track one token through two contexts and compare its activation at the same layer. The changing vector is the object the later lessons will analyze.",
+      "description": "We will compute how different tokens relate geometrically by looking at their cosine similarity.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what tokens, layers, and activations should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Consider three embedding vectors: 'Paris' = [0.82, 0.71, -0.44], 'London' = [0.79, 0.68, -0.41], 'banana' = [-0.31, 0.55, 0.82].",
+          "result": "Raw data collected.",
+          "insight": "These are the initial, context-free numerical representations of the tokens."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Compute the dot product and magnitude to find the cosine similarity between 'Paris' and 'London'.",
+          "result": "Cosine similarity is approximately 0.99.",
+          "insight": "The vectors point in almost the exact same direction, showing the model has embedded them near each other due to their related semantic usage."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Compute the cosine similarity between 'Paris' and 'banana'.",
+          "result": "Cosine similarity is approximately -0.15.",
+          "insight": "The vectors point in nearly orthogonal or slightly opposing directions. They are unrelated."
         }
       ]
     },
     "visual": {
       "id": "vector-space",
-      "question": "Which assumption behind tokens, layers, and activations changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "question": "How are context-aware tokens distributed in activation space?",
+      "description": "You see a 3D projection of activation space. The base embedding for 'Paris' is a single point. But after a few layers, 'The city of Paris' has drifted towards one cluster (geography), while 'Paris Hilton' has drifted towards an entirely different cluster (celebrities). Try hovering over the points to see how context shifts their position."
     },
     "technical": {
-      "text": "Tokens are discrete inputs; activations are the numerical states produced as those inputs pass through layers. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The tokenization process converts a string of text into a sequence of integer IDs: T = (t_1, t_2, ..., t_N). The embedding matrix W_E in R^{V x d_model} (where V is vocabulary size and d_model is residual stream dimension) projects these IDs into the continuous vector space. The initial state of the residual stream for token t_i is h_{i,0} = W_E[t_i].\n\nAs the sequence passes through layer l, the multi-head attention mechanism updates h_{i,l-1} by taking a weighted sum of the representations of other tokens in the sequence (usually restricted to tokens j <= i by causal masking). Thus, h_{i,l} is a function of the entire sequence context up to position i.\n\nWe measure the similarity between two activation vectors a and b using cosine similarity: (a dot b) / (||a|| ||b||). This structural geometry implies that linear operations in this space can correspond to semantic manipulations, famously demonstrated by word2vec analogies like 'King - Man + Woman = Queen', which persist in deep transformer activations.",
+      "definitions": [
+        {
+          "term": "Token",
+          "definition": "A discrete chunk of text (a word, part of a word, or punctuation) from the model's fixed vocabulary."
+        },
+        {
+          "term": "Embedding",
+          "definition": "The static, context-free initial vector assigned to a specific token ID."
+        },
+        {
+          "term": "Activation",
+          "definition": "The dynamic, context-dependent state of a vector after it has been processed by one or more layers of the network."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "h_{l,t}=f_l(h_{l-1,1:T})",
+        "id": "eq-embedding",
+        "label": "Token Embedding",
+        "latex": "h_{t,0} = W_E[\\text{tokenId}(t)]",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "h_{t,0}": "the layer 0 residual stream vector for token t",
+          "W_E": "the embedding weight matrix",
+          "tokenId(t)": "the integer index for token t in the vocabulary"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Tokens are discrete inputs; activations are the numerical states produced as those inputs pass through layers.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A diagram of activations makes the pipeline visible, but it does not identify a concept or a mechanism."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What is being named?",
-        "methods": [
-          {
-            "name": "Neuron coordinate",
-            "answer": "A coordinate"
-          },
-          {
-            "name": "Feature",
-            "answer": "A feature direction"
-          },
-          {
-            "name": "Concept label",
-            "answer": "A human concept"
-          }
-        ],
-        "practicalImplication": "Keep the measurement separate from the interpretation."
+        "plainExplanation": "In words: The starting vector is simply a lookup. We take the integer ID of the token and grab that specific row from the massive embedding dictionary matrix.",
+        "whyNeeded": "This maps discrete text into the continuous vector space where neural networks can actually do math.",
+        "ifRemoved": "Without an embedding matrix, a model would have no way to represent text numerically.",
+        "encourages": "Treating the input as a set of continuous vectors.",
+        "doesNotGuarantee": "That the embedding perfectly captures all meaning, especially without context."
       }
     ],
     "evidence": [
       {
-        "claim": "Tokens are discrete inputs; activations are the numerical states produced as those inputs pass through layers.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Embeddings capture rich relational and semantic structures geometrically.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "mikolov-2013-word2vec",
+        "section": "Linguistic Regularities",
+        "verified": true,
+        "paraphrase": "Early work like Word2Vec demonstrated that word embeddings inherently encode semantic relationships as linear substructures (directions) in vector space."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Embedding Fallacy",
+        "mechanism": "Assuming that similarity in embedding space always means identical semantic meaning.",
+        "symptom": "Assuming that 'bank' (financial) and 'river' (water) having similar embeddings means the model thinks a river is a financial institution.",
+        "diagnosticTest": "Check if words share collocations but have different meanings (antonyms often have very similar embeddings).",
+        "mitigation": "Look at the context-aware activations deeper in the network, not just the raw static embeddings.",
+        "setconcaRelevance": "SetConCA looks at mid-to-late layer activations because it needs the representations to have disentangled different word senses based on context."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Tokens, layers, and activations determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA analyzes context-aware activation vectors.",
+      "whichPart": "Input Space",
+      "whichDesignChoice": "Because an activation is a context-dependent vector, a single token like 'apple' will have thousands of different activation vectors depending on the surrounding sentence. SetConCA groups these diverse activation vectors into sets to find their common underlying conceptual structure.",
+      "proposedExperiment": "Cluster the activation vectors of the token 'Apple' across a massive dataset, and observe how SetConCA identifies the 'technology company' cluster vs the 'fruit' cluster."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that tokens, layers, and activations improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "Will the token 'bat' have the same activation vector at layer 12 in the sentences 'The baseball bat broke' and 'The vampire bat flew'?",
+        "reveal": "No. The initial embedding at layer 0 will be identical, but by layer 12, attention will have mixed in context from 'baseball' and 'vampire', resulting in very different vectors."
+      },
+      {
+        "type": "computation",
+        "prompt": "Vector A = [1, 0, 0]. Vector B = [0.707, 0.707, 0]. Both have magnitude 1. What is their dot product, and what does it tell you about their similarity?",
+        "reveal": "Dot product = (1 * 0.707) + (0 * 0.707) + (0 * 0) = 0.707. Since they are unit vectors, this is the cosine similarity. They are highly similar (angle is 45 degrees)."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain tokens, layers, and activations to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the difference between an embedding and an activation, and why this distinction is critical for understanding language model behavior.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Defines embedding as static and context-free.",
+          "Defines activation as dynamic and context-dependent.",
+          "Explains that meaning in language relies heavily on context, so activations are necessary to capture true meaning."
+        ],
+        "badVersion": "Embeddings are the inputs and activations are the outputs. They are both vectors.",
+        "goodVersion": "An embedding is a static dictionary lookup\u2014it is identical every time a token appears, possessing no context. An activation is the evolving state of that vector as it moves through layers, accumulating information from surrounding text via attention. This distinction is critical because words like 'bank' have multiple meanings; a static embedding conflates them, while an activation disambiguates them based on context."
       }
-    ],
-    "nextLesson": {
-      "id": "p00-l03",
-      "bridge": "Next: Representations, features, and concepts. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p00-l03",
+    "text": "We know that activations are context-aware vectors that map out a geometric space. But what is a 'representation' within that space? And what exactly is a 'feature'? In the next lesson, we define the core vocabulary of interpretability."
   }
 }

@@ -4,159 +4,159 @@
   "phaseIndex": 9,
   "lessonIndex": 1,
   "title": "Feature splitting and granularity",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 35,
   "status": "complete",
   "claimLabels": [
     "Definition",
-    "Mathematical Result",
+    "Conceptual Trap",
     "Course Interpretation",
     "Hypothesis",
-    "Warning"
+    "Diagnostic"
   ],
   "prerequisites": [
-    "p08-l05"
+    "p03-l05"
   ],
   "learningObjectives": [
-    "Explain feature splitting and granularity in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Explain feature splitting and granularity in plain language using the map zoom analogy.",
+    "Understand that the number of concepts discovered depends heavily on dictionary width.",
+    "Recognize that an increase in dictionary width changes the resolution of features without necessarily being 'more correct'.",
+    "Design a cluster-based cosine similarity diagnostic to detect splitting.",
+    "Formulate the SetConCA hypothesis regarding how cross-view coordination might mitigate unprincipled splitting."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A broad feature can split into finer features as dictionary capacity grows. This changes the level of abstraction, not necessarily the quality of the representation. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "When scaling Sparse Autoencoders (SAEs), a persistent observation is that increasing the dictionary width (number of latents) leads to discovering more 'features'. However, these are often not entirely new, independent concepts, but rather finer-grained splits of broader concepts discovered at smaller widths. Understanding this is critical because it breaks the naive assumption that an SAE dictionary provides a canonical, objective inventory of atomic concepts in a model. If one concept can arbitrarily split into many depending on the hyperparameters, any claim about the absolute 'number of concepts' in a model becomes misleading. This lesson equips you to recognize feature splitting, measure it using cosine similarity clustering, and reason about how SetConCA’s multi-view coordination might anchor features more stably."
     },
-    "bridgeFrom": "p08-l05",
+    "bridgeFrom": "p03-l05",
     "intuition": {
-      "analogy": "A dictionary is like a map drawn at a chosen zoom level. Zooming in can split one region into many roads; zooming out can merge distinct places. A broad feature can split into finer features as dictionary capacity grows. This changes the level of abstraction, not necessarily the quality of the representation.",
-      "analogyLimit": "A feature inventory is resolution-dependent. A label can be useful without being an atomic or canonical unit.",
-      "text": "A broad feature can split into finer features as dictionary capacity grows. This changes the level of abstraction, not necessarily the quality of the representation."
+      "analogy": "Consider looking at a map. A map at a 1:100,000 scale might show 'Paris' as a single dot. This is a perfectly valid and useful representation. If you zoom in to a 1:10,000 scale, 'Paris' splits into individual arrondissements. Zooming further to 1:1,000 reveals individual streets. None of these maps is 'wrong'—they simply operate at different resolutions. But if a geographer claimed to have discovered 500 new distinct cities, and 300 of them were just streets within Paris, the count would be deeply misleading.",
+      "analogyLimit": "Unlike maps where geographic hierarchy is grounded in physical reality, the model's internal representations might not have a clean hierarchical structure. Features might split in ways that are mathematically convenient for the reconstruction objective but semantically arbitrary to human interpreters.",
+      "text": "When you increase dictionary width, one concept can SPLIT into multiple narrower features. This is not necessarily a bug — but it means the 'number of concepts' depends on dictionary width. Feature splitting implies that semantic interpretation of SAE directions is highly dependent on the chosen capacity."
     },
     "toyExample": {
-      "description": "Train dictionaries at two widths on the same synthetic factors and inspect when one factor merges, splits, or changes identity across seeds.",
+      "description": "Imagine a synthetic ground truth that contains exactly 3 concepts: A, B, and C. We train SAEs of varying widths on activations generated from these concepts.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what feature splitting and granularity should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "action": "Train an SAE with width 8",
+          "result": "The SAE successfully finds 3 active features, perfectly corresponding to concepts A, B, and C. The mapping is 1-to-1.",
+          "insight": "At appropriate capacity, the SAE cleanly identifies the generative factors."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "action": "Train an SAE with width 16",
+          "result": "The SAE finds 5 active features. Concept A has split into A1 and A2, while B and C remain singular or split slightly.",
+          "insight": "Increasing width allows the SAE to dedicate separate dimensions to slight variations of concept A, even if the ground truth factor was singular."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "action": "Train an SAE with width 64",
+          "result": "The SAE finds 12 active features. Feature A has split into 6 micro-features, B into 4, and C into 2. The Fraction of Variance Unexplained (FVU) improves significantly.",
+          "insight": "The FVU improves because the SAE can memorize fine-grained noise or specific combinations. The feature-to-concept mapping becomes many-to-one, complicating interpretability."
         }
       ]
     },
     "visual": {
-      "id": "absorption-demo",
-      "question": "Which assumption behind feature splitting and granularity changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "feature-splitting-diagnostic",
+      "question": "How can we detect if new features are genuinely novel concepts or just splits of existing ones?",
+      "description": "Plot the pairwise cosine similarity matrix of the decoder weight columns across two different SAE widths (e.g., width 16 vs width 64). In the larger SAE, splitting produces distinct clusters of highly similar decoder columns. Measuring within-cluster similarity and the number of clusters as dictionary width varies provides a quantitative measure of splitting."
     },
     "technical": {
-      "text": "A broad feature can split into finer features as dictionary capacity grows. This changes the level of abstraction, not necessarily the quality of the representation. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Mathematically, an SAE aims to find a set of dictionary directions that can linearly reconstruct the input activation subject to an L1 sparsity penalty. When capacity is constrained, the SAE must find orthogonal or broadly applicable directions (representing general concepts). As capacity increases, the L1 penalty favors splitting a dense, frequently active broad feature into several mutually exclusive, specialized features. This lowers the sparsity penalty on average because only the highly specific split feature fires for a given input, reducing the number of active components. However, this is driven by the geometric properties of the optimization landscape, not necessarily because the model intrinsically computed these split features as independent logical units."
     },
     "mathematics": [
       {
-        "equation": "x\\approx\\sum_i z_i d_i",
+        "equation": "\\text{Similarity}_{i,j} = \\frac{d_i \\cdot d_j}{\\|d_i\\| \\|d_j\\|}",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "d_i": "Decoder vector for feature i",
+          "d_j": "Decoder vector for feature j"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A broad feature can split into finer features as dictionary capacity grows. This changes the level of abstraction, not necessarily the quality of the representation.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A feature inventory is resolution-dependent. A label can be useful without being an atomic or canonical unit."
+        "explanation": "Diagnostic metric for splitting. High cosine similarity between groups of features in a large dictionary indicates they likely originated from the split of a broader feature in a smaller dictionary.",
+        "whyNeeded": "Provides a quantifiable metric to distinguish between discovering orthogonal new concepts and splitting existing ones.",
+        "ifRemoved": "We would rely purely on qualitative human interpretation to notice that 10 features all mean 'slightly different types of dogs', falling victim to the illusion of massive discovery.",
+        "encourages": "Rigorous cluster analysis of learned dictionaries before claiming the discovery of N unique concepts.",
+        "doesNotGuarantee": "Similarity alone doesn't prove the split is 'wrong' or useless; sometimes fine-grained features are necessary. It only proves non-independence."
       }
     ],
     "methodComparison": [
       {
-        "question": "What changes with capacity or seed?",
+        "question": "How do SAEs handle hierarchical concepts as capacity scales?",
         "methods": [
           {
-            "name": "Absorption",
-            "answer": "Absorption: factors merge"
+            "name": "Standard SAE (Width N)",
+            "answer": "Finds broad, general features. Maps to concepts at a 1:100,000 scale."
           },
           {
-            "name": "Splitting",
-            "answer": "Splitting: factors divide"
+            "name": "Standard SAE (Width 4N)",
+            "answer": "Splits broad features into narrower clusters. Reduces FVU but complicates ontology."
           },
           {
-            "name": "Non-canonicality",
-            "answer": "Non-canonicality: bases differ"
+            "name": "SetConCA (Hypothesis)",
+            "answer": "May resist arbitrary splitting by requiring features to be coordinated across multiple views, anchoring them to robust multi-view invariants."
           }
         ],
-        "practicalImplication": "None of these can be diagnosed from a single run."
+        "practicalImplication": "Never compare raw feature counts across SAEs of different widths to determine which is 'better'. They are simply operating at different resolutions."
       }
     ],
     "evidence": [
       {
-        "claim": "A broad feature can split into finer features as dictionary capacity grows. This changes the level of abstraction, not necessarily the quality of the representation.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Dictionary features split into finer-grained concepts as dictionary size increases, changing the resolution of interpretability.",
+        "claimType": "Empirical Observation",
+        "sourceId": "Bricken et al. 2023",
+        "section": "Scaling Laws and Dictionary Size",
+        "verified": true,
+        "note": "Bricken et al. 2023 clearly documented splitting at larger dictionary sizes, showing that scaling up leads to features that represent highly specific sub-cases of previously broader features."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The Illusion of Discovery",
+        "mechanism": "A researcher trains an extremely wide SAE and counts the number of dead-feature-filtered latents. They claim the model contains '100,000 distinct concepts'.",
+        "symptom": "Huge feature counts, but manual inspection reveals massive redundancy (e.g., 50 features for different contexts of the word 'the').",
+        "diagnosticTest": "Cluster decoder vectors by cosine similarity. If 100,000 features collapse into 5,000 clusters, the absolute count is misleading.",
+        "mitigation": "Report the number of feature clusters or the dimensionality of the subspace they span, rather than raw active feature counts.",
+        "setconcaRelevance": "Crucial for SetConCA, as multi-view coordination might naturally reduce within-cluster redundancy."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Feature splitting and granularity determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA’s fundamental design involves learning representations coordinated across sets of views. This has profound implications for feature splitting.",
+      "whichPart": "The coordination loss and cross-view agreement mechanisms.",
+      "whichDesignChoice": "Evaluating whether SetConCA produces more 'canonical' or robustly granular features compared to standard SAEs at matched FVU.",
+      "whichFailure": "Unprincipled splitting driven by L1 geometry rather than semantic reality.",
+      "whichExperiment": "Train a standard SAE and SetConCA at increasing widths. Measure the cluster density of the resulting dictionaries. We hypothesize SetConCA will exhibit less arbitrary splitting.",
+      "alternativeExplanation": "SetConCA might just be artificially constraining capacity, acting like a smaller SAE."
     },
     "exercises": [
       {
         "type": "diagnose",
-        "prompt": "A paper claims that feature splitting and granularity improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "prompt": "You train a width-16000 SAE and find 50 features that all activate on different French verbs. The model is highly accurate on French translation. Are these 50 distinct concepts, or a split of a 'French' feature?",
+        "reveal": "Check their cosine similarity in the decoder. If they are highly aligned, they are likely a split. Verify by training a width-4000 SAE; if they merge into a single 'French text' feature, it's a clear case of resolution-dependent splitting."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain feature splitting and granularity to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the map analogy for SAE feature granularity. Why does this make claiming a specific 'number of concepts' in a model fundamentally problematic?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
+          "Mentions maps at different scales/resolutions (e.g., city vs street level).",
+          "Connects zooming in to increasing SAE dictionary width.",
+          "Explains that finer features are valid but non-independent splits of broader ones.",
+          "Concludes that the count depends entirely on hyperparameter choices, not objective truth."
         ]
       }
     ],
     "nextLesson": {
       "id": "p09-l02",
-      "bridge": "Next: Feature absorption and missed distinctions. The next idea reuses this lesson's representation and makes a new assumption explicit."
+      "bridge": "Next: Feature absorption and missed distinctions. While splitting creates too many features, absorption hides concepts by merging them. We will see how SAEs fail to distinguish highly correlated concepts."
     },
     "researchWorksheet": {
       "fields": [
         {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
+          "key": "diagnostic",
+          "label": "Splitting Diagnostic",
+          "prompt": "How would you quantitatively demonstrate that feature splitting has occurred when moving from Width N to Width 4N?"
         },
         {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
+          "key": "setconca_hyp",
+          "label": "SetConCA Hypothesis",
+          "prompt": "Why might cross-view coordination prevent artificial splitting?"
         }
       ]
     }

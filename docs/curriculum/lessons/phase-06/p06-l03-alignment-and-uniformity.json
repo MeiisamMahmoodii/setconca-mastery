@@ -6,159 +6,137 @@
   "title": "Alignment and uniformity",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p06-l02"
-  ],
+  "prerequisites": ["p06-l02"],
   "learningObjectives": [
-    "Explain alignment and uniformity in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Define alignment and uniformity in representation learning.",
+    "Explain how contrastive losses optimize both properties simultaneously.",
+    "Diagnose representation collapse using these metrics."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Contrastive learning needs positives to come together and the overall representation distribution to remain spread out enough to avoid collapse. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "While InfoNCE works well in practice, Wang & Isola (2020) provided a beautiful theoretical framework to understand *why*. They showed that good contrastive representations exhibit two measurable geometric properties: alignment and uniformity. Understanding these gives us better tools to evaluate models beyond just calculating the loss."
     },
-    "bridgeFrom": "p06-l02",
+    "bridgeFrom": "We saw how InfoNCE pulls positives and pushes negatives. Now we'll formalize these two opposing forces as measurable metrics.",
     "intuition": {
-      "analogy": "Contrastive learning is a sorting game: place genuine variants of the same item close together without piling every item into one corner. Contrastive learning needs positives to come together and the overall representation distribution to remain spread out enough to avoid collapse.",
-      "analogyLimit": "A lower contrastive loss can come from a shortcut in the views, not from recovery of the intended invariant.",
-      "text": "Contrastive learning needs positives to come together and the overall representation distribution to remain spread out enough to avoid collapse."
+      "analogy": "Imagine organizing a networking event. 'Alignment' means ensuring people from the same company stand close to each other. 'Uniformity' means ensuring groups are spread out evenly across the entire room, rather than all clustering by the buffet.",
+      "analogyLimit": "In latent space, the 'room' is the surface of a high-dimensional hypersphere.",
+      "text": "Wang and Isola identified two key properties of contrastive representations normalized to the unit hypersphere. \n\n1. **Alignment:** Two samples forming a positive pair should be mapped to nearby points on the hypersphere. This means the model successfully ignores the noise or augmentations that separate them.\n\n2. **Uniformity:** The representations of random, unrelated samples should be roughly uniformly distributed across the hypersphere. This ensures the model uses the full capacity of the representation space and maximally distinguishes different concepts.\n\nInfoNCE implicitly optimizes for both, but measuring them directly provides profound diagnostic insight."
     },
     "toyExample": {
-      "description": "Give each item two legitimate views and several near-duplicate negatives. Sweep temperature and inspect when the loss starts punishing semantically valid neighbours.",
+      "description": "Consider 20 representations projected onto a 2D circle (a 1-sphere). Let's evaluate extreme cases of Alignment and Uniformity.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what alignment and uniformity should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Case A: Complete Collapse. All 20 points are mapped to the exact same location (e.g., coordinates [1, 0]).",
+          "result": "Alignment is perfect (distance between any positive pair is 0). Uniformity is extremely bad (all points are concentrated, leaving the rest of the circle empty).",
+          "insight": "Perfect alignment is trivial if you ignore uniformity. The representation contains zero information."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Case B: Perfect Uniformity, Random Alignment. Points are evenly spaced every 18 degrees, but positive pairs are randomly assigned across the circle.",
+          "result": "Uniformity is perfect. Alignment is terrible (average distance between pairs is large).",
+          "insight": "Using the whole space is useless if related items aren't grouped together."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Case C: Ideal Balance. Points form 10 tight clusters (perfect alignment) evenly spaced every 36 degrees (excellent uniformity).",
+          "result": "Both metrics are optimized.",
+          "insight": "This is what contrastive learning aims for: structured groupings that utilize the entire available space."
         }
       ]
     },
     "visual": {
-      "id": "contrastive-temp",
-      "question": "Which assumption behind alignment and uniformity changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "align-unif",
+      "question": "How do alignment and uniformity manifest on a hypersphere?",
+      "description": "2D sphere visualizations showing points transitioning from collapsed (bad uniformity), to randomly scattered (bad alignment), to clustered and evenly distributed (good both)."
     },
     "technical": {
-      "text": "Contrastive learning needs positives to come together and the overall representation distribution to remain spread out enough to avoid collapse. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Alignment calculates the expected distance between positive pairs. Uniformity calculates the logarithm of the expected exponentiated negative distance between random pairs.",
+      "definitions": [
+        "Alignment Loss: The expected Euclidean distance between normalized representations of positive pairs.",
+        "Uniformity Loss: A metric evaluating how well representations are distributed on the unit hypersphere, based on a Gaussian potential kernel."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L_{\\mathrm{NCE}}=-\\log\\frac{e^{s(z,z^+)/\\tau}}{\\sum_j e^{s(z,z_j)/\\tau}}",
+        "id": "eq-align",
+        "label": "Alignment Metric",
+        "latex": "\\mathcal{L}_{align} = \\mathbb{E}_{(x,y) \\sim p_{pos}} [||f(x) - f(y)||^2]",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "p_{pos}": "Distribution of positive pairs",
+          "f(x), f(y)": "Normalized representations"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Contrastive learning needs positives to come together and the overall representation distribution to remain spread out enough to avoid collapse.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A lower contrastive loss can come from a shortcut in the views, not from recovery of the intended invariant."
-      }
-    ],
-    "methodComparison": [
+        "plainExplanation": "Measures how close positive pairs are. Lower is better.",
+        "whyNeeded": "Ensures invariance to the transformations defining the positive pairs.",
+        "ifRemoved": "Representations of similar things would drift apart.",
+        "encourages": "Clustering of related concepts.",
+        "doesNotGuarantee": "Does not prevent collapse."
+      },
       {
-        "question": "What prevents collapse?",
-        "methods": [
-          {
-            "name": "InfoNCE",
-            "answer": "InfoNCE: negatives"
-          },
-          {
-            "name": "VICReg",
-            "answer": "VICReg: variance and covariance terms"
-          },
-          {
-            "name": "Supervised contrastive",
-            "answer": "Supervised contrastive: class positives"
-          }
-        ],
-        "practicalImplication": "The positive-pair definition is usually the highest-leverage choice."
+        "id": "eq-unif",
+        "label": "Uniformity Metric",
+        "latex": "\\mathcal{L}_{unif} = \\log \\mathbb{E}_{x,y \\sim p_{data}} [e^{-2||f(x) - f(y)||^2}]",
+        "symbols": {
+          "p_{data}": "Data distribution (random pairs)",
+          "f(x), f(y)": "Normalized representations"
+        },
+        "plainExplanation": "Measures how spread out random representations are. Lower is better.",
+        "whyNeeded": "Prevents representation collapse and ensures maximal separability of distinct concepts.",
+        "ifRemoved": "The model could trivially minimize alignment by mapping everything to a single point.",
+        "encourages": "Utilization of the entire representation space.",
+        "doesNotGuarantee": "Does not ensure related things are grouped."
       }
     ],
     "evidence": [
       {
-        "claim": "Contrastive learning needs positives to come together and the overall representation distribution to remain spread out enough to avoid collapse.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Contrastive learning optimizes alignment and uniformity.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Alignment+Uniformity, Wang & Isola 2020",
+        "section": "Abstract",
+        "verified": true,
+        "paraphrase": "The standard contrastive loss asymptotically optimizes two distinct properties: alignment of features from positive pairs, and uniformity of the induced distribution of features on the hypersphere."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Representation Collapse",
+        "mechanism": "The repulsive force (uniformity) is removed or overwhelmed by the attractive force (alignment).",
+        "symptom": "Loss drops rapidly to near zero; downstream accuracy is no better than random guessing. Alignment metric is ~0, Uniformity metric is very high.",
+        "diagnosticTest": "Plot the variance of the representation vectors across a batch. If variance is near zero across all dimensions, the representation has collapsed.",
+        "mitigation": "Ensure negative sampling is working correctly, use techniques like stop-gradient (SimSiam) if not using negatives, or explicitly add a uniformity penalty (VICReg).",
+        "setconcaRelevance": "In SetConCA, if we only encourage coordination between sets without a strong enough negative signal, all sets might converge to the same generic representation."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Alignment and uniformity determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "Provides the diagnostic metrics needed to evaluate SetConCA representations.",
+      "whichPart": "Evaluation Strategy",
+      "whichDesignChoice": "Tracking alignment and uniformity separately during SetConCA training to debug representation quality.",
+      "proposedExperiment": "Measure the alignment and uniformity of SetConCA set-level representations throughout training to ensure they don't collapse and properly utilize the latent space."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that alignment and uniformity improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you train a model with a very high temperature ($\\tau \\to \\infty$), will the resulting representations have better alignment or better uniformity?",
+        "reveal": "Better uniformity. A high temperature heavily penalizes any lack of uniformity, pushing all points away from each other evenly, often at the expense of tight alignment for positive pairs."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain alignment and uniformity to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Describe how measuring alignment and uniformity separately provides more debugging information than just looking at the overall InfoNCE loss.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies that a low InfoNCE loss could theoretically hide partial collapse or poor alignment.",
+          "Explains that separate metrics isolate the attractive vs. repulsive forces.",
+          "Notes that plotting them allows diagnosis of specific failures (e.g., perfect alignment but terrible uniformity = collapse)."
+        ],
+        "badVersion": "They tell you different things about the loss.",
+        "goodVersion": "InfoNCE merges the attractive and repulsive forces into a single number. A stagnant InfoNCE loss might mean the model can't align positives, or it might mean it's struggling to separate negatives. By tracking alignment and uniformity separately, you can pinpoint the exact failure mode. For example, near-zero alignment with terrible uniformity immediately diagnoses representation collapse."
       }
-    ],
-    "nextLesson": {
-      "id": "p06-l04",
-      "bridge": "Next: False negatives and shortcut solutions. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p06-l04",
+    "text": "Even with perfect alignment and uniformity metrics, a model can still fail if our definition of positive and negative pairs is flawed. Next, we look at the dangers of false negatives and shortcut solutions."
   }
 }

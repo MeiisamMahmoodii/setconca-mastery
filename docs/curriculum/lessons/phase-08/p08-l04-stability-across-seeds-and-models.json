@@ -4,161 +4,137 @@
   "phaseIndex": 8,
   "lessonIndex": 4,
   "title": "Stability across seeds and models",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 35,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
     "p08-l03"
   ],
   "learningObjectives": [
-    "Explain stability across seeds and models in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Define representation stability in the context of Sparse Autoencoders (SAEs).",
+    "Evaluate the challenge of feature consistency when training multiple SAEs on the same data with different random seeds.",
+    "Explain why features are not necessarily 'canonical units' of a model.",
+    "Design experiments to measure the percentage of robustly reproducible features between two SAE runs."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A result that survives random seeds, model families, layers, and sampling changes is more credible than a single attractive run. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "A core premise of Mechanistic Interpretability is that neural networks learn a true, canonical set of features to represent the world. If this is true, our interpretability tools should consistently discover these exact same features. But do they?\n\nIf you train a Sparse Autoencoder (SAE) on a language model, you will extract thousands of seemingly interpretable features. If you immediately train a *second* SAE using the exact same architecture, the exact same training data, but a different random seed, you expect to find the same features. Recent research reveals a disturbing truth: you often don't. Many features are highly seed-dependent, meaning they are artifacts of the specific training run, not fundamental truths about the model. This lesson focuses on measuring stability, challenging the idea of canonical features, and evaluating what it means when an SAE feature cannot be reliably reproduced."
     },
-    "bridgeFrom": "p08-l03",
+    "bridgeFrom": "In the previous lesson, we learned that overall geometric structure (measured by CKA) is highly stable across different runs. Now, we zoom in to see that the *specific axes* within that geometry (the SAE features) are often alarmingly unstable.",
     "intuition": {
-      "analogy": "Evaluation is a medical panel, not a single thermometer. One number can be reassuring while another reveals the problem. A result that survives random seeds, model families, layers, and sampling changes is more credible than a single attractive run.",
-      "analogyLimit": "No single metric measures interpretability. Every metric needs an explicit non-claim beside it.",
-      "text": "A result that survives random seeds, model families, layers, and sampling changes is more credible than a single attractive run."
+      "analogy": "Imagine asking two different translators to create a comprehensive dictionary for a newly discovered alien language.",
+      "analogyLimit": "Translators are subjective humans; SAEs are deterministic mathematical algorithms responding to random initialization.",
+      "text": "Both translators have access to the exact same alien texts. When they finish, you compare their dictionaries. They agree perfectly on basic concepts: both dictionaries have exact entries for 'sun', 'water', and 'eat'. But for complex concepts, they diverge. Translator A creates a specific word for 'the feeling of melancholy while watching rain', while Translator B splits that concept into 'sadness' and 'weather'. \n\nBoth dictionaries are perfectly valid and allow you to translate the alien texts accurately (high reconstruction fidelity). But the specific words (features) they chose are different. In SAEs, the random seed determines the initial dictionary. The SAE optimizes this dictionary to reconstruct the activations. Because there are many valid ways to decompose the representation space, different seeds result in different feature sets. A feature that appears in one SAE run but not another is like Translator A's highly specific word: it works for reconstruction, but it is not a fundamental, canonical 'unit' of the alien language."
     },
     "toyExample": {
-      "description": "Run two methods across several seeds and plot fidelity, sparsity, similarity, and intervention effects separately instead of collapsing them into one score.",
+      "description": "Compare the features learned by two SAE runs (Seed 1 and Seed 2) to evaluate feature stability.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what stability across seeds and models should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Train SAE-1 and SAE-2 on the same language model activations. Both achieve similar FVU and Loss Recovery.",
+          "result": "Both SAEs are functionally equivalent in terms of reconstruction.",
+          "insight": "Reconstruction quality does not guarantee feature consistency."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "For every feature in SAE-1, find the feature in SAE-2 with the highest cosine similarity between their decoder vectors.",
+          "result": "Create pairs of best-matching features.",
+          "insight": "This pairs up the features that are attempting to represent the same concept."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Analyze Feature $f_{42}$ from SAE-1. Its best match in SAE-2 is $f_{107}$ with a cosine similarity of 0.96. Both fire on the concept 'Eiffel Tower'.",
+          "result": "This is a highly stable, robust feature.",
+          "insight": "Strong, clear concepts are reliably found regardless of the random seed."
+        },
+        {
+          "step": 4,
+          "action": "Analyze Feature $f_{15}$ from SAE-1. It fires on 'sentences starting with Although'. Its best match in SAE-2 has a cosine similarity of only 0.45, and fires on 'punctuation marks'.",
+          "result": "Feature $f_{15}$ has no match. It is unstable.",
+          "insight": "Many specific, granular features are artifacts of the optimization path, not canonical units of the model."
         }
       ]
     },
     "visual": {
-      "id": "sae-pareto",
-      "question": "Which assumption behind stability across seeds and models changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "sae-feature-matching",
+      "question": "What does the distribution of maximum cosine similarities between two SAE runs tell us about feature stability?",
+      "description": "A histogram showing the maximum cosine similarity for all features in SAE-1 when matched against SAE-2. The distribution is bimodal. There is a large spike near 1.0 (highly stable, reproducible features) and a wide, diffuse bump between 0.3 and 0.7 (unstable, seed-dependent features). This visually proves that only a subset of features are genuinely canonical."
     },
     "technical": {
-      "text": "A result that survives random seeds, model families, layers, and sampling changes is more credible than a single attractive run. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Seed stability in Sparse Autoencoders is measured by comparing the learned dictionary vectors across different training initializations. The standard protocol involves finding the Hungarian matching or greedy max-cosine matching between the decoder columns of $SAE_1$ and $SAE_2$. We then report metrics such as the average best-match cosine similarity, or the fraction of features with a similarity above a strict threshold (e.g., $>0.9$). Research by Makelov et al. (2024) and the SAEBench framework (2025) demonstrates that while SAEs stably recover macroscopic properties (like overall reconstruction error), the microscopic properties (individual features) exhibit significant variance. This challenges the 'linear representation hypothesis' in its strongest form, suggesting that the model's representations are often continuous spaces that can be arbitrarily discretized by the SAE depending on the random seed.",
+      "definitions": [
+        "Seed Stability: The degree to which a machine learning algorithm produces the exact same learned artifacts (features) when trained multiple times with different random initializations.",
+        "Decoder Column: The vector in an SAE's weight matrix that defines the specific direction in the model's representation space corresponding to a single feature.",
+        "Cosine Similarity: A metric used to measure how closely two vectors align in space, ranging from -1 (opposite) to 1 (identical direction)."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathrm{FVU}=\\frac{\\|X-\\hat X\\|_F^2}{\\|X-\\bar X\\|_F^2}",
+        "id": "eq-1",
+        "label": "Greedy Feature Matching Similarity",
+        "latex": "Sim(f_i^{(1)}) = \\max_{j} \\frac{d_i^{(1)} \\cdot d_j^{(2)}}{||d_i^{(1)}|| ||d_j^{(2)}||}",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "f_i^{(1)}": "Feature $i$ from SAE run 1",
+          "d_i^{(1)}": "Decoder vector for feature $i$ in SAE 1",
+          "d_j^{(2)}": "Decoder vector for feature $j$ in SAE 2"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A result that survives random seeds, model families, layers, and sampling changes is more credible than a single attractive run.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "No single metric measures interpretability. Every metric needs an explicit non-claim beside it."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What does the metric measure?",
-        "methods": [
-          {
-            "name": "FVU",
-            "answer": "FVU: reconstruction"
-          },
-          {
-            "name": "CKA",
-            "answer": "CKA: geometry similarity"
-          },
-          {
-            "name": "Intervention",
-            "answer": "Intervention: causal effect"
-          }
-        ],
-        "practicalImplication": "Report the metric's non-claim beside its result."
+        "plainExplanation": "For a given feature in the first SAE, we search through all features in the second SAE to find the one that points in the most similar direction. This equation calculates that maximum similarity score.",
+        "whyNeeded": "Because the arbitrary ordering of features in an SAE means feature 1 in SAE-1 does not correspond to feature 1 in SAE-2. We must geometrically match them to assess stability.",
+        "ifRemoved": "We would have no quantitative way to prove whether an SAE is discovering universal truths about the network or just generating random, run-specific artifacts.",
+        "encourages": "Designing interpretability methods that consistently find the same structures.",
+        "doesNotGuarantee": "Even if a feature is highly stable across seeds, it does not guarantee that the model uses that feature causally for its behavior."
       }
     ],
     "evidence": [
       {
-        "claim": "A result that survives random seeds, model families, layers, and sampling changes is more credible than a single attractive run.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "SAEs trained with different seeds can achieve similar reconstruction quality while finding substantially different features.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Leask et al. 2025 (via Makelov/SAEBench context)",
+        "section": "Stability Analysis",
+        "verified": true,
+        "paraphrase": "Different initialization seeds lead SAEs to converge on different local optima. These different dictionaries can reconstruct the activations equally well, but decompose the space using different basis vectors, indicating that features are not always canonical."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The Canonical Feature Illusion",
+        "mechanism": "Analyzing a single, highly specific feature from one SAE run and publishing a paper claiming the model fundamentally represents the concept using that exact feature.",
+        "symptom": "Other researchers train an SAE on the same model to replicate the finding, but the specific feature simply does not exist in their dictionary.",
+        "diagnosticTest": "Train 3 SAEs with different seeds. If the feature's decoder vector does not have a max-cosine similarity > 0.9 across all 3 runs, it is an artifact, not a canonical feature.",
+        "mitigation": "Require seed-stability analysis for any claims about specific features in Mechanistic Interpretability research.",
+        "setconcaRelevance": "High"
       }
     ],
     "setconcaConnection": {
-      "relevance": "Stability across seeds and models determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA hypothesizes that grouping variables into coherent subsets (concepts) reduces the arbitrary degrees of freedom in representation learning.",
+      "whichPart": "Evaluation Phase",
+      "whichDesignChoice": "Testing the hypothesis that SetConCA architectures improve interpretability by forcing stability.",
+      "proposedExperiment": "Train 5 standard SAEs and 5 SetConCA models on the same data. Calculate the percentage of robustly stable features (cosine > 0.9 across all runs) for both architectures. If SetConCA has a significantly higher percentage of stable features, this is powerful evidence that it is recovering true, canonical concepts rather than optimization artifacts."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that stability across seeds and models improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you increase the L1 sparsity penalty on an SAE, forcing it to use fewer active features per token, what do you predict will happen to the seed stability of the learned features?",
+        "reveal": "Stability generally INCREASES when sparsity is high. When the SAE is heavily constrained, there are fewer valid mathematical ways to decompose the space, forcing it to find the most robust, dominant features reliably. When sparsity constraints are loose, the SAE has more freedom to create arbitrary, seed-dependent features."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain stability across seeds and models to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the difference between finding that an SAE has high reconstruction fidelity and finding that an SAE has high seed stability.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Defines reconstruction fidelity as the ability to accurately recreate the original activations (e.g., low FVU).",
+          "Defines seed stability as the consistency of specific learned features across different random initializations.",
+          "Explains that high fidelity can be achieved by many different, equally valid mathematical bases (feature dictionaries).",
+          "Concludes that an SAE can perfectly reconstruct the data (high fidelity) while using completely different, non-reproducible features in every run (low stability)."
+        ],
+        "badVersion": "Fidelity is about accuracy and stability is about seeds.",
+        "goodVersion": "Reconstruction fidelity measures whether the SAE's dictionary, taken as a whole, spans the representation space well enough to accurately recreate the original activations (minimizing MSE or FVU). Seed stability measures whether the *specific individual vectors* comprising that dictionary are consistently found across different training runs. An SAE can have high fidelity but low stability if the representation space is continuous and can be tiled or decomposed in many different but mathematically equivalent ways. In this case, different random seeds will find different arbitrary sets of features that all reconstruct the space equally well, proving that those specific features are not canonical units of the model."
       }
-    ],
-    "nextLesson": {
-      "id": "p08-l05",
-      "bridge": "Next: Causal faithfulness and steering. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p08-l05",
+    "text": "If a feature is stable and reproduces consistently, that's great. But we still haven't answered the ultimate question: does the neural network actually *use* this feature to make its decisions? The final lesson in this phase explores causal faithfulness and steering."
   }
 }

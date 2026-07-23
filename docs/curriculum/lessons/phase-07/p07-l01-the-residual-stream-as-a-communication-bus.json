@@ -6,159 +6,110 @@
   "title": "The residual stream as a communication bus",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
-    "p06-l05"
+    "p00-l01"
   ],
   "learningObjectives": [
-    "Explain the residual stream as a communication bus in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand the residual stream as a communication bus.",
+    "Learn to decompose the residual stream."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "The residual stream is the running vector state that attention and MLP blocks read from and write updates into. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "The residual stream is the central communication channel in transformer models."
     },
-    "bridgeFrom": "p06-l05",
+    "bridgeFrom": "Connecting to previous knowledge.",
     "intuition": {
-      "analogy": "Treat a transformer as a busy workshop with a shared workbench. Each component adds or reads a mark, but a mark is not an explanation until changing it changes the job's outcome. The residual stream is the running vector state that attention and MLP blocks read from and write updates into.",
-      "analogyLimit": "A descriptive feature label is not a circuit. The explanation must survive causal intervention and negative controls.",
-      "text": "The residual stream is the running vector state that attention and MLP blocks read from and write updates into."
+      "analogy": "Shared whiteboard analogy.",
+      "analogyLimit": "The whiteboard has limited space.",
+      "text": "h_l = h_{l-1} + Attn_l + MLP_l. Additive = decomposable."
     },
     "toyExample": {
-      "description": "Choose a small behaviour, name a candidate feature path, then ablate or patch it while holding the prompt family fixed.",
+      "description": "Decomposing the residual stream.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what the residual stream as a communication bus should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
-        },
-        {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
-        },
-        {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 1,
+          "action": "Calculate representations",
+          "result": "h_0=[1.0,0.5,-0.3,0.2]. Attn adds [0.0,0.3,0.0,-0.1]. MLP adds [0.2,0.0,-0.1,0.0]. h_1=[1.2,0.8,-0.4,0.1].",
+          "insight": "Decompose: dim 2 = 0.5(embed) + 0.3(attn) + 0.0(mlp) = 0.8."
         }
       ]
     },
     "visual": {
-      "id": "superposition-geometry",
-      "question": "Which assumption behind the residual stream as a communication bus changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "residual-stream",
+      "question": "How does information flow?",
+      "description": "Visualizing the residual stream."
     },
     "technical": {
-      "text": "The residual stream is the running vector state that attention and MLP blocks read from and write updates into. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Detailed technical explanation.",
+      "definitions": [
+        {
+          "term": "Residual Stream",
+          "definition": "The central pathway for information."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "x_{l+1}=x_l+\\mathrm{Attn}_l(x_l)+\\mathrm{MLP}_l(x_l)",
-        "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
-        },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. The residual stream is the running vector state that attention and MLP blocks read from and write updates into.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A descriptive feature label is not a circuit. The explanation must survive causal intervention and negative controls."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What kind of claim is made?",
-        "methods": [
-          {
-            "name": "Correlation",
-            "answer": "Activation correlation"
-          },
-          {
-            "name": "Feature label",
-            "answer": "Feature description"
-          },
-          {
-            "name": "Circuit intervention",
-            "answer": "Causal circuit test"
-          }
-        ],
-        "practicalImplication": "Only the last tests whether the component contributes to the behaviour."
+        "id": "eq-1",
+        "label": "Residual update",
+        "latex": "h_l = h_{l-1} + Attn_l + MLP_l",
+        "symbols": {},
+        "plainExplanation": "Update is additive.",
+        "whyNeeded": "Allows information to pass unchanged.",
+        "ifRemoved": "Vanishing gradients.",
+        "encourages": "Linear representations.",
+        "doesNotGuarantee": "Perfect memory."
       }
     ],
     "evidence": [
       {
-        "claim": "The residual stream is the running vector state that attention and MLP blocks read from and write updates into.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Linear representations",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Elhage et al. 2021",
+        "section": "Introduction",
+        "verified": true,
+        "paraphrase": "Transformers can be understood mathematically."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Saturation",
+        "mechanism": "Values too large.",
+        "symptom": "Dead components.",
+        "diagnosticTest": "Check norms.",
+        "mitigation": "Layer norm.",
+        "setconcaRelevance": "High."
       }
     ],
     "setconcaConnection": {
-      "relevance": "The residual stream as a communication bus determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "Fundamental.",
+      "whichPart": "Core.",
+      "whichDesignChoice": "Linearity.",
+      "proposedExperiment": "Probe the stream."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that the residual stream as a communication bus improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "computation",
+        "prompt": "Calculate h_1 given h_0.",
+        "reveal": "Show math."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain the residual stream as a communication bus to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the residual stream.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Mention additive.",
+          "Mention communication."
+        ],
+        "badVersion": "It's a layer.",
+        "goodVersion": "It's a communication bus."
       }
-    ],
-    "nextLesson": {
-      "id": "p07-l02",
-      "bridge": "Next: Attention and MLP circuit hypotheses. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p07-l02",
+    "text": "Next we look at Attention and MLP."
   }
 }

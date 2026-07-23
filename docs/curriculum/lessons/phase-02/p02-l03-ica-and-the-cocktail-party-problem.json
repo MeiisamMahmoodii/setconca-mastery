@@ -4,161 +4,136 @@
   "phaseIndex": 2,
   "lessonIndex": 3,
   "title": "ICA and the cocktail-party problem",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 35,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p02-l02"
-  ],
+  "prerequisites": ["p02-l02"],
   "learningObjectives": [
-    "Explain ica and the cocktail-party problem in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Define the 'cocktail-party problem' and how it relates to Blind Source Separation (BSS).",
+    "Explain the core principle of Independent Component Analysis (ICA): maximizing non-Gaussianity.",
+    "Define kurtosis and explain how it measures non-Gaussianity to identify sparse or structured sources.",
+    "List the necessary conditions and failure modes of ICA."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "ICA assumes observations are mixtures of independent, non-Gaussian sources and searches for an unmixing transformation. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "We know that neural networks learn complex mixtures of concepts, and we know that simple decorrelation (like PCA) isn't enough to disentangle them. We need a method that actively hunts for statistically independent sources. Enter Independent Component Analysis (ICA).\n\nICA was originally developed for signal processing, but its underlying philosophy—that complex data is a linear mixture of independent, non-Gaussian sources—maps perfectly onto the goals of mechanistic interpretability. In interpretability, we believe activations are linear mixtures of independent, sparse features. \n\nThis lesson explores the mathematics and intuition of ICA. By understanding how ICA separates audio signals, we gain the conceptual toolkit needed to understand how modern methods like Sparse Autoencoders (SAEs) and SetConCA separate neural representations."
     },
-    "bridgeFrom": "p02-l02",
+    "bridgeFrom": "Lesson 2 showed that correlation is not independence, and PCA only achieves the former. ICA is the mathematical algorithm designed specifically to achieve the latter.",
     "intuition": {
-      "analogy": "Think of hearing several instruments through a wall. The sound at the wall is observable; the instruments are the proposed hidden causes. ICA assumes observations are mixtures of independent, non-Gaussian sources and searches for an unmixing transformation.",
-      "analogyLimit": "Latent recovery claims are conditional: remove an assumption and the same observations can support a different latent explanation.",
-      "text": "ICA assumes observations are mixtures of independent, non-Gaussian sources and searches for an unmixing transformation."
+      "analogy": "The Cocktail Party Problem",
+      "analogyLimit": "In a real room, sound echoes and arrives at microphones with slight time delays (convolutive mixing). Standard ICA assumes instantaneous linear mixing with no delays.",
+      "text": "Imagine you are at a crowded cocktail party. There are two people speaking simultaneously: Alice is telling a story, and Bob is singing a song. There are two microphones in the room, placed in different locations. \n\nMicrophone 1 is closer to Alice, so it records a mixture that is mostly Alice with a bit of Bob. Microphone 2 is closer to Bob, recording mostly Bob with a bit of Alice. You only have the recordings from the two microphones. You don't know what Alice or Bob sound like, and you don't know where the microphones are placed.\n\nThe goal of ICA is to take these two mixed recordings and process them to perfectly recover Alice's separate voice and Bob's separate voice. This is called 'Blind Source Separation' because we are separating the sources without knowing anything about the mixing process.\n\nHow does ICA do it? By relying on the Central Limit Theorem. The theorem states that a mixture of independent signals is always *more* Gaussian (more like a bell curve) than the original signals. Therefore, to find the original signals, ICA takes the mixtures and searches for the projections that look the *least* Gaussian."
     },
     "toyExample": {
-      "description": "Mix two non-Gaussian sources, then change the mixing matrix. Ask which assumptions make unmixing possible and which leave several answers equally valid.",
+      "description": "Separating a uniform noise signal and a sawtooth wave.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what ica and the cocktail-party problem should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Generate two independent source signals ($s_1$, $s_2$).",
+          "result": "Let $s_1$ be random uniform noise, and $s_2$ be a deterministic sawtooth wave.",
+          "insight": "Both signals are highly non-Gaussian. A uniform distribution is flat, not a bell curve."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Mix them using a matrix $A = [[0.7, 0.3], [0.4, 0.6]]$.",
+          "result": "We get mixtures $x_1$ and $x_2$. If we plot a histogram of $x_1$, it looks much more like a Gaussian bell curve than either $s_1$ or $s_2$.",
+          "insight": "The Central Limit Theorem at work: mixing pushes the distribution toward a Gaussian shape."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Apply ICA to find an unmixing matrix $W$.",
+          "result": "ICA rotates the data to maximize 'non-Gaussianity'. It perfectly recovers the uniform noise and the sawtooth wave.",
+          "insight": "PCA would fail here, just giving us uncorrelated mixtures. ICA succeeds by looking at the shape (kurtosis) of the distributions."
         }
       ]
     },
     "visual": {
       "id": "ica-mixing",
-      "question": "Which assumption behind ica and the cocktail-party problem changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "question": "Notice the histograms of the signals. How do the shapes change from the sources to the mixtures?",
+      "description": "Three rows of plots. Top row: two source signals (a square wave and a sine wave) with non-Gaussian histograms. Middle row: two mixtures of the sources. The mixtures look jagged and their histograms look more like bell curves. Bottom row: The recovered signals from ICA, matching the top row."
     },
     "technical": {
-      "text": "ICA assumes observations are mixtures of independent, non-Gaussian sources and searches for an unmixing transformation. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The ICA model assumes $x = As$, where $s$ are independent latent sources and $A$ is an unknown invertible mixing matrix. We want to find $W \\approx A^{-1}$ such that $y = Wx$ recovers the sources $s$. Since we can't measure independence directly easily, we use a proxy: non-Gaussianity. We measure non-Gaussianity using kurtosis or negentropy. Kurtosis is the fourth standardized moment. A Gaussian has a kurtosis of 0. Sparse signals (super-Gaussian) have positive kurtosis (heavy tails, sharp peak). Uniform-like signals (sub-Gaussian) have negative kurtosis. ICA algorithms like FastICA iteratively update $W$ to maximize the absolute value of the kurtosis of the outputs $y$.",
+      "definitions": [
+        "Blind Source Separation (BSS): Recovering source signals from mixtures with very little information about the source signals or the mixing process.",
+        "Central Limit Theorem: The sum of independent random variables tends toward a normal (Gaussian) distribution.",
+        "Kurtosis: A statistical measure of the 'tailedness' or 'peakedness' of a distribution compared to a normal distribution."
+      ]
     },
     "mathematics": [
       {
-        "equation": "x=As+\\epsilon",
+        "id": "eq-1",
+        "label": "Kurtosis",
+        "latex": "\\kappa(y) = \\frac{E[y^4]}{(E[y^2])^2} - 3",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "y": "A zero-mean random variable (our proposed independent component).",
+          "E[y^4]": "The fourth moment.",
+          "E[y^2]": "The second moment (variance)."
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. ICA assumes observations are mixtures of independent, non-Gaussian sources and searches for an unmixing transformation.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Latent recovery claims are conditional: remove an assumption and the same observations can support a different latent explanation."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What does the assumption buy?",
-        "methods": [
-          {
-            "name": "Correlation",
-            "answer": "Correlation: a linear summary"
-          },
-          {
-            "name": "Independence",
-            "answer": "Independence: stronger separation"
-          },
-          {
-            "name": "Causal model",
-            "answer": "Causal model: intervention predictions"
-          }
-        ],
-        "practicalImplication": "Do not upgrade one kind of evidence into another."
+        "plainExplanation": "This formula measures how far a distribution is from being a standard bell curve. The '- 3' is there because a perfect Gaussian distribution has an $E[y^4]/(E[y^2])^2$ ratio of exactly 3. So, a Gaussian has a kurtosis of 0.",
+        "whyNeeded": "It provides a computable metric for non-Gaussianity, which is the objective function ICA maximizes.",
+        "ifRemoved": "We would know we want non-Gaussianity but wouldn't have a mathematical way to calculate or optimize it.",
+        "encourages": "Searching for directions in the data that produce sparse (spiky) distributions.",
+        "doesNotGuarantee": "That the sources are truly independent if the assumption of linear mixing is violated."
       }
     ],
     "evidence": [
       {
-        "claim": "ICA assumes observations are mixtures of independent, non-Gaussian sources and searches for an unmixing transformation.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "ICA can separate independent sources by maximizing non-Gaussianity.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "1404.2986v1",
+        "section": "3. What is ICA?",
+        "verified": true,
+        "paraphrase": "The core principle of ICA estimation is that maximizing the non-Gaussianity of a linear combination of mixture variables leads to the recovery of the independent components."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The Gaussian Trap",
+        "mechanism": "Attempting to use ICA when the underlying latent sources are normally distributed (Gaussian).",
+        "symptom": "ICA fails to converge or returns arbitrary orthogonal rotations, similar to PCA.",
+        "diagnosticTest": "Check the kurtosis of the extracted components. If they are all near zero, the sources might be Gaussian.",
+        "mitigation": "ICA fundamentally requires at most one source to be Gaussian. If sources are Gaussian, ICA cannot separate them.",
+        "setconcaRelevance": "We assume neural features are sparse (super-Gaussian, positive kurtosis). This is why ICA-like approaches are theoretically sound for interpretability."
+      },
+      {
+        "name": "Overcomplete Mixtures",
+        "mechanism": "Having more latent sources than observed mixtures (e.g., trying to find 10 voices with only 2 microphones).",
+        "symptom": "Standard linear ICA math breaks down because the mixing matrix $A$ cannot be inverted.",
+        "diagnosticTest": "Compare the presumed number of features to the dimension of the activation vector.",
+        "mitigation": "Use overcomplete ICA methods or Sparse Autoencoders (SAEs), which are designed to handle more sources than dimensions.",
+        "setconcaRelevance": "Transformer activations exhibit superposition (more concepts than dimensions). Standard ICA fails here; this is why interpretability requires sparse dictionary learning, not just vanilla ICA."
       }
     ],
     "setconcaConnection": {
-      "relevance": "ICA and the cocktail-party problem determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "ConCA (Concept Component Analysis) treats transformer activations as mixtures of concept components.",
+      "whichPart": "The core algorithm of ConCA.",
+      "whichDesignChoice": "Applying an ICA-inspired decomposition to isolate distinct, human-interpretable concepts from dense activation vectors.",
+      "proposedExperiment": "Calculate the kurtosis of the components extracted by ConCA compared to raw neurons. ConCA components should exhibit significantly higher kurtosis (sparsity)."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that ica and the cocktail-party problem improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If ICA outputs a signal $y_1 = [1, -2, 3]$ and $y_2 = [-4, 5, -6]$, it's equally valid if it had output $y_1 = [-4, 5, -6]$ and $y_2 = [-2, 4, -6]$ (scaling by -2). Why does ICA have these scaling and permutation ambiguities?",
+        "reveal": "Because $x = As$. We can multiply a source $s_i$ by a constant $c$, and divide the corresponding column in $A$ by $c$, and $x$ remains exactly the same. We can also swap the order of the sources and the columns of $A$. ICA cannot determine the 'true' order or scale, only the independent axes."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain ica and the cocktail-party problem to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the logic linking the Central Limit Theorem to the objective of maximizing non-Gaussianity in ICA.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "States that the CLT causes mixtures of independent variables to be more Gaussian than the sources.",
+          "Concludes that to reverse the mixing, we must move away from Gaussianity.",
+          "Explains that maximizing non-Gaussianity (via kurtosis) therefore finds the unmixed sources."
+        ],
+        "badVersion": "ICA uses kurtosis to find non-Gaussian things because the CLT says mixtures are Gaussian.",
+        "goodVersion": "The Central Limit Theorem states that adding independent random variables together results in a distribution that is more Gaussian than the original variables. Therefore, any linear mixture of our latent sources will look more like a bell curve. To reverse this mixing process and find the original sources, we must logically do the opposite: search for linear combinations of our observed data that are as far from a Gaussian distribution as possible. By maximizing a metric of non-Gaussianity like kurtosis, we reverse the CLT effect and isolate the independent sources."
       }
-    ],
-    "nextLesson": {
-      "id": "p02-l04",
-      "bridge": "Next: Identifiability: what can be uniquely recovered?. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p02-l04",
+    "text": "ICA shows that by adding the constraint of non-Gaussian independence, we can uniquely recover latent sources. This concept of whether a true underlying model can be uniquely recovered is called 'identifiability', which is the subject of our next lesson."
   }
 }

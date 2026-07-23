@@ -4,161 +4,145 @@
   "phaseIndex": 4,
   "lessonIndex": 2,
   "title": "CCA: align shared variation",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 35,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
-    "p04-l01"
+    "p04-l01",
+    "p01-l05"
   ],
   "learningObjectives": [
-    "Explain cca: align shared variation in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand the mathematical objective of Canonical Correlation Analysis (CCA).",
+    "Formulate CCA as an eigenvalue problem.",
+    "Explain the difference between aligning shared semantics and aligning shared noise.",
+    "Interpret canonical correlations in the context of representation learning."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "CCA finds one direction in each view whose projected values are maximally correlated. It recovers shared variation, not necessarily the causal factor that generated it. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Canonical Correlation Analysis (CCA) is the classical workhorse of multi-view learning. Introduced by Hotelling in 1936, it provides a principled mathematical framework for finding linear relationships between two sets of variables. If you have two views of the same data, CCA finds the coordinate systems (projections) in each view such that the projected data are maximally correlated.\n\nWhile modern deep learning often relies on non-linear neural networks, understanding CCA is absolutely essential. Deep multi-view methods, including Deep CCA, are direct extensions of this classical technique. The objective function\u2014maximizing correlation\u2014remains the core driving force for aligning representations.\n\nFurthermore, studying CCA exposes a critical vulnerability in correlation-based alignment: CCA will eagerly align anything that is correlated, including shared noise or confounding variables. By studying linear CCA, we learn to anticipate and mitigate these failure modes in more complex, opaque deep models."
     },
-    "bridgeFrom": "p04-l01",
+    "bridgeFrom": "We established that views contain both shared and private information. CCA gives us the mathematical tool to extract that shared information linearly.",
     "intuition": {
-      "analogy": "Two cameras can film the same event from different angles. What both cameras see is shared; their lighting, occlusion, and viewpoint are private. CCA finds one direction in each view whose projected values are maximally correlated. It recovers shared variation, not necessarily the causal factor that generated it.",
-      "analogyLimit": "Correlation identifies agreement, not necessarily cause. A shared nuisance can look just as attractive as a shared concept.",
-      "text": "CCA finds one direction in each view whose projected values are maximally correlated. It recovers shared variation, not necessarily the causal factor that generated it."
+      "analogy": "Two people describing a landscape from different vantage points.",
+      "analogyLimit": "CCA is strictly linear and only finds correlations, not necessarily causation.",
+      "text": "Imagine two people standing on different hills, looking at the same valley. Person A describes what they see using a coordinate system relative to their hill (View 1). Person B describes the valley using a coordinate system relative to their hill (View 2).\n\nBecause they are looking at the same valley, their descriptions are related, but they are encoded in completely different coordinate systems. CCA acts as a translator. It finds a specific direction for Person A to look, and a corresponding direction for Person B to look, such that what they see in those directions matches as closely as possible.\n\nSpecifically, CCA finds linear projections of View 1 and View 2 such that the resulting 1D projections are maximally correlated. It then finds a second pair of directions, orthogonal to the first, that maximize the remaining correlation, and so on."
     },
     "toyExample": {
-      "description": "Create two views with one shared factor and one private factor. Increase private signal and watch an alignment-only objective ignore it.",
+      "description": "Aligning physical measurements.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what cca: align shared variation should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Collect a dataset of 10 people. View 1 is [height, weight]. View 2 is [shoe_size, hat_size].",
+          "result": "We have two 2D views of the same 10 individuals.",
+          "insight": "The views describe different physical attributes but share an underlying factor (overall body size)."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Compute CCA on View 1 and View 2.",
+          "result": "The first canonical correlation might be 0.95.",
+          "insight": "CCA successfully finds a linear combination of height/weight and shoe/hat size that represents the shared 'body size' factor."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Examine the second canonical correlation.",
+          "result": "The second correlation might be 0.15.",
+          "insight": "The remaining variation (e.g., head shape vs body shape) is largely independent between the views."
         }
       ]
     },
     "visual": {
       "id": "cca-shared-noise",
-      "question": "Which assumption behind cca: align shared variation changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "question": "Does high correlation imply shared semantic meaning?",
+      "description": "A scatter plot showing two views perfectly correlated along a diagonal line, but the line represents a shared confounding variable (like time of day or batch effect) rather than the true signal."
     },
     "technical": {
-      "text": "CCA finds one direction in each view whose projected values are maximally correlated. It recovers shared variation, not necessarily the causal factor that generated it. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Given two zero-mean data matrices X (n x p) and Y (n x q), CCA seeks linear projection vectors w_x and w_y that maximize the Pearson correlation between Xw_x and Yw_y. The objective is to maximize w_x^T C_xy w_y subject to w_x^T C_xx w_x = 1 and w_y^T C_yy w_y = 1, where C_xx, C_yy are auto-covariance matrices and C_xy is the cross-covariance matrix. This can be solved as a generalized eigenvalue problem.",
+      "definitions": [
+        "Canonical Variates: The projected data vectors Xw_x and Yw_y.",
+        "Canonical Correlation: The correlation between a pair of canonical variates.",
+        "Cross-Covariance Matrix (C_xy): Matrix capturing the covariance between every feature in X and every feature in Y."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\max_{u,v}\\;\\mathrm{corr}(u^\\top X,v^\\top Y)",
+        "id": "eq-2",
+        "label": "CCA Objective",
+        "latex": "\\max_{w_x, w_y} \\frac{w_x^T C_{xy} w_y}{\\sqrt{w_x^T C_{xx} w_x} \\sqrt{w_y^T C_{yy} w_y}}",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "w_x": "Projection for X",
+          "w_y": "Projection for Y",
+          "C_{xy}": "Cross-covariance"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. CCA finds one direction in each view whose projected values are maximally correlated. It recovers shared variation, not necessarily the causal factor that generated it.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Correlation identifies agreement, not necessarily cause. A shared nuisance can look just as attractive as a shared concept."
-      }
-    ],
-    "methodComparison": [
+        "plainExplanation": "Find the projections that maximize the correlation between the two views.",
+        "whyNeeded": "It provides a scale-invariant measure of alignment.",
+        "ifRemoved": "We would be sensitive to the arbitrary scale of the features in X and Y.",
+        "encourages": "Finding the strongest shared linear signal.",
+        "doesNotGuarantee": "That the signal is semantically meaningful (it could be shared noise)."
+      },
       {
-        "question": "What information is rewarded?",
-        "methods": [
-          {
-            "name": "CCA",
-            "answer": "CCA: shared correlation"
-          },
-          {
-            "name": "Reconstruction",
-            "answer": "Reconstruction: within-view fidelity"
-          },
-          {
-            "name": "Shared/private model",
-            "answer": "Shared/private model: both"
-          }
-        ],
-        "practicalImplication": "Alignment alone can discard valuable private signal."
+        "id": "eq-3",
+        "label": "CCA Generalized Eigenvalue Problem",
+        "latex": "C_{xy} C_{yy}^{-1} C_{yx} w_x = \\lambda^2 C_{xx} w_x",
+        "symbols": {
+          "\\lambda": "Canonical correlation",
+          "C_{yy}^{-1}": "Inverse covariance of Y"
+        },
+        "plainExplanation": "The optimal projection for X is an eigenvector of this composite matrix.",
+        "whyNeeded": "Allows CCA to be solved efficiently using standard linear algebra techniques.",
+        "ifRemoved": "We would have to use iterative optimization which is slower and might find local optima.",
+        "encourages": "An exact, globally optimal solution for linear alignment.",
+        "doesNotGuarantee": "Success if the relationships are highly non-linear."
       }
     ],
     "evidence": [
       {
-        "claim": "CCA finds one direction in each view whose projected values are maximally correlated. It recovers shared variation, not necessarily the causal factor that generated it.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "CCA finds maximally correlated linear projections.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "1711.02391v1",
+        "section": "2. Canonical Correlation Analysis",
+        "verified": true,
+        "paraphrase": "The tutorial by Uurtio et al. (2017) formally derives CCA as the search for linear combinations of two views that achieve maximum correlation."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Shared Noise Alignment",
+        "mechanism": "Both views contain a strong, correlated noise signal (e.g., they were collected at the same time, sharing a temporal confounder).",
+        "symptom": "High canonical correlation, but the canonical variates are useless for downstream semantic tasks.",
+        "diagnosticTest": "Evaluate the learned representations on a semantic classification task.",
+        "mitigation": "Ensure data collection does not introduce shared confounding variables, or use techniques to partial them out.",
+        "setconcaRelevance": "If different contexts share structural similarities (e.g., same sentence length), CCA might align on length rather than the target concept."
       }
     ],
     "setconcaConnection": {
-      "relevance": "CCA: align shared variation determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA aims to find shared conceptual representations, much like CCA aims to find shared variance.",
+      "whichPart": "Objective Function / Alignment Strategy",
+      "whichDesignChoice": "While SetConCA operates on sets, the principle of maximizing agreement (or correlation) between elements of the set to distill the concept is fundamentally related to CCA.",
+      "proposedExperiment": "Apply linear CCA to pairs of token activations that share a concept, and see if the resulting canonical variates encode the concept better than the raw activations."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that cca: align shared variation improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If View 1 and View 2 are completely independent random noise, what will the canonical correlations be?",
+        "reveal": "They will be close to zero (though slightly positive in finite samples due to spurious correlations)."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain cca: align shared variation to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Why is it important to remember that CCA finds what is SHARED, but can also find shared NOISE?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Mentions that correlation does not equal semantics.",
+          "Provides an example of shared noise (e.g., batch effects).",
+          "Explains the impact on downstream tasks."
+        ],
+        "badVersion": "Because noise is bad for models.",
+        "goodVersion": "CCA is mathematically blind to the difference between 'useful semantic signal' and 'useless correlated noise'. If both views share a confounding variable (like being recorded on the same faulty microphone), CCA will gladly align that noise perfectly, yielding a high correlation but a representation that is useless for actual tasks."
       }
-    ],
-    "nextLesson": {
-      "id": "p04-l03",
-      "bridge": "Next: Deep multi-view models. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p04-l03",
+    "text": "Linear projections are limited. What if the shared information is encoded in a highly non-linear way? Enter Deep CCA."
   }
 }

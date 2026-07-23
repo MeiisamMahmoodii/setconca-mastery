@@ -3,162 +3,144 @@
   "phase": "Sparse representation learning",
   "phaseIndex": 3,
   "lessonIndex": 1,
-  "title": "Undercomplete and overcomplete codes",
+  "title": "Undercomplete and Overcomplete Codes",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p02-l05"
-  ],
+  "prerequisites": ["p01-l05"],
   "learningObjectives": [
-    "Explain undercomplete and overcomplete codes in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Differentiate between undercomplete and overcomplete representations.",
+    "Explain why undercomplete codes force compression and feature mixing.",
+    "Explain why overcomplete codes allow for selectivity but require sparsity constraints."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "An undercomplete code compresses into fewer dimensions. An overcomplete code offers more feature directions than input dimensions, so it must be constrained to avoid arbitrary dense solutions. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Before we can understand Sparse Autoencoders (SAEs), we need to understand what makes them different from traditional dimensionality reduction techniques like Principal Component Analysis (PCA). PCA is fundamentally an undercomplete coding scheme: it forces a high-dimensional space into a lower-dimensional one. This necessitates a loss of information and forces features to mix together. \n\nIn modern mechanistic interpretability, we are interested in isolating individual, monosemantic concepts. An undercomplete code makes this impossible by design because it doesn't have enough 'slots' for all the unique features present in the data. Overcomplete codes solve this problem by providing more slots than input dimensions. However, an overcomplete code without constraints is trivial—it could just memorize the input and do nothing else. \n\nUnderstanding the transition from undercomplete compression to overcomplete, sparse representation is the foundational step for all modern interpretability techniques that rely on dictionary learning. This lesson establishes that foundation by clearly distinguishing the mathematics, the intuition, and the consequences of these two opposing paradigms."
     },
-    "bridgeFrom": "p02-l05",
+    "bridgeFrom": "In Phase 1, we learned that neural networks represent concepts as directions in a high-dimensional latent space. We also saw that concepts are often in 'superposition', where there are more active concepts than available dimensions. This lesson introduces the framework needed to disentangle them.",
     "intuition": {
-      "analogy": "Think of an overcomplete dictionary as a large box of labelled tools. Sparsity says that only a few tools may be taken out for any one job. An undercomplete code compresses into fewer dimensions. An overcomplete code offers more feature directions than input dimensions, so it must be constrained to avoid arbitrary dense solutions.",
-      "analogyLimit": "A sparse code can still be unstable, polysemantic, or aligned to a convenient decomposition rather than the intended factors.",
-      "text": "An undercomplete code compresses into fewer dimensions. An overcomplete code offers more feature directions than input dimensions, so it must be constrained to avoid arbitrary dense solutions."
+      "analogy": "An interior designer's furniture catalog.",
+      "analogyLimit": "A furniture catalog has discrete items, whereas neural network features are continuous directions in a vector space.",
+      "text": "Imagine you are an interior designer tasked with furnishing a 10-room house, and you must use a catalog to order furniture. \n\nAn undercomplete code is like being handed a catalog that only contains 5 types of furniture (e.g., 'table-chair combo', 'bed-dresser combo'). Because you have 10 rooms but only 5 types of furniture to choose from, you are forced to reuse those limited types across many different rooms, even if they don't perfectly fit the specific aesthetic of a given room. The limited size of the catalog forces a severe compromise: you must mix and match broadly applicable, generic pieces. You cannot have specialized, unique pieces for each room because there just aren't enough slots in the catalog.\n\nAn overcomplete code, on the other hand, is like being handed a massive, specialized catalog containing 10,000 distinct types of furniture. You have far more furniture types than you have rooms. This allows you to pick exactly the right pieces for each specific room. A bedroom can have a specific bed, a dining room a specific table, and a patio a specific chair. Because the catalog is so large, you don't have to compromise or mix disparate concepts. \n\nHowever, there is a catch with the massive catalog: if you order 1,000 items for a single room, it will be a chaotic mess. To make the overcomplete catalog work, you need a strict constraint: you must only select a very small number of items per room. This is sparsity. By enforcing sparsity on an overcomplete catalog, you achieve highly selective, precise, and unmixed representations."
     },
     "toyExample": {
-      "description": "Generate activations from a few sparse ground-truth factors, then compare an L1 code and a TopK code at similar reconstruction error.",
+      "description": "Comparing undercomplete and overcomplete representations for a 3-dimensional input.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what undercomplete and overcomplete codes should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Define an input vector in a 3-dimensional space (d=3): x = [1.5, -0.5, 2.0].",
+          "result": "The input x represents some internal model activation.",
+          "insight": "We want to represent x using a dictionary of learned features."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Apply an undercomplete code with k=2 features (like PCA).",
+          "result": "The dictionary D is 3x2. The code c is 2x1. To reconstruct x, we need x ≈ D * c. Because k < d, we cannot perfectly reconstruct all possible 3D vectors. The features in D must be broad and capture variance across multiple input dimensions simultaneously.",
+          "insight": "Undercomplete codes force compression, inevitably mixing distinct concepts into the same features."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Apply an overcomplete code with k=8 features, but NO sparsity.",
+          "result": "The dictionary D is 3x8. The code c is 8x1. There are infinitely many ways to choose c such that x = D * c. The network might just use the first 3 features to perfectly copy the input and ignore the rest.",
+          "insight": "Without constraints, an overcomplete dictionary is redundant and trivial."
+        },
+        {
+          "step": 4,
+          "action": "Apply an overcomplete code (k=8) WITH a sparsity constraint (e.g., at most 2 active features).",
+          "result": "The code c is forced to be mostly zeros. Only the 2 features in D that best align with x will be activated. The features in D can now afford to be highly specialized and selective.",
+          "insight": "Overcomplete + Sparse = Selectivity. Concepts can finally be separated."
         }
       ]
     },
     "visual": {
       "id": "sparse-dict",
-      "question": "Which assumption behind undercomplete and overcomplete codes changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "question": "What is the primary visual difference in the activation pattern between the undercomplete and sparse overcomplete models?",
+      "description": "A visualization showing a dense, low-dimensional vector for the undercomplete model, and a sparse, high-dimensional vector for the overcomplete model."
     },
     "technical": {
-      "text": "An undercomplete code compresses into fewer dimensions. An overcomplete code offers more feature directions than input dimensions, so it must be constrained to avoid arbitrary dense solutions. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "In representation learning, a code is a transformation of an input vector into a latent vector. Let the input vector be $x \\in \\mathbb{R}^d$. A dictionary $D$ is a matrix of size $d \\times k$, where each column is a 'feature' or 'atom'. The code vector $c \\in \\mathbb{R}^k$ contains the coefficients or activations for each feature. The reconstruction of the input is given by $\\hat{x} = D c$. The relationship between the input dimension $d$ and the dictionary size $k$ defines the nature of the code.",
+      "definitions": [
+        {
+          "term": "Undercomplete Code",
+          "definition": "A representation where the number of dictionary features $k$ is strictly less than the input dimension $d$ ($k < d$). This forces a bottleneck and data compression."
+        },
+        {
+          "term": "Overcomplete Code",
+          "definition": "A representation where the number of dictionary features $k$ is strictly greater than the input dimension $d$ ($k > d$). The dictionary forms a frame rather than a basis."
+        },
+        {
+          "term": "Superposition",
+          "definition": "The phenomenon where a neural network represents more unique features than it has dimensions by storing them as almost-orthogonal vectors. Overcomplete dictionaries are designed to disentangle superposition."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L=\\|x-\\hat{x}\\|_2^2+\\lambda\\|z\\|_1",
+        "id": "eq-1",
+        "label": "Linear Reconstruction",
+        "latex": "\\hat{x} = \\sum_{i=1}^{k} c_i D_i",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "\\hat{x}": "Reconstructed input vector",
+          "c_i": "Activation coefficient for the i-th feature",
+          "D_i": "The i-th column vector (feature direction) in the dictionary"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. An undercomplete code compresses into fewer dimensions. An overcomplete code offers more feature directions than input dimensions, so it must be constrained to avoid arbitrary dense solutions.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A sparse code can still be unstable, polysemantic, or aligned to a convenient decomposition rather than the intended factors."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "How is sparsity imposed?",
-        "methods": [
-          {
-            "name": "L1 SAE",
-            "answer": "L1: soft magnitude penalty"
-          },
-          {
-            "name": "TopK SAE",
-            "answer": "TopK: exact activity budget"
-          },
-          {
-            "name": "Dense AE",
-            "answer": "Dense AE: no sparse constraint"
-          }
-        ],
-        "practicalImplication": "Compare methods at matched fidelity and activity."
+        "plainExplanation": "The reconstructed input is simply a weighted sum of the dictionary features, where the weights are the activations in the code vector.",
+        "whyNeeded": "This defines the fundamental linear model used in sparse dictionary learning. It assumes that features combine additively.",
+        "ifRemoved": "We would not be able to evaluate how well the code vector represents the original input.",
+        "encourages": "Additive composition of independent features.",
+        "doesNotGuarantee": "That the features $D_i$ are semantically meaningful on their own without appropriate sparsity constraints on $c$."
       }
     ],
     "evidence": [
       {
-        "claim": "An undercomplete code compresses into fewer dimensions. An overcomplete code offers more feature directions than input dimensions, so it must be constrained to avoid arbitrary dense solutions.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Neural network representations are in superposition, necessitating overcomplete dictionaries to disentangle them.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Bricken et al. 2023",
+        "section": "Introduction",
+        "verified": true,
+        "paraphrase": "Language models pack more concepts into their activation spaces than there are dimensions. Standard bases cannot isolate these features; an overcomplete sparse dictionary is required to find the 'true' feature directions."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Trivial Overcompleteness",
+        "mechanism": "Training an overcomplete autoencoder without a strict enough sparsity penalty.",
+        "symptom": "The model achieves perfect reconstruction but the features are dense and uninterpretable. Often, it just learns the identity function.",
+        "diagnosticTest": "Check the average L0 norm (number of non-zero activations). If it's close to $d$ or $k$, the code is not sparse.",
+        "mitigation": "Increase the sparsity penalty coefficient ($\\lambda$) or use a hard sparsity constraint like TopK.",
+        "setconcaRelevance": "SetConCA must ensure that representations remain sparse, otherwise coordination across views might just align dense, uninterpretable noise."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Undercomplete and overcomplete codes determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA operates on the premise that features should be sparse and aligned across views.",
+      "whichPart": "The feature extraction backbone.",
+      "whichDesignChoice": "Choosing to project intermediate representations into an overcomplete space before applying the cross-view coordination loss.",
+      "proposedExperiment": "Train SetConCA with an undercomplete bottleneck versus an overcomplete sparse layer. Measure the resulting disentanglement score on a synthetic dataset with known ground-truth factors."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that undercomplete and overcomplete codes improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you have an input space of $d=512$ and you want to represent 2000 distinct, roughly independent concepts, what is the minimum dictionary size $k$ you should choose, and what constraint must you apply?",
+        "reveal": "You must choose an overcomplete dictionary where $k \\ge 2000$. To make it work, you must apply a sparsity constraint so that for any given input, only a small subset of those $k$ features is active at once."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain undercomplete and overcomplete codes to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain why Principal Component Analysis (PCA) is insufficient for extracting monosemantic features from a language model's residual stream.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Mentions that PCA is an undercomplete transformation.",
+          "Explains that undercomplete transformations force compression.",
+          "Connects compression to the inevitable mixing of distinct features (polysemanticity).",
+          "Notes that the residual stream contains more features than dimensions (superposition), which PCA cannot resolve."
+        ],
+        "badVersion": "PCA just finds the directions of maximum variance, which might not be the actual concepts.",
+        "goodVersion": "PCA fundamentally relies on an undercomplete basis, meaning the number of components is less than or equal to the input dimensions. Because language models exhibit superposition—representing more features than they have dimensions—an undercomplete method like PCA is forced to compress multiple distinct concepts into single orthogonal components. This compression inherently prevents the extraction of monosemantic features, as each principal component must mix several true features to explain the variance."
       }
-    ],
-    "nextLesson": {
-      "id": "p03-l02",
-      "bridge": "Next: L0, L1, and TopK sparsity. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p03-l02",
+    "text": "Now that we understand why an overcomplete dictionary requires sparsity to be useful, we must ask: how exactly do we enforce this sparsity? In the next lesson, we will explore the different mathematical definitions of sparsity—L0, L1, and TopK—and the profound impact they have on the learned features."
   }
 }

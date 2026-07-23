@@ -6,159 +6,109 @@
   "title": "SAEs as overcomplete dictionaries",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
     "p07-l03"
   ],
   "learningObjectives": [
-    "Explain saes as overcomplete dictionaries in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand SAEs as a solution to superposition."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "An SAE offers a larger set of candidate directions and activates only a few at once, aiming to resolve features that were superposed in the original coordinates. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "SAEs are the current best approach to disentangling superimposed features."
     },
-    "bridgeFrom": "p07-l03",
+    "bridgeFrom": "We need a way to unpack superimposed representations.",
     "intuition": {
-      "analogy": "Treat a transformer as a busy workshop with a shared workbench. Each component adds or reads a mark, but a mark is not an explanation until changing it changes the job's outcome. An SAE offers a larger set of candidate directions and activates only a few at once, aiming to resolve features that were superposed in the original coordinates.",
-      "analogyLimit": "A descriptive feature label is not a circuit. The explanation must survive causal intervention and negative controls.",
-      "text": "An SAE offers a larger set of candidate directions and activates only a few at once, aiming to resolve features that were superposed in the original coordinates."
+      "analogy": "Prism splitting light.",
+      "analogyLimit": "Prisms split into continuous spectrum, SAEs discrete.",
+      "text": "SAE = proposed solution to superposition. More atoms than dimensions.\n[Warning]: SAEs find A decomposition, not THE decomposition."
     },
     "toyExample": {
-      "description": "Choose a small behaviour, name a candidate feature path, then ablate or patch it while holding the prompt family fixed.",
+      "description": "SAE finding features.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what saes as overcomplete dictionaries should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
-        },
-        {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
-        },
-        {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 1,
+          "action": "3D with 6 ground truth features.",
+          "result": "SAE with 12 atoms.",
+          "insight": "Compare alignment. Atoms align with ground truth features."
         }
       ]
     },
     "visual": {
-      "id": "superposition-geometry",
-      "question": "Which assumption behind saes as overcomplete dictionaries changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "sae-pareto",
+      "question": "How to evaluate SAEs?",
+      "description": "Pareto frontier of reconstruction vs sparsity."
     },
     "technical": {
-      "text": "An SAE offers a larger set of candidate directions and activates only a few at once, aiming to resolve features that were superposed in the original coordinates. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "SAEs learn an overcomplete dictionary to represent activations sparsely.",
+      "definitions": [
+        {
+          "term": "Sparse Autoencoder",
+          "definition": "A model trained to reconstruct activations with a sparsity penalty."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "x_{l+1}=x_l+\\mathrm{Attn}_l(x_l)+\\mathrm{MLP}_l(x_l)",
-        "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
-        },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. An SAE offers a larger set of candidate directions and activates only a few at once, aiming to resolve features that were superposed in the original coordinates.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A descriptive feature label is not a circuit. The explanation must survive causal intervention and negative controls."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What kind of claim is made?",
-        "methods": [
-          {
-            "name": "Correlation",
-            "answer": "Activation correlation"
-          },
-          {
-            "name": "Feature label",
-            "answer": "Feature description"
-          },
-          {
-            "name": "Circuit intervention",
-            "answer": "Causal circuit test"
-          }
-        ],
-        "practicalImplication": "Only the last tests whether the component contributes to the behaviour."
+        "id": "eq-4",
+        "label": "SAE Loss",
+        "latex": "L = \\|x - \\hat{x}\\|^2 + \\lambda \\|f\\|_1",
+        "symbols": {},
+        "plainExplanation": "Reconstruction plus sparsity.",
+        "whyNeeded": "Disentangle features.",
+        "ifRemoved": "Dense representations.",
+        "encourages": "Monosemanticity.",
+        "doesNotGuarantee": "Causality."
       }
     ],
     "evidence": [
       {
-        "claim": "An SAE offers a larger set of candidate directions and activates only a few at once, aiming to resolve features that were superposed in the original coordinates.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Monosemantic features",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Bricken 2023, Cunningham 2023, Templeton 2025",
+        "section": "Main",
+        "verified": true,
+        "paraphrase": "SAEs find more interpretable features than neurons."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Dead latents",
+        "mechanism": "Features never activate.",
+        "symptom": "Low L0.",
+        "diagnosticTest": "Count active latents.",
+        "mitigation": "Ghost grads.",
+        "setconcaRelevance": "High."
       }
     ],
     "setconcaConnection": {
-      "relevance": "SAEs as overcomplete dictionaries determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "Core methodology.",
+      "whichPart": "Feature extraction.",
+      "whichDesignChoice": "L1 penalty.",
+      "proposedExperiment": "Train SAE."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that saes as overcomplete dictionaries improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "computation",
+        "prompt": "Calculate L1 norm.",
+        "reveal": "Show math."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain saes as overcomplete dictionaries to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain SAEs.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Overcomplete dictionary.",
+          "Sparsity."
+        ],
+        "badVersion": "It's an autoencoder.",
+        "goodVersion": "It's a sparse dictionary learner."
       }
-    ],
-    "nextLesson": {
-      "id": "p07-l05",
-      "bridge": "Next: From feature correlation to mechanism. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p07-l05",
+    "text": "Next we look at causal evidence."
   }
 }

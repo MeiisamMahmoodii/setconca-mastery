@@ -4,161 +4,148 @@
   "phaseIndex": 8,
   "lessonIndex": 2,
   "title": "Probes and control tasks",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 30,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
-    "p08-l01"
+    "p08-l01",
+    "p07-l05"
   ],
   "learningObjectives": [
-    "Explain probes and control tasks in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Define linear probing and explain its purpose in representation evaluation.",
+    "Understand the distinction between a property being present in a representation and a property being structurally accessible.",
+    "Explain Hewitt & Liang's (2019) concept of control tasks and how they expose over-powerful probes.",
+    "Apply Minimum Description Length (MDL) probing principles to evaluate representation quality.",
+    "Calculate and interpret probe selectivity."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A probe shows that information can be decoded. Control tasks test whether the probe learned an accidental lookup table rather than a useful organization of the representation. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "When we want to know if a neural network has learned a specific concept (like 'parts of speech' or 'sentiment'), the standard approach is to train a simple classifier—a linear probe—on top of the network's internal representations. If the probe achieves high accuracy, we often declare victory: 'The network understands sentiment!'\n\nBut this conclusion is dangerous. What if the probe achieved high accuracy not because the network learned a clean, structured representation of sentiment, but simply because the representation space is so high-dimensional that a linear classifier can memorize the training labels? If you give a linear probe enough dimensions, it can separate almost anything. We need a way to distinguish between a probe that is genuinely extracting existing structure and a probe that is just memorizing data. This lesson introduces control tasks and MDL probing, essential tools for keeping our evaluations honest."
     },
-    "bridgeFrom": "p08-l01",
+    "bridgeFrom": "In the previous lesson, we saw how variance metrics can trick us into thinking a representation is good when it is functionally useless. Now, we will see how classification metrics can trick us into thinking a representation is structured when it is actually just high-dimensional.",
     "intuition": {
-      "analogy": "Evaluation is a medical panel, not a single thermometer. One number can be reassuring while another reveals the problem. A probe shows that information can be decoded. Control tasks test whether the probe learned an accidental lookup table rather than a useful organization of the representation.",
-      "analogyLimit": "No single metric measures interpretability. Every metric needs an explicit non-claim beside it.",
-      "text": "A probe shows that information can be decoded. Control tasks test whether the probe learned an accidental lookup table rather than a useful organization of the representation."
+      "analogy": "Imagine a detective trying to prove that a suspect (the neural network) knows the layout of a secret base (the concept).",
+      "analogyLimit": "Unlike human memory, which is lossy, a high-dimensional vector space can perfectly memorize random information if given enough capacity.",
+      "text": "The detective asks the suspect a series of questions. The suspect answers them all correctly. The detective concludes: 'Aha! You know the layout.' But wait—what if the detective was secretly whispering the answers to the suspect? Or what if the suspect just has an eidetic memory and memorized the questions and answers beforehand without understanding the layout?\n\nIn our neural network evaluations, the linear probe is the detective. If the probe is too powerful, or if the representation space is too large, the probe essentially 'whispers the answers' by finding complex, meaningless correlations that happen to separate the training data. To test if the suspect actually knows the layout, the detective should ask questions about a FAKE layout. If the suspect still answers them all correctly, we know they are just memorizing, not understanding. This is exactly what a control task does: we ask the probe to predict random, fake labels. If it succeeds, the probe is too powerful."
     },
     "toyExample": {
-      "description": "Run two methods across several seeds and plot fidelity, sparsity, similarity, and intervention effects separately instead of collapsing them into one score.",
+      "description": "Evaluate two different representations (A and B) using a standard probe and a control task to determine which representation actually has better structure.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what probes and control tasks should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Train a linear probe on Representation A to predict a real property (e.g., noun vs. verb). Accuracy: 92%.",
+          "result": "Representation A seems excellent.",
+          "insight": "High raw accuracy is encouraging but inconclusive."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Train a linear probe on Representation B to predict the same real property. Accuracy: 78%.",
+          "result": "Representation B seems worse than Representation A.",
+          "insight": "A naive evaluation would select Representation A."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Run a control task: train the probe on Representation A to predict random, fake labels. Accuracy: 85%.",
+          "result": "Selectivity for A is 92% - 85% = 7%.",
+          "insight": "Representation A has high capacity but little actual structure related to the property. The probe is just memorizing."
+        },
+        {
+          "step": 4,
+          "action": "Run a control task on Representation B using the same random labels. Accuracy: 12%.",
+          "result": "Selectivity for B is 78% - 12% = 66%.",
+          "insight": "Representation B is MUCH better. Its structure genuinely supports the real property, while preventing the memorization of random noise."
         }
       ]
     },
     "visual": {
-      "id": "sae-pareto",
-      "question": "Which assumption behind probes and control tasks changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "probe-selectivity",
+      "question": "How does probe selectivity change as the complexity (capacity) of the probe increases?",
+      "description": "A graph showing probe accuracy on real tasks vs control tasks as probe complexity increases. As complexity grows, real task accuracy goes up, but control task accuracy goes up even faster, causing selectivity (the gap between them) to plummet. The best probes have high selectivity, not just high raw accuracy."
     },
     "technical": {
-      "text": "A probe shows that information can be decoded. Control tasks test whether the probe learned an accidental lookup table rather than a useful organization of the representation. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Linear probing involves training a classifier $y = Wz + b$ on frozen representations $z$ to predict a property $y$. Hewitt & Liang (2019) introduced control tasks, where the true labels $y$ are replaced with random labels drawn from the same empirical distribution. Selectivity is defined as the difference between the accuracy on the real task and the accuracy on the control task. Voita & Titov (2020) proposed Minimum Description Length (MDL) probing, which evaluates representations based on how much they compress the labels. A representation that requires fewer bits to transmit the labels is considered better, as it demonstrates that the structure of the representation genuinely aligns with the task, rather than just providing enough dimensions for memorization.",
+      "definitions": [
+        "Linear Probe: A simple linear classifier trained on frozen internal representations to predict a specific property.",
+        "Control Task: A diagnostic task where the real labels are replaced with random labels to test the memorization capacity of the representation and probe.",
+        "Selectivity: The difference in performance between a real task and a control task.",
+        "MDL Probing: Evaluating representation quality by measuring the compression of labels, rather than raw classification accuracy."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathrm{FVU}=\\frac{\\|X-\\hat X\\|_F^2}{\\|X-\\bar X\\|_F^2}",
+        "id": "eq-1",
+        "label": "Probe Selectivity",
+        "latex": "Selectivity = Accuracy(Task_{real}) - Accuracy(Task_{control})",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "Accuracy(Task_{real})": "Probe accuracy on the actual property",
+          "Accuracy(Task_{control})": "Probe accuracy when trained on randomized labels"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A probe shows that information can be decoded. Control tasks test whether the probe learned an accidental lookup table rather than a useful organization of the representation.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "No single metric measures interpretability. Every metric needs an explicit non-claim beside it."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What does the metric measure?",
-        "methods": [
-          {
-            "name": "FVU",
-            "answer": "FVU: reconstruction"
-          },
-          {
-            "name": "CKA",
-            "answer": "CKA: geometry similarity"
-          },
-          {
-            "name": "Intervention",
-            "answer": "Intervention: causal effect"
-          }
-        ],
-        "practicalImplication": "Report the metric's non-claim beside its result."
+        "plainExplanation": "Selectivity is the gap between how well the probe learns the actual concept and how well it can memorize random noise.",
+        "whyNeeded": "It prevents us from being fooled by high-dimensional representations that can perfectly separate any random assignment of labels.",
+        "ifRemoved": "We would consistently overrate high-dimensional representations and overly complex probes, mistaking memorization capacity for genuine learned structure.",
+        "encourages": "Selecting representations where the specific geometry aligns with the concept, making the concept easy to learn while keeping random noise hard to learn.",
+        "doesNotGuarantee": "It does not guarantee that the model actually *uses* the information for its internal computations (causal faithfulness)."
       }
     ],
     "evidence": [
       {
-        "claim": "A probe shows that information can be decoded. Control tasks test whether the probe learned an accidental lookup table rather than a useful organization of the representation.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "High probe accuracy can be achieved even when the representation has no specific structure for the task.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Hewitt & Liang 2019",
+        "section": "Designing Control Tasks",
+        "verified": true,
+        "paraphrase": "Standard linear probes can achieve high accuracy on complex linguistic tasks purely by memorizing data in high-dimensional spaces, making raw accuracy an unreliable indicator of learned linguistic structure unless compared against a control task."
+      },
+      {
+        "claim": "Compression provides a more principled measure of representation quality than accuracy.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Voita & Titov 2020",
+        "section": "MDL Probes",
+        "verified": true,
+        "paraphrase": "By measuring the Minimum Description Length (the number of bits required to transmit the labels given the representations), we can accurately rank representations by how much structural information they contain about the task, penalizing representations that merely offer high memorization capacity."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The Powerful Probe Fallacy",
+        "mechanism": "Using a probe that is too complex (e.g., an MLP or a linear probe on a massive hidden state) to evaluate a representation.",
+        "symptom": "The probe achieves 99% accuracy on the concept, leading to the false conclusion that the model has deeply 'understood' the concept, when in fact the probe did all the learning.",
+        "diagnosticTest": "Run a control task with random labels. If accuracy remains high, the probe is too powerful.",
+        "mitigation": "Always calculate Selectivity. Use MDL probing to evaluate the compression ratio. Constrain the probe's complexity.",
+        "setconcaRelevance": "High"
       }
     ],
     "setconcaConnection": {
-      "relevance": "Probes and control tasks determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA aims to improve the alignment of features with human-interpretable concepts.",
+      "whichPart": "Evaluation Phase",
+      "whichDesignChoice": "How we prove that SetConCA features are actually better than baseline SAE features.",
+      "proposedExperiment": "Train linear probes on both SetConCA features and standard SAE features for a specific concept. If SetConCA has higher probe accuracy, run a control task. If SetConCA also has higher Selectivity and a better MDL compression ratio, we have robust evidence that SetConCA provides genuinely superior conceptual structure, not just higher capacity."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that probes and control tasks improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "You increase the dimensionality of your model's hidden state from 1000 to 4000. What do you expect will happen to probe accuracy on the real task? What will happen to control task accuracy? What will happen to selectivity?",
+        "reveal": "Real task accuracy will likely increase or stay high. Control task accuracy will drastically increase because the higher dimensionality provides more capacity for memorization. Therefore, Selectivity will likely DECREASE, exposing that the raw accuracy gain is an illusion."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain probes and control tasks to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Why might a representation with 78% accuracy and 66% selectivity be preferred over a representation with 92% accuracy and 7% selectivity?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Defines selectivity as the gap between real task accuracy and control task accuracy.",
+          "Explains that 7% selectivity means the representation is mostly just memorizing labels due to high capacity.",
+          "Explains that 66% selectivity means the representation geometry is specifically structured to support the real task.",
+          "Concludes that the 78% accuracy representation is more genuinely aligned with the concept, whereas the 92% accuracy is a mirage of capacity."
+        ],
+        "badVersion": "Because 66% is a better selectivity number.",
+        "goodVersion": "The representation with 92% accuracy and 7% selectivity has an 85% accuracy on random control tasks. This means the representation space is so high-dimensional or the probe is so powerful that it can separate almost any random assignment of labels. It hasn't learned the specific structure of the task; it just has massive memorization capacity. The representation with 78% accuracy and 66% selectivity only gets 12% on control tasks. This proves that its geometry specifically encodes the structure of the real task, making the true labels much easier to learn than random noise. The 78% representation genuinely 'understands' the concept better."
       }
-    ],
-    "nextLesson": {
-      "id": "p08-l03",
-      "bridge": "Next: CKA, SVCCA, and representation similarity. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p08-l03",
+    "text": "Probes help us evaluate if a specific concept is present in a representation. But what if we want to compare two entire representation spaces to see if they are structurally similar, regardless of specific concepts? In the next lesson, we'll dive into CKA and SVCCA."
   }
 }

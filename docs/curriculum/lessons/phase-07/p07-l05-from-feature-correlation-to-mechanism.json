@@ -6,159 +6,108 @@
   "title": "From feature correlation to mechanism",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
     "p07-l04"
   ],
   "learningObjectives": [
-    "Explain from feature correlation to mechanism in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand the difference between correlation and causation for features."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A feature that correlates with a behaviour is a candidate explanation. Necessity and sufficiency require targeted interventions and controls. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Finding a feature is not enough; we must prove it has a causal role."
     },
-    "bridgeFrom": "p07-l04",
+    "bridgeFrom": "From finding features, we must evaluate their causal role.",
     "intuition": {
-      "analogy": "Treat a transformer as a busy workshop with a shared workbench. Each component adds or reads a mark, but a mark is not an explanation until changing it changes the job's outcome. A feature that correlates with a behaviour is a candidate explanation. Necessity and sufficiency require targeted interventions and controls.",
-      "analogyLimit": "A descriptive feature label is not a circuit. The explanation must survive causal intervention and negative controls.",
-      "text": "A feature that correlates with a behaviour is a candidate explanation. Necessity and sufficiency require targeted interventions and controls."
+      "analogy": "Correlation vs causation.",
+      "analogyLimit": "Features can be both.",
+      "text": "4 methods: probing (info exists?), patching (info used?), ablation (necessary?), steering (sufficient?).\n[Warning]: Correlation ≠ causation for features.\nSetConCA: must test ALL four, not just probing."
     },
     "toyExample": {
-      "description": "Choose a small behaviour, name a candidate feature path, then ablate or patch it while holding the prompt family fixed.",
+      "description": "Evaluating two features.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what from feature correlation to mechanism should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
-        },
-        {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
-        },
-        {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 1,
+          "action": "Compare f_42 and f_108.",
+          "result": "f_42 has probe accuracy 92% for 'capital_city' but steering works only 15%. f_108 has probe 78% but steering 85%.",
+          "insight": "Which is better? f_108 has better causal influence."
         }
       ]
     },
     "visual": {
-      "id": "superposition-geometry",
-      "question": "Which assumption behind from feature correlation to mechanism changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "sae-pareto",
+      "question": "How to measure causal effect?",
+      "description": "Visualizing steering results."
     },
     "technical": {
-      "text": "A feature that correlates with a behaviour is a candidate explanation. Necessity and sufficiency require targeted interventions and controls. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Probing, patching, ablation, and steering test different causal hypotheses.",
+      "definitions": [
+        {
+          "term": "Activation Patching",
+          "definition": "Replacing an activation to test its causal effect."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "x_{l+1}=x_l+\\mathrm{Attn}_l(x_l)+\\mathrm{MLP}_l(x_l)",
-        "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
-        },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A feature that correlates with a behaviour is a candidate explanation. Necessity and sufficiency require targeted interventions and controls.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A descriptive feature label is not a circuit. The explanation must survive causal intervention and negative controls."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What kind of claim is made?",
-        "methods": [
-          {
-            "name": "Correlation",
-            "answer": "Activation correlation"
-          },
-          {
-            "name": "Feature label",
-            "answer": "Feature description"
-          },
-          {
-            "name": "Circuit intervention",
-            "answer": "Causal circuit test"
-          }
-        ],
-        "practicalImplication": "Only the last tests whether the component contributes to the behaviour."
+        "id": "eq-5",
+        "label": "Steering",
+        "latex": "h' = h + \\alpha f",
+        "symbols": {},
+        "plainExplanation": "Adding feature direction.",
+        "whyNeeded": "Test sufficiency.",
+        "ifRemoved": "No causal proof.",
+        "encourages": "Causal features.",
+        "doesNotGuarantee": "Natural behavior."
       }
     ],
     "evidence": [
       {
-        "claim": "A feature that correlates with a behaviour is a candidate explanation. Necessity and sufficiency require targeted interventions and controls.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Causal features",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Various",
+        "section": "Main",
+        "verified": true,
+        "paraphrase": "Features must be tested causally."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Off-manifold intervention",
+        "mechanism": "Steering too strong.",
+        "symptom": "Gibberish output.",
+        "diagnosticTest": "Check perplexity.",
+        "mitigation": "Lower alpha.",
+        "setconcaRelevance": "High."
       }
     ],
     "setconcaConnection": {
-      "relevance": "From feature correlation to mechanism determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "Evaluation core.",
+      "whichPart": "Testing.",
+      "whichDesignChoice": "Interventions.",
+      "proposedExperiment": "Steer with feature."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that from feature correlation to mechanism improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "computation",
+        "prompt": "Calculate patched output.",
+        "reveal": "Show math."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain from feature correlation to mechanism to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the 4 methods.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Probing, patching, ablation, steering."
+        ],
+        "badVersion": "They are tests.",
+        "goodVersion": "They test existence, usage, necessity, and sufficiency."
       }
-    ],
-    "nextLesson": {
-      "id": null,
-      "bridge": "This phase checkpoint now combines the ideas from the phase."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p08-l01",
+    "text": "Phase 8 asks: how do we MEASURE everything rigorously?"
   }
 }

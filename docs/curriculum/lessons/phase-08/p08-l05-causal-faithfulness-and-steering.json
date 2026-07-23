@@ -4,161 +4,138 @@
   "phaseIndex": 8,
   "lessonIndex": 5,
   "title": "Causal faithfulness and steering",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 30,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
   "prerequisites": [
     "p08-l04"
   ],
   "learningObjectives": [
-    "Explain causal faithfulness and steering in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand why correlation is insufficient for proving the functional role of a feature.",
+    "Define and apply causal interventions: steering, ablation, and activation patching.",
+    "Evaluate the causal faithfulness of a feature by analyzing how model behavior changes when the feature is manipulated.",
+    "Recognize the limitation that a feature can be causally relevant for one behavior but causally inert for another."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Faithfulness asks whether an explanation tracks the computation that causes behaviour. Steering tests effects of changing a component, but requires dosage and off-target controls. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "We have spent this phase learning how to evaluate features. We checked if they reconstruct the data (FVU). We checked if they can be decoded (Probing). We checked if they are consistent across runs (Stability). But all of these methods suffer from a fatal flaw: they are observational. They only show correlation.\n\nJust because a feature reliably fires every time the model processes the word 'Paris' does NOT mean the model is actually *using* that feature to know it is looking at 'Paris'. The feature might be a vestigial side-effect, a redundant backup, or an artifact of the SAE. The gold standard for interpretability is causality. If a feature truly represents a concept, we should be able to reach into the model, change the feature, and predictable change the model's output. This lesson explores steering and ablation—the tools we use to prove that our interpreted features are causally faithful to the model's actual computations."
     },
-    "bridgeFrom": "p08-l04",
+    "bridgeFrom": "We have ruled out unstable features and overly powerful probes. Now, we apply the ultimate test: causal intervention, moving from 'what does the feature observe?' to 'what does the feature do?'",
     "intuition": {
-      "analogy": "Evaluation is a medical panel, not a single thermometer. One number can be reassuring while another reveals the problem. Faithfulness asks whether an explanation tracks the computation that causes behaviour. Steering tests effects of changing a component, but requires dosage and off-target controls.",
-      "analogyLimit": "No single metric measures interpretability. Every metric needs an explicit non-claim beside it.",
-      "text": "Faithfulness asks whether an explanation tracks the computation that causes behaviour. Steering tests effects of changing a component, but requires dosage and off-target controls."
+      "analogy": "Imagine observing a complex factory. You notice that a specific red light always turns on right before the factory produces a defective product.",
+      "analogyLimit": "Unlike the light, which is just an indicator, features in a neural network are mathematical vectors that actively participate in the next layer's computation.",
+      "text": "You train a probe on the red light and achieve 99% accuracy in predicting defects. You conclude: 'The red light causes the defects!' To prove this, you need a causal intervention. \n\nIntervention 1 (Ablation): You smash the red light so it can't turn on. If the factory still produces defects, the light was just correlated (maybe a warning system), not causal. \n\nIntervention 2 (Steering): You manually turn on the red light when the factory is running smoothly. If turning on the light doesn't cause a defect, again, it has no causal power.\n\nIn neural networks, SAE features are often just 'red lights'. They fire predictably, but if we ablate them (set them to zero) or steer them (artificially increase their value), the model's output doesn't change. A feature is only causally faithful if manipulating it reliably controls the model's behavior."
     },
     "toyExample": {
-      "description": "Run two methods across several seeds and plot fidelity, sparsity, similarity, and intervention effects separately instead of collapsing them into one score.",
+      "description": "Evaluate two features (f_paris and f_europe) using causal interventions to determine if they actually drive the model's predictions.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what causal faithfulness and steering should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Identify Feature f_paris. It fires strongly when processing text about Paris. Probe accuracy for 'is_paris' is 95%.",
+          "result": "Strong observational correlation.",
+          "insight": "We must test causality."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Steering Test: Feed the model the prompt 'The capital of the UK is London'. Add $10 \\times d_{paris}$ to the residual stream.",
+          "result": "The model changes its output from 'London' to 'France' 73% of the time.",
+          "insight": "Adding the feature actively redirects the model's processing toward the concept of France/Paris."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Ablation Test: Feed the model 'The capital of France is'. Force f_paris to equal zero.",
+          "result": "Model accuracy for predicting 'Paris' drops from 95% to 22%.",
+          "insight": "Removing the feature cripples the model's ability to use the concept. f_paris is highly causally faithful."
+        },
+        {
+          "step": 4,
+          "action": "Identify Feature f_europe. Probe accuracy for 'is_european' is 89%. Steering test: add $10 \\times d_{europe}$ to 'banana'.",
+          "result": "The model does NOT change its output to anything European. It still predicts fruit-related words.",
+          "insight": "f_europe contains information (high probe accuracy) but the model does not *use* it causally for this task. It is an observational mirage."
         }
       ]
     },
     "visual": {
-      "id": "sae-pareto",
-      "question": "Which assumption behind causal faithfulness and steering changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "activation-patching",
+      "question": "How does activation patching isolate the causal role of a single position or feature?",
+      "description": "A diagram showing a 'clean' prompt (The Eiffel Tower is in [Paris]) and a 'corrupted' prompt (The Colosseum is in [Rome]). The diagram shows taking the activation for a specific feature from the clean run and 'patching' (overwriting) it into the corrupted run. If the model's output changes from Rome to Paris, that specific feature at that specific layer is proven to be the causal mechanism."
     },
     "technical": {
-      "text": "Faithfulness asks whether an explanation tracks the computation that causes behaviour. Steering tests effects of changing a component, but requires dosage and off-target controls. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Causal faithfulness is evaluated through interventions. Steering (or activation addition) involves adding a scaled version of an SAE decoder direction ($+\\alpha \\cdot d_k$) to the model's activations during the forward pass to induce a target behavior. Ablation (or clamping) involves setting a feature's activation to zero to observe the degradation in performance. Activation patching (or causal tracing) involves replacing a specific activation in a corrupted run with the corresponding activation from a clean run. A critical warning in interpretability is that causal faithfulness is often context-dependent: a feature that successfully steers the model in a multiple-choice setting might have zero causal effect when the model is generating open-ended text.",
+      "definitions": [
+        "Causal Faithfulness: The degree to which an interpreted feature actually governs the model's true internal computations, proven via intervention.",
+        "Steering: Artificially adding or scaling a feature vector during the forward pass to force the model to exhibit a specific concept or behavior.",
+        "Ablation: Forcibly setting a feature's activation to zero to test if it is necessary for a specific behavior.",
+        "Activation Patching: Swapping a specific internal activation between two different inputs to trace exactly where a decision is made."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathrm{FVU}=\\frac{\\|X-\\hat X\\|_F^2}{\\|X-\\bar X\\|_F^2}",
+        "id": "eq-1",
+        "label": "Representation Steering",
+        "latex": "h_{steered} = h_{original} + \\alpha \\cdot d_k",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "h_{original}": "The original hidden state activation vector",
+          "\\alpha": "Steering coefficient (scalar multiplier)",
+          "d_k": "The decoder direction vector for feature $k$"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Faithfulness asks whether an explanation tracks the computation that causes behaviour. Steering tests effects of changing a component, but requires dosage and off-target controls.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "No single metric measures interpretability. Every metric needs an explicit non-claim beside it."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What does the metric measure?",
-        "methods": [
-          {
-            "name": "FVU",
-            "answer": "FVU: reconstruction"
-          },
-          {
-            "name": "CKA",
-            "answer": "CKA: geometry similarity"
-          },
-          {
-            "name": "Intervention",
-            "answer": "Intervention: causal effect"
-          }
-        ],
-        "practicalImplication": "Report the metric's non-claim beside its result."
+        "plainExplanation": "During the forward pass of the network, we intercept the activation, add a multiple of our feature vector to it, and let the network continue computing with this modified state.",
+        "whyNeeded": "It provides undeniable proof that the feature direction $d_k$ is causally linked to the model's output behavior.",
+        "ifRemoved": "We would be trapped relying on correlational metrics like probe accuracy or FVU, never knowing if the model actually uses the features we found.",
+        "encourages": "Rigorous, testable claims about feature interpretation.",
+        "doesNotGuarantee": "It does not guarantee that the feature is the *only* causal mechanism, nor does it guarantee the steering will work in all contexts (e.g., across different prompts)."
       }
     ],
     "evidence": [
       {
-        "claim": "Faithfulness asks whether an explanation tracks the computation that causes behaviour. Steering tests effects of changing a component, but requires dosage and off-target controls.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Features that correlate highly with a concept often fail causal intervention tests.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Makelov et al. 2024",
+        "section": "Causal Evaluations",
+        "verified": true,
+        "paraphrase": "Principled evaluations show a significant gap between observational metrics (like probing) and causal metrics (like steering). Many features that appear highly interpretable observationally exert no causal influence on the model's output when intervened upon."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The Epiphenomenal Feature Fallacy",
+        "mechanism": "Assuming that because an SAE feature cleanly activates on a concept, the model uses that feature to process the concept.",
+        "symptom": "You publish a paper claiming 'Feature X represents Concept Y'. Someone else ablates Feature X, and the model still perfectly processes Concept Y (using redundant or entirely different pathways).",
+        "diagnosticTest": "Perform a steering or ablation test. If manipulating the feature does not systematically alter the model's behavior regarding the concept, the feature is epiphenomenal (non-causal).",
+        "mitigation": "Never claim a feature *represents* a concept functionally without providing causal intervention evidence.",
+        "setconcaRelevance": "Critical"
       }
     ],
     "setconcaConnection": {
-      "relevance": "Causal faithfulness and steering determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA must prove that its discovered concepts are actually used by the model.",
+      "whichPart": "Evaluation Phase",
+      "whichDesignChoice": "Validating the SetConCA architecture against standard SAEs.",
+      "proposedExperiment": "Identify a specific concept feature found by both SetConCA and a standard SAE. Perform a steering experiment for both. If steering the SetConCA feature results in a more reliable, precise change in model output (fewer unintended side effects) than steering the standard SAE feature, this proves SetConCA learns cleaner causal representations."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that causal faithfulness and steering improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "You ablate Feature X, which fires on 'plural nouns', but the model still successfully generates plural verbs. You conclude Feature X is not causally necessary. What is a major flaw in this conclusion?",
+        "reveal": "The model might have multiple, redundant features for 'plurality'. Ablating just one feature is like cutting one of two parallel wires; the circuit still works. This is why ablation must often be combined with steering, or multiple redundant features must be ablated simultaneously."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain causal faithfulness and steering to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Why is high probe accuracy insufficient to prove that a feature is the causal mechanism for a behavior?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies that probing is strictly correlational.",
+          "Explains that a feature might just be a side-effect or indicator of the true computational process.",
+          "Provides an example of how a feature can contain information (high probe accuracy) but not be used by the model (fails steering/ablation).",
+          "Concludes that only interventions can establish causality."
+        ],
+        "badVersion": "Because probes can memorize things, so you need steering to be sure.",
+        "goodVersion": "Probing only measures correlation—it tells us whether the information is present in the feature. However, just because information is present doesn't mean the model uses it for the behavior in question. The feature might be a vestigial byproduct of an earlier computation, or one of many redundant indicators. A probe could achieve 99% accuracy on an 'epiphenomenal' feature. To prove that the feature is the actual causal mechanism driving the behavior, we must intervene: if we ablate the feature, the behavior must degrade, and if we steer the feature, we must be able to predictably induce the behavior. High probe accuracy without causal intervention proves nothing about the model's actual computations."
       }
-    ],
-    "nextLesson": {
-      "id": null,
-      "bridge": "This phase checkpoint now combines the ideas from the phase."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p09-l01",
+    "text": "We now have a complete toolkit for evaluating representations honestly: FVU, loss recovery, MDL probing, CKA, seed stability, and causal steering. In Phase 9, we will apply these tools to examine exactly where and how Sparse Autoencoders fail, and why we need better architectures like SetConCA."
   }
 }

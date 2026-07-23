@@ -863,6 +863,67 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
               if (l.title.toLowerCase().includes(q.toLowerCase())) {
                 results.push({ type: 'lesson', id: l.id, title: l.title, sub: 'Phase '+ph.id+': '+ph.title });
               }
+      <div class="search-bar">
+        <input class="search-input" type="search" placeholder="Search papers…" oninput="filterLibrary(this.value)" id="librarySearch" />
+      </div>
+      <div id="libraryContent">${libraryHtml}</div>
+    `;
+  }
+
+  async function renderGlossary(phases, state) {
+    let glossaryData;
+    try { glossaryData = await ensureGlossary(); } catch { glossaryData = []; }
+
+    const grouped = {};
+    glossaryData.forEach(term => {
+      const letter = term.term[0].toUpperCase();
+      if (!grouped[letter]) grouped[letter] = [];
+      grouped[letter].push(term);
+    });
+
+    const glossaryHtml = Object.entries(grouped).sort(([a], [b]) => a.localeCompare(b)).map(([letter, terms]) => `
+      <div style="margin-bottom:1rem">
+        <div style="font-family:var(--heading); font-size:1.3rem; font-weight:800; color:var(--blue); margin-bottom:0.5rem; border-bottom:1px solid var(--border); padding-bottom:0.25rem">${letter}</div>
+        ${terms.map(term => `
+          <div class="glossary-term" onclick="this.classList.toggle('expanded')" role="button" tabindex="0">
+            <div class="glossary-term-name">${esc(term.term)}</div>
+            <div class="glossary-term-short">${esc(term.oneSentence)}</div>
+            <div class="glossary-term-full">${esc(term.fullDefinition || term.oneSentence)}</div>
+            ${term.conceptId ? `<div style="margin-top:0.4rem"><a href="#/concept/${term.conceptId}" onclick="event.stopPropagation(); app.navigate('/concept/${term.conceptId}')" style="font-size:0.8rem; color:var(--blue)">→ Open full concept page</a></div>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    `).join('');
+
+    return `
+      <h2 style="margin-bottom:0.5rem">Glossary</h2>
+      <p class="muted" style="margin-bottom:1rem">Click any term to expand its full definition. Terms highlighted in blue throughout lessons link here.</p>
+      <div class="search-bar">
+        <input class="search-input" type="search" placeholder="Search terms…" id="glossarySearch" oninput="filterGlossary(this.value)" />
+      </div>
+      <div id="glossaryContent">${glossaryHtml}</div>
+    `;
+  }
+
+  async function renderSearch(phases, state) {
+    return `
+      <h2 style="margin-bottom:0.5rem">Search</h2>
+      <div class="search-bar">
+        <input class="search-input" type="search" placeholder="Search lessons, concepts, papers, terms…" id="globalSearch" oninput="runSearch(this.value)" autofocus />
+      </div>
+      <div id="searchResults" style="margin-top:1rem"></div>
+      <script>
+        async function runSearch(q) {
+          const el = document.getElementById('searchResults');
+          if (!q.trim()) { el.innerHTML = ''; return; }
+          const phases = app.getPhases();
+          if (!phases) return;
+          const results = [];
+          phases.forEach(ph => {
+            ph.lessons.forEach(l => {
+              if (l.title.toLowerCase().includes(q.toLowerCase())) {
+                results.push({ type: 'lesson', id: l.id, title: l.title, sub: 'Phase '+ph.id+': '+ph.title });
+              }
             });
             if (ph.title.toLowerCase().includes(q.toLowerCase())) {
               results.push({ type: 'phase', id: ph.id, title: ph.title, sub: 'Phase' });
@@ -870,15 +931,15 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
           });
           el.innerHTML = results.length === 0
             ? '<p class="muted">No results found.</p>'
-            : results.map(r => \`
-                <div class="search-result" onclick="app.navigate('/\${r.type}/\${r.id}')">
-                  <span class="search-result-type badge badge-dim">\${r.type}</span>
+            : results.map(r => `
+                <div class="search-result" onclick="app.navigate('/${r.type}/${r.id}')">
+                  <span class="search-result-type badge badge-dim">${r.type}</span>
                   <div>
-                    <div style="font-weight:600">\${r.title}</div>
-                    <div class="muted" style="font-size:0.8rem">\${r.sub}</div>
+                    <div style="font-weight:600">${r.title}</div>
+                    <div class="muted" style="font-size:0.8rem">${r.sub}</div>
                   </div>
                 </div>
-              \`).join('');
+              `).join('');
         }
       </script>
     `;
@@ -901,119 +962,6 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
         <h1 style="margin-bottom:0.5rem; font-size:1.65rem">${esc(paper.title)}</h1>
         <p class="muted" style="margin-bottom:1rem">${esc(paper.authors || '')}</p>
         <div class="callout ok" style="margin-bottom:1rem"><strong>What this page will do:</strong> ${esc(guide.readingPromise)}</div>
-        ${paper.file ? `<a href="RAW/${paper.file}" target="_blank" class="btn-secondary" style="display:inline-block; text-decoration:none; margin-bottom:1.25rem">Open the source PDF ↗</a>` : ''}
-        <article class="card" style="margin-bottom:1rem"><p style="margin:0; font-size:1.05rem; line-height:1.8">${esc(guide.strapline)}</p></article>
-        ${guide.sections.map(section => `<article class="card" style="margin-bottom:1rem"><h2 style="font-size:1.18rem; margin-bottom:0.6rem">${esc(section.heading)}</h2><p style="margin:0; line-height:1.8; color:#d6deeb">${esc(section.body)}</p></article>`).join('')}
-        <article class="card" style="margin-bottom:1rem"><h2 style="font-size:1.18rem; margin-bottom:0.6rem">${esc(guide.toy.title)}</h2><p style="line-height:1.7; color:#d6deeb">${esc(guide.toy.body)}</p><div id="demoMount" data-visual="${esc(guide.toy.visual)}"></div></article>
-        <article class="card" style="margin-bottom:1rem"><h2 style="font-size:1.18rem; margin-bottom:0.6rem">Check your understanding</h2><ul style="padding-left:1.2rem; color:#d6deeb; line-height:1.8">${guide.checks.map(check => `<li>${esc(check)}</li>`).join('')}</ul></article>
-        <article class="card" style="margin-bottom:1rem"><h2 style="font-size:1.18rem; margin-bottom:0.6rem">Where this comes from in the paper</h2><ul style="padding-left:1.2rem; color:#d6deeb; line-height:1.8">${guide.sourceNotes.map(note => `<li>${esc(note)}</li>`).join('')}</ul></article>
-        ${nextPaper ? `<div class="callout purple"><strong>Next paper:</strong> ${esc(guide.nextReason)}${guides[nextPaper.id] ? `<div style="margin-top:0.7rem"><button class="btn-primary" onclick="app.navigate('/paper/${esc(nextPaper.id)}')">Continue to ${esc(nextPaper.title)} →</button></div>` : ''}</div>` : ''}
-      `;
-    }
-
-    return `
-      <button class="btn-ghost" onclick="app.navigate('/library')" style="margin-bottom:1rem">← Research Library</button>
-
-      <div style="margin-bottom:0.5rem">
-        <span class="badge badge-blue">Tier ${paper.tier}</span>
-        <span class="badge badge-dim">${esc(paper.year || '')}</span>
-        <span class="badge badge-dim">${esc(paper.venue || '')}</span>
-        ${paper.status ? `<span class="badge badge-green">${esc(paper.status)}</span>` : ''}
-      </div>
-
-      <h1 style="margin-bottom:0.5rem; font-size:1.5rem">${esc(paper.title)}</h1>
-      <p class="muted" style="margin-bottom:1rem">${esc(paper.authors || '')}</p>
-
-      ${paper.file ? `<a href="RAW/${paper.file}" target="_blank" class="btn-secondary" style="display:inline-block; text-decoration:none; margin-bottom:1rem">📄 View PDF</a>` : ''}
-      ${paper.url ? `<a href="${paper.url}" target="_blank" class="btn-ghost" style="display:inline-block; text-decoration:none; margin-bottom:1rem; margin-left:0.5rem">🔗 Paper page</a>` : ''}
-
-      <div class="card">
-        <h3>Main contribution</h3>
-          <p>${esc(paper.contribution || paper.summary || 'Not yet documented.')}</p>
-      </div>
-
-      ${paper.concepts && paper.concepts.length > 0 ? `
-        <div class="card">
-          <h3>Concepts taught in lessons</h3>
-          <div style="display:flex; flex-wrap:wrap; gap:0.4rem">${paper.concepts.map(c => `<span class="badge badge-blue">${esc(c)}</span>`).join('')}</div>
-        </div>
-      ` : ''}
-
-      ${paper.lessonIds && paper.lessonIds.length > 0 ? `
-        <div class="card">
-          <h3>Lessons that cite this paper</h3>
-          ${paper.lessonIds.map(lid => `<div class="lesson-item" onclick="app.navigate('/lesson/${lid}')">${esc(lid)}</div>`).join('')}
-        </div>
-      ` : ''}
-
-      ${paper.assumptions ? `
-        <div class="card">
-          <h3>Key assumptions</h3>
-          <p>${esc(paper.assumptions)}</p>
-        </div>
-      ` : ''}
-
-      ${paper.limitations ? `
-        <div class="card">
-          <h3>Limitations</h3>
-          <p>${esc(paper.limitations)}</p>
-        </div>
-      ` : ''}
-
-      ${paper.setconcaRelevance ? `
-        <div class="callout purple">
-          <strong>SetConCA relevance:</strong> ${esc(paper.setconcaRelevance)}
-        </div>
-      ` : ''}
-    `;
-  }
-
-  async function renderConcept(conceptId, phases, state) {
-    let concepts;
-    try { concepts = await ensureConcepts(); } catch { concepts = []; }
-    const concept = concepts.find(c => c.id === conceptId);
-    if (!concept) return `<p class="muted">Concept not found.</p>`;
-
-    return `
-      <button class="btn-ghost" onclick="app.navigate('/map')" style="margin-bottom:1rem">← Concept Map</button>
-
-      <span class="badge badge-blue">${esc(concept.category || 'Concept')}</span>
-      <h1 style="margin:0.5rem 0">${esc(concept.title)}</h1>
-      <div class="callout" style="margin-bottom:1rem">${esc(concept.oneSentenceDefinition)}</div>
-
-      ${concept.fullDefinition ? `<div class="card"><p>${esc(concept.fullDefinition)}</p></div>` : ''}
-
-      ${concept.prerequisites && concept.prerequisites.length > 0 ? `
-        <div class="card">
-          <h3>Prerequisites</h3>
-          <div style="display:flex; flex-wrap:wrap; gap:0.4rem">
-            ${concept.prerequisites.map(pid => `
-              <button class="btn-ghost" onclick="app.navigate('/concept/${pid}')">${esc(pid)}</button>
-            `).join('')}
-          </div>
-        </div>
-      ` : ''}
-
-      ${concept.lessonIds && concept.lessonIds.length > 0 ? `
-        <div class="card">
-          <h3>Lessons covering this concept</h3>
-          ${concept.lessonIds.map(lid => `<div class="lesson-item" onclick="app.navigate('/lesson/${lid}')">${esc(lid)}</div>`).join('')}
-        </div>
-      ` : ''}
-
-      ${concept.setconcaRelevance ? `
-        <div class="callout purple"><strong>SetConCA connection:</strong> ${esc(concept.setconcaRelevance)}</div>
-      ` : ''}
-    `;
-  }
-
-  function getProgress(state, phases) {
-    if (!phases) return { done: 0, total: 0, pct: 0 };
-    const allLessons = phases.flatMap(ph => ph.lessons.filter(l => l.status !== 'stub'));
-    const total = allLessons.length;
-    const done = allLessons.filter(l => state.lessons[l.id]?.mastered).length;
-    return { done, total, pct: total > 0 ? Math.round(100*done/total) : 0 };
-  }
 
   return {
     renderHome,

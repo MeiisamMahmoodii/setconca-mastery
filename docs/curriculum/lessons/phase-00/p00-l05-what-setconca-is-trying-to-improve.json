@@ -4,161 +4,146 @@
   "phaseIndex": 0,
   "lessonIndex": 5,
   "title": "What SetConCA is trying to improve",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 35,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p00-l04"
-  ],
+  "prerequisites": ["p00-l04"],
   "learningObjectives": [
-    "Explain what setconca is trying to improve in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Identify the limitations of pointwise Sparse Autoencoders.",
+    "Explain the core hypothesis of Set-level Concept Coordination (SetConCA).",
+    "Understand how grouping tokens provides additional signal for feature extraction.",
+    "Recognize that SetConCA is experimental research."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "SetConCA tests whether coordinating sparse codes across multiple views of the same underlying item improves stability, specificity, and causal usefulness. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "This is the climax of the Orientation phase. Up to now, we have covered established science: the residual stream, embeddings, superposition, and the need for Dictionary Learning.\n\nNow, we step off the edge of established textbooks and into active research. This lesson introduces the exact problem that SetConCA was designed to solve. It is crucial to understand the limitations of current methodologies so you can appreciate why the mathematical complexity of SetConCA (which we will cover in later phases) is justified."
     },
-    "bridgeFrom": "p00-l04",
+    "bridgeFrom": "Superposition forces us to use Sparse Autoencoders (SAEs) to disentangle features.",
     "intuition": {
-      "analogy": "Instead of judging a feature from one photograph, compare several photographs of the same object and ask what survives the viewpoint change.",
-      "analogyLimit": "This is a research hypothesis, not an established result; the lab must measure gains against matched pointwise baselines.",
-      "text": "SetConCA tests whether coordinating sparse codes across multiple views of the same underlying item improves stability, specificity, and causal usefulness."
+      "analogy": "Imagine trying to identify objects in a movie by studying every single frame completely independently. You might identify a 'red blob' in one frame and a 'moving car' in another. A standard SAE works like this—it looks at one token at a time.\n\nSetConCA says: if you know that 5 consecutive frames are part of the same scene, you should analyze them TOGETHER. The fact that they belong to the same 'set' gives you massive additional signal. The 'red blob' must be consistent with the 'moving car'. By coordinating the analysis across the set, you get a much clearer, stabler picture of what the true underlying concept is.",
+      "analogyLimit": "In a movie, the set is defined by time (consecutive frames). In SetConCA, the set is defined by us—we group tokens that we know share a concept, even if they appear in completely different documents.",
+      "text": "The current state-of-the-art for untangling superposition is the pointwise Sparse Autoencoder (SAE). A pointwise SAE takes a single activation vector for a single token, projects it into a larger space, enforces sparsity, and tries to reconstruct the original vector. It works well, but it has flaws.\n\nFlaw 1: Feature Splitting. Because it processes everything independently, a standard SAE might learn 10 different features for 'apple' depending on slight variations in context, rather than one unified 'apple concept'.\nFlaw 2: Instability. If you train the same SAE twice with different random seeds, you often get different features. The learned dictionary is fragile.\n\n[CRITICAL]: ALL claims about SetConCA must be considered [Hypothesis]—this is unpublished research.\n\nSet-level Concept Coordination Autoencoder (SetConCA) proposes a structural change. Instead of processing tokens one by one, it processes sets of tokens that are known to share a semantic concept. It adds a Set Encoder to compute a shared representation, and uses a contrastive loss to force the learned features of the set members to align with each other.\n\n[Hypothesis]: By enforcing this coordination, SetConCA will reduce feature splitting, mapping the variations to a single, robust conceptual feature.\n[Hypothesis]: Set-level features will be vastly more stable across different training runs."
     },
     "toyExample": {
-      "description": "Track one token through two contexts and compare its activation at the same layer. The changing vector is the object the later lessons will analyze.",
+      "description": "We contrast how a Pointwise SAE and SetConCA handle a group of related tokens.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what what setconca is trying to improve should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "We have 3 tokens: 'Paris', 'capital of France', 'city of light'. We know they share the concept [PARIS].",
+          "result": "Inputs defined.",
+          "insight": "We have external human knowledge that these are related."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Pointwise SAE processes them independently. It reconstructs them minimizing error.",
+          "result": "Finds feature #102 for 'Paris', feature #504 for 'capital', feature #88 for 'city'.",
+          "insight": "The SAE successfully reconstructed the vectors, but it split the concept across multiple disconnected features."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "SetConCA processes them as a Set. A Contrastive Loss penalizes the model if their feature activations are too different.",
+          "result": "The model is forced to map all three to the same underlying feature direction: Feature #200 (The Paris Concept).",
+          "insight": "By using the set structure as a signal, SetConCA coerced the model into discovering a unified, stable concept."
         }
       ]
     },
     "visual": {
-      "id": "vector-space",
-      "question": "Which assumption behind what setconca is trying to improve changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "setconca-architecture",
+      "question": "How does SetConCA differ from a standard SAE?",
+      "description": "Side-by-side comparison. Left: Pointwise SAE showing isolated inputs flowing through an encoder bottleneck. Right: SetConCA showing a group of inputs flowing into both standard encoders AND a central 'Set Encoder', with arrows showing a contrastive loss pulling the representations together in the latent space."
     },
     "technical": {
-      "text": "SetConCA tests whether coordinating sparse codes across multiple views of the same underlying item improves stability, specificity, and causal usefulness. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "A standard SAE optimizes: L = ||x - D(E(x))||^2 + \\lambda ||E(x)||_1, processing each vector x individually. \n\nSetConCA alters this fundamental objective. Given a set of activations X = {x_1, ..., x_k} that share a concept, SetConCA introduces a Set Encoder function S(X) that aggregates the set into a global context vector c. The individual encodings are conditioned on this context: z_i = E(x_i, c). \n\nFurthermore, SetConCA introduces a contrastive regularization term L_{contrast}. This loss penalizes distance between the latent codes of items within the same set, while pushing apart codes from different sets. The full hypothesized objective becomes: L = Recon(X) + Sparsity(X) + L_{contrast}(X). This forces the dictionary to find basis vectors that are invariant across the specific token instantiations within the set.",
+      "definitions": [
+        {
+          "term": "Pointwise",
+          "definition": "Processing data one item at a time, independently."
+        },
+        {
+          "term": "Feature Splitting",
+          "definition": "When a model assigns multiple distinct features to slight variations of what humans consider a single concept."
+        },
+        {
+          "term": "Set Encoder",
+          "definition": "A function (like DeepSets or self-attention) that takes a group of unordered vectors and outputs a single summary vector."
+        },
+        {
+          "term": "Contrastive Loss",
+          "definition": "A mathematical penalty that encourages similar items to be close together in latent space and dissimilar items to be far apart."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L=\\mathcal L_{recon}+\\lambda_s\\mathcal L_{sparse}+\\lambda_c\\mathcal L_{coord}",
+        "id": "eq-set-contrast",
+        "label": "Hypothesized Contrastive Objective",
+        "latex": "L_{contrast} = \\sum_{i \\in Set} ||z_i - \\bar{z}||^2",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "L_{contrast}": "The contrastive penalty term",
+          "z_i": "The sparse latent code for token i",
+          "\\bar{z}": "The average (centroid) latent code for the set"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. SetConCA tests whether coordinating sparse codes across multiple views of the same underlying item improves stability, specificity, and causal usefulness.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A diagram of activations makes the pipeline visible, but it does not identify a concept or a mechanism."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What is being named?",
-        "methods": [
-          {
-            "name": "Neuron coordinate",
-            "answer": "A coordinate"
-          },
-          {
-            "name": "Feature",
-            "answer": "A feature direction"
-          },
-          {
-            "name": "Concept label",
-            "answer": "A human concept"
-          }
-        ],
-        "practicalImplication": "Keep the measurement separate from the interpretation."
+        "plainExplanation": "In words: We calculate the 'center' of the set's representations. We then penalize the model if any individual member strays too far from that center.",
+        "whyNeeded": "This is the mathematical mechanism that forces coordination. It says: 'You must use similar features for these related tokens.'",
+        "ifRemoved": "Without it, SetConCA degrades back into a slightly more complex pointwise SAE, losing the coordination signal.",
+        "encourages": "Robust, unified feature discovery.",
+        "doesNotGuarantee": "That the forced grouping won't accidentally erase important subtle distinctions between the tokens."
       }
     ],
     "evidence": [
       {
-        "claim": "SetConCA tests whether coordinating sparse codes across multiple views of the same underlying item improves stability, specificity, and causal usefulness.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
+        "claim": "SetConCA reduces feature splitting and improves stability.",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "setconca-internal",
+        "section": "Core Motivations",
         "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "paraphrase": "This is the central untested claim of the SetConCA architecture. The goal of this curriculum and subsequent tooling is to rigorously evaluate this claim."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Concept Erasure (Hypothesized)",
+        "mechanism": "The contrastive loss is too strong, forcing tokens that are only loosely related to use the exact same feature representation, erasing valid semantic nuances.",
+        "symptom": "'Apple' (fruit) and 'Apple' (company) are forced into the same feature because they were accidentally included in a messy set.",
+        "diagnosticTest": "Check the reconstruction error. If the contrastive loss is dominating, the SAE will fail to accurately reconstruct the original vectors because it threw away the nuanced details.",
+        "mitigation": "Carefully tune the lambda weight on the contrastive loss, and ensure high-quality, cleanly curated sets.",
+        "setconcaRelevance": "This is the primary expected risk of the SetConCA architecture."
       }
     ],
     "setconcaConnection": {
-      "relevance": "What SetConCA is trying to improve determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "This defines the entire purpose of the SetConCA project.",
+      "whichPart": "Global",
+      "whichDesignChoice": "Every design choice in SetConCA—from the data curation pipelines to the Set Encoder layers—is built to test this exact hypothesis of coordinated feature learning.",
+      "proposedExperiment": "Train SetConCA with L_{contrast} = 0, and L_{contrast} = 1.0. Compare the resulting dictionaries to see if feature splitting is demonstrably reduced."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that what setconca is trying to improve improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you feed a perfectly curated set of synonyms into SetConCA, what effect do you expect the contrastive loss to have on their sparse activations?",
+        "reveal": "The contrastive loss will force their sparse activations to be highly similar, effectively mapping all the synonyms to the same combination of sparse dictionary elements."
+      },
+      {
+        "type": "computation",
+        "prompt": "If z1 = [1, 0, 0], z2 = [1, 0, 0.2]. The centroid is [1, 0, 0.1]. Calculate the L_contrast for z1.",
+        "reveal": "L_contrast for z1 = ||[1, 0, 0] - [1, 0, 0.1]||^2 = ||[0, 0, -0.1]||^2 = 0.01."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain what setconca is trying to improve to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the fundamental trade-off introduced by the SetConCA contrastive loss. What do you gain, and what do you risk losing?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies the gain: unified, stable concepts and reduced feature splitting.",
+          "Identifies the risk: forcing tokens to be too similar, losing nuance.",
+          "Relates this to the reconstruction objective."
+        ],
+        "badVersion": "You gain better features but risk the model taking longer to train.",
+        "goodVersion": "The contrastive loss provides a strong signal that forces related tokens to share feature representations, solving the feature splitting and instability problems of pointwise SAEs. However, the trade-off is potential concept erasure. If the contrastive penalty is too high, the model will prioritize making the set members identical in latent space at the expense of throwing away unique nuances necessary to accurately reconstruct the original activation vector."
       }
-    ],
-    "nextLesson": {
-      "id": null,
-      "bridge": "This phase checkpoint now combines the ideas from the phase."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p01-l01",
+    "text": "You now understand the big picture, the problems, and the proposed solution. But to actually build SetConCA, we must master the math. Phase 1 begins our deep dive into Linear Algebra and Representation Geometry."
   }
 }

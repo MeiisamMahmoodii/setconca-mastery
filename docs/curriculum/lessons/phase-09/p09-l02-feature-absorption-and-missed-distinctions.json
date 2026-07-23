@@ -4,159 +4,158 @@
   "phaseIndex": 9,
   "lessonIndex": 2,
   "title": "Feature absorption and missed distinctions",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 35,
   "status": "complete",
   "claimLabels": [
     "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
+    "Empirical Finding",
+    "Conceptual Trap",
+    "Diagnostic"
   ],
   "prerequisites": [
     "p09-l01"
   ],
   "learningObjectives": [
-    "Explain feature absorption and missed distinctions in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Define feature absorption and explain the optimization pressure that causes it.",
+    "Understand the findings from Chanin et al. 2024 (A is for Absorption).",
+    "Explain how highly correlated concepts lead to missed distinctions in SAE dictionaries.",
+    "Design isolation tests to diagnose feature absorption.",
+    "Contrast absorption with splitting to understand the dual failure modes of SAE capacity scaling."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A narrow or heavily constrained dictionary can use one feature for several related causes, hiding distinctions that matter for analysis or intervention. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "In the previous lesson, we saw how SAEs can split one concept into many. This lesson covers the opposite problem: when an SAE merges two distinct concepts into one feature. This phenomenon, known as feature absorption, happens when two concepts frequently co-occur in the training data. The SAE optimization objective (reconstruction vs. sparsity) often finds it 'cheaper' to use a single feature to represent the combined presence of both concepts, rather than paying the sparsity penalty for two separate features. Understanding absorption is vital because it means the absence of a distinct feature for a concept in an SAE does NOT mean the model lacks that concept; the model's distinction might just be absorbed and hidden by the SAE."
     },
     "bridgeFrom": "p09-l01",
     "intuition": {
-      "analogy": "A dictionary is like a map drawn at a chosen zoom level. Zooming in can split one region into many roads; zooming out can merge distinct places. A narrow or heavily constrained dictionary can use one feature for several related causes, hiding distinctions that matter for analysis or intervention.",
-      "analogyLimit": "A feature inventory is resolution-dependent. A label can be useful without being an atomic or canonical unit.",
-      "text": "A narrow or heavily constrained dictionary can use one feature for several related causes, hiding distinctions that matter for analysis or intervention."
+      "analogy": "Imagine a grocery store that almost always sells peanut butter and jelly together in a bundle. A naive inventory system might just create a single item code for 'PB&J Bundle'. If a customer comes in looking just for peanut butter, the system says 'not found'—even though the store has plenty of peanut butter. The concept of 'peanut butter' has been absorbed into the co-occurring concept of the bundle.",
+      "analogyLimit": "In SAEs, absorption isn't just about bundling items; it often involves contextual nuances absorbing base concepts, like a position absorbing a letter.",
+      "text": "One feature absorbs the role of another. A feature meant for concept A also starts representing concept B because A and B often co-occur."
     },
     "toyExample": {
-      "description": "Train dictionaries at two widths on the same synthetic factors and inspect when one factor merges, splits, or changes identity across seeds.",
+      "description": "Consider two ground-truth concepts: Concept A ('capital city') and Concept B ('European country').",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what feature absorption and missed distinctions should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "action": "Data Co-occurrence",
+          "result": "In the training text, Concept A and Concept B co-occur 80% of the time (e.g., Paris, Berlin, Rome).",
+          "insight": "The SAE rarely sees one without the other."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "action": "SAE Training",
+          "result": "The SAE learns a single feature 'f' that activates strongly for 'European capitals'. It pays the L1 penalty only once per activation.",
+          "insight": "Using two features (one for capital, one for Europe) would double the sparsity penalty on 80% of the data, so the SAE optimizes it away."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "action": "Testing the Distinction",
+          "result": "We test the SAE on 'Tokyo'. Tokyo is a capital city (Concept A) but NOT European (Concept B). Feature 'f' does not activate.",
+          "insight": "The SAE failed to learn a pure 'capital city' feature. The concept of 'capital city' has been absorbed into 'European capital', leading to a missed distinction."
         }
       ]
     },
     "visual": {
-      "id": "absorption-demo",
-      "question": "Which assumption behind feature absorption and missed distinctions changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "absorption-isolation-test",
+      "question": "How do we prove a feature has absorbed another concept?",
+      "description": "Create a 2x2 grid testing the presence/absence of Concept A and Concept B. Feature absorption is present when the feature only activates in the (A=True, B=True) quadrant, but fails to activate in the (A=True, B=False) quadrant, despite Concept A being present."
     },
     "technical": {
-      "text": "A narrow or heavily constrained dictionary can use one feature for several related causes, hiding distinctions that matter for analysis or intervention. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Feature absorption is a direct consequence of the sparsity penalty (L1 norm) in standard SAEs. If features $f_A$ and $f_B$ co-occur with probability $P$, the expected sparsity cost of representing them separately is proportional to $E[|f_A| + |f_B|]$. If the SAE learns a composite feature $f_{AB}$, the cost drops to $E[|f_{AB}|]$. Unless the reconstruction loss heavily penalizes the use of $f_{AB}$ when only A is present (which is rare if A rarely appears without B), the optimization landscape heavily favors absorption. This means SAEs are extremely vulnerable to dataset biases and spurious correlations."
     },
     "mathematics": [
       {
-        "equation": "x\\approx\\sum_i z_i d_i",
+        "equation": "L_{sparse} = \\lambda \\sum_i |z_i|",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "z_i": "Activation of feature i",
+          "lambda": "Sparsity coefficient"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A narrow or heavily constrained dictionary can use one feature for several related causes, hiding distinctions that matter for analysis or intervention.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A feature inventory is resolution-dependent. A label can be useful without being an atomic or canonical unit."
+        "explanation": "This penalty drives absorption. If $z_1$ (Concept A) and $z_2$ (Concept B) frequently fire together, replacing them with $z_3$ (Concept A AND B) cuts the penalty at those steps in half.",
+        "whyNeeded": "Demonstrates why absorption is not a bug in the code, but a fundamental property of the L1 objective combined with correlated data.",
+        "ifRemoved": "Students would assume the SAE is just 'not trained long enough' or 'needs more capacity', rather than facing the objective's limitations.",
+        "encourages": "Designing datasets that forcefully break correlations to ensure pure feature learning.",
+        "doesNotGuarantee": "Simply lowering lambda doesn't fix it; that just leads to dense, uninterpretable representations (or massive splitting)."
       }
     ],
     "methodComparison": [
       {
-        "question": "What changes with capacity or seed?",
+        "question": "How do different configurations impact absorption?",
         "methods": [
           {
-            "name": "Absorption",
-            "answer": "Absorption: factors merge"
+            "name": "High L1 Penalty",
+            "answer": "Massive absorption. Forces the SAE to create highly bundled, composite features to save sparsity cost."
           },
           {
-            "name": "Splitting",
-            "answer": "Splitting: factors divide"
+            "name": "Low L1 Penalty",
+            "answer": "Less absorption, but leads to dense representations where many features fire simultaneously, ruining interpretability."
           },
           {
-            "name": "Non-canonicality",
-            "answer": "Non-canonicality: bases differ"
+            "name": "High Dictionary Width",
+            "answer": "Can mitigate absorption by allowing the model to have both the bundle feature and the pure features, but risks severe splitting."
           }
         ],
-        "practicalImplication": "None of these can be diagnosed from a single run."
+        "practicalImplication": "There is no 'free lunch' in standard SAE tuning. You are always trading off absorption (missed distinctions) against splitting (redundancy)."
       }
     ],
     "evidence": [
       {
-        "claim": "A narrow or heavily constrained dictionary can use one feature for several related causes, hiding distinctions that matter for analysis or intervention.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "SAE features for specific concepts often absorb contextual information, failing to generalize to the concept in novel contexts.",
+        "claimType": "Empirical Finding",
+        "sourceId": "Chanin et al. 2024 (A is for Absorption)",
+        "section": "Core Findings",
+        "verified": true,
+        "note": "In letter-detection tasks, SAE features for specific letters (like 'A') absorb information about the letter's position in the word. A feature intended for 'contains letter A' becomes 'contains letter A AND it's the first letter.' The distinction between 'A anywhere' and 'A first' is lost."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "False Negative on Model Capabilities",
+        "mechanism": "A researcher looks for a 'deception' feature in an SAE. They don't find a pure one. They conclude the model does not represent deception.",
+        "symptom": "The model clearly exhibits deceptive behavior, but the SAE dictionary lacks a clear feature for it.",
+        "diagnosticTest": "Look for composite features. 'Deception' might have been absorbed into 'Roleplaying as a hacker' or 'Refusing to answer'. Run isolation tests.",
+        "mitigation": "Do not treat the SAE dictionary as an exhaustive, canonical list of model capabilities.",
+        "setconcaRelevance": "Can SetConCA use views across diverse contexts to break these correlations and prevent absorption? This is a key research question."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Feature absorption and missed distinctions determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA aims to extract robust concepts invariant to specific contexts. Absorption is exactly what happens when a concept fails to decouple from its context.",
+      "whichPart": "The construction of the View Set.",
+      "whichDesignChoice": "If views are constructed by varying the context while holding the core concept constant, SetConCA's coordination loss should penalize absorption, forcing the isolation of the true concept.",
+      "whichFailure": "If the view set has the same biases as the pretraining data, SetConCA will suffer from the exact same absorption.",
+      "whichExperiment": "Test SetConCA on the 'A is for Absorption' letter position task. Define views as the same letter in different positions. Does it recover a pure letter feature?",
+      "alternativeExplanation": "Any success might just be due to the data augmentation implicit in view construction, not the architecture itself."
     },
     "exercises": [
       {
         "type": "diagnose",
-        "prompt": "A paper claims that feature absorption and missed distinctions improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "prompt": "An SAE trained on code learns a feature that fires on 'def main():'. How do you test if this feature has absorbed the concept of 'Python syntax' into 'Function definitions'?",
+        "reveal": "Find inputs with Python syntax but no function definitions (e.g., list comprehensions), and inputs with function definitions in other languages (e.g., C++ 'int main()'). If it only fires for Python functions, it's a composite (absorbed) feature."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain feature absorption and missed distinctions to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain how the sparsity objective in an SAE actively encourages feature absorption when data is correlated. Use the 'capital city / European' example.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
+          "Identifies the L1 sparsity penalty.",
+          "Explains that two co-occurring features cost more (2x L1) than one bundled feature (1x L1).",
+          "Shows how this causes the model to fail to represent the isolated concept (capital city) when the context (Europe) is missing.",
+          "Correctly references the objective function's trade-off."
         ]
       }
     ],
     "nextLesson": {
       "id": "p09-l03",
-      "bridge": "Next: Non-canonical dictionaries. The next idea reuses this lesson's representation and makes a new assumption explicit."
+      "bridge": "Next: Non-canonical dictionaries. We've seen features split and absorb based on width and data. But even with the exact same hyperparameters and data, different random seeds produce entirely different features. We will explore why SAE dictionaries are not canonical."
     },
     "researchWorksheet": {
       "fields": [
         {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
+          "key": "isolation_test",
+          "label": "Isolation Test Design",
+          "prompt": "Design an isolation test to prove that an SAE feature for 'Eiffel Tower' has absorbed the concept of 'Daytime'."
         },
         {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
+          "key": "paper_finding",
+          "label": "Chanin 2024 Finding",
+          "prompt": "Summarize the specific empirical finding regarding letter detection from 'A is for Absorption'."
         }
       ]
     }

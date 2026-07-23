@@ -3,162 +3,160 @@
   "phase": "Sparse representation learning",
   "phaseIndex": 3,
   "lessonIndex": 3,
-  "title": "The sparse autoencoder objective",
-  "estimatedMinutes": 25,
+  "title": "The Sparse Autoencoder Objective",
+  "estimatedMinutes": 35,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p03-l02"
-  ],
+  "prerequisites": ["p03-l02"],
   "learningObjectives": [
-    "Explain the sparse autoencoder objective in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Diagram the architecture of a standard Sparse Autoencoder (SAE).",
+    "Write out the equations for the encoder, decoder, and loss functions for various SAE variants.",
+    "Calculate a forward pass by hand through a toy SAE.",
+    "Explain how the SAE isolates features from a language model's residual stream."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A sparse autoencoder must reconstruct activations while using a small, selective code. Its objective determines which reconstruction--sparsity compromise it learns. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "The Sparse Autoencoder is the primary workhorse of modern mechanistic interpretability. While the theoretical concepts of overcomplete dictionaries and sparsity norms are essential, the actual implementation—the architecture, the weights, and the objective function—is where the real engineering happens. \n\nDifferent formulations of the SAE exist (Standard L1, TopK, Gated), and each modifies the forward pass and the loss function slightly to address the trade-offs we discussed in previous lessons. To read and replicate modern interpretability papers, you must be completely fluent in reading these architectures and understanding exactly how data flows from an LM's activations, through the SAE, and back into a reconstructed activation.\n\nThis lesson provides the concrete mathematical mechanics of the SAE."
     },
-    "bridgeFrom": "p03-l02",
+    "bridgeFrom": "We know we need an overcomplete dictionary and a sparsity mechanism. Now we assemble these pieces into a complete, trainable neural network architecture: the Sparse Autoencoder.",
     "intuition": {
-      "analogy": "Think of an overcomplete dictionary as a large box of labelled tools. Sparsity says that only a few tools may be taken out for any one job. A sparse autoencoder must reconstruct activations while using a small, selective code. Its objective determines which reconstruction--sparsity compromise it learns.",
-      "analogyLimit": "A sparse code can still be unstable, polysemantic, or aligned to a convenient decomposition rather than the intended factors.",
-      "text": "A sparse autoencoder must reconstruct activations while using a small, selective code. Its objective determines which reconstruction--sparsity compromise it learns."
+      "analogy": "A translator converting a complex sentence into a sparse set of bullet points, then back into a sentence.",
+      "analogyLimit": "Translators understand semantic meaning natively; the SAE relies purely on geometric optimization to discover meaning.",
+      "text": "Imagine a highly technical, dense paragraph (the LM activation). It contains many ideas interwoven together.\n\nThe Encoder is like an analyst reading the paragraph and extracting a few key bullet points from a massive master list of possible topics. They must choose only the most relevant bullet points (sparsity). \n\nThe Decoder is like a writer who takes those few bullet points and tries to reconstruct the original dense paragraph perfectly.\n\nThe Objective Function grades this process on two criteria: 1) Did the reconstructed paragraph match the original? (Reconstruction Error), and 2) Did the analyst strictly adhere to the limit on the number of bullet points? (Sparsity Penalty). By forcing the network to excel at both, the master list of bullet points (the dictionary) is forced to align with true, underlying concepts."
     },
     "toyExample": {
-      "description": "Generate activations from a few sparse ground-truth factors, then compare an L1 code and a TopK code at similar reconstruction error.",
+      "description": "A manual forward pass through an L1-SAE.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what the sparse autoencoder objective should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Input: d=4 input vector x = [1.0, 0.5, -0.3, 0.8].",
+          "result": "This is our dense activation vector from a language model.",
+          "insight": "We want to pass this through the encoder to get the sparse code."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Encoder: Apply the weights $W_e$ (8x4), bias $b_e$ (8x1), and ReLU. Assume the result after ReLU is z = [0, 2.1, 0, 0, 0, 1.3, 0, 0.7].",
+          "result": "The code z has length 8 (overcomplete). It has an L0 sparsity of 3, and an L1 norm of 2.1 + 1.3 + 0.7 = 4.1.",
+          "insight": "The encoder has successfully selected a sparse subset of features."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Decoder: Multiply z by dictionary $W_d$ (4x8) and add bias $b_d$. Assume the result is $\\hat{x}$ = [0.98, 0.52, -0.28, 0.79].",
+          "result": "This is the reconstructed vector.",
+          "insight": "We compare $\\hat{x}$ to $x$ to see how much information was lost."
+        },
+        {
+          "step": 4,
+          "action": "Compute Loss: MSE = $||x - \\hat{x}||^2$ = 0.0013. Sparsity Penalty = $\\lambda * ||z||_1$. Let $\\lambda = 0.5$. Penalty = 0.5 * 4.1 = 2.05.",
+          "result": "Total Loss = 0.0013 + 2.05 = 2.0513.",
+          "insight": "The loss function balances the tight reconstruction with the cost of the active features."
         }
       ]
     },
     "visual": {
-      "id": "sparse-dict",
-      "question": "Which assumption behind the sparse autoencoder objective changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "sae-architecture",
+      "question": "Where exactly is the sparsity constraint enforced in the diagram?",
+      "description": "A block diagram of an SAE. The input x goes through the Encoder (Linear + Bias + ReLU/TopK) to produce the sparse bottleneck z. z then goes through the Decoder (Linear + Bias) to produce x-hat. The sparsity constraint is evaluated directly on z."
     },
     "technical": {
-      "text": "A sparse autoencoder must reconstruct activations while using a small, selective code. Its objective determines which reconstruction--sparsity compromise it learns. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The fundamental architecture of an SAE consists of an encoder mapping $\\mathbb{R}^d \\to \\mathbb{R}^k$ and a decoder mapping $\\mathbb{R}^k \\to \\mathbb{R}^d$. Crucially, the decoder weights $W_d$ represent the actual 'dictionary' of features, while the encoder weights $W_e$ learn to approximate the inverse of this dictionary selection process.",
+      "definitions": [
+        {
+          "term": "Encoder",
+          "definition": "$z = f(W_e(x - b_{dec}) + b_{enc})$. Maps the input to the latent code. $f$ is the activation (e.g., ReLU or TopK)."
+        },
+        {
+          "term": "Decoder",
+          "definition": "$\\hat{x} = W_d z + b_{dec}$. Reconstructs the input. The columns of $W_d$ are often normalized to have unit norm during training."
+        },
+        {
+          "term": "Pre-encoder Bias subtraction",
+          "definition": "Modern SAEs often subtract the decoder bias from the input before the encoder: $x' = x - b_{dec}$. This helps the SAE focus on the variance of the data rather than its mean."
+        },
+        {
+          "term": "Gated SAE",
+          "definition": "An advanced architecture that separates the decision of *which* features to activate (the gate) from *how much* they activate (the magnitude), resolving shrinkage without fixing $k$ like TopK does."
+        }
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L=\\|x-\\hat{x}\\|_2^2+\\lambda\\|z\\|_1",
+        "id": "eq-1",
+        "label": "TopK SAE Forward Pass",
+        "latex": "z = TopK(ReLU(W_e(x - b_{dec}) + b_{enc}), k) \\\\ \\hat{x} = W_d z + b_{dec}",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "W_e": "Encoder weight matrix ($k \\times d$)",
+          "W_d": "Decoder weight matrix (dictionary, $d \\times k$)",
+          "b_{enc}": "Encoder bias",
+          "b_{dec}": "Decoder bias / dataset mean",
+          "k": "The fixed number of features to keep active"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A sparse autoencoder must reconstruct activations while using a small, selective code. Its objective determines which reconstruction--sparsity compromise it learns.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A sparse code can still be unstable, polysemantic, or aligned to a convenient decomposition rather than the intended factors."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "How is sparsity imposed?",
-        "methods": [
-          {
-            "name": "L1 SAE",
-            "answer": "L1: soft magnitude penalty"
-          },
-          {
-            "name": "TopK SAE",
-            "answer": "TopK: exact activity budget"
-          },
-          {
-            "name": "Dense AE",
-            "answer": "Dense AE: no sparse constraint"
-          }
-        ],
-        "practicalImplication": "Compare methods at matched fidelity and activity."
+        "plainExplanation": "The input is centered, multiplied by the encoder weights, biased, and passed through a ReLU. Then, only the top K largest values are kept. This sparse vector is then multiplied by the dictionary to reconstruct the input.",
+        "whyNeeded": "This defines the exact data flow for a modern TopK SAE.",
+        "ifRemoved": "N/A - this is the core mechanism.",
+        "encourages": "Strict L0 sparsity without L1 shrinkage.",
+        "doesNotGuarantee": "That the active features are perfectly aligned with true semantic concepts."
       }
     ],
     "evidence": [
       {
-        "claim": "A sparse autoencoder must reconstruct activations while using a small, selective code. Its objective determines which reconstruction--sparsity compromise it learns.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "SAEs can decompose language model representations into interpretable features.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Cunningham et al. 2023",
+        "section": "Abstract",
+        "verified": true,
+        "paraphrase": "The authors demonstrated that sparse autoencoders successfully extract disentangled, interpretable features from the dense internal representations of language models, validating the overall SAE architecture."
+      },
+      {
+        "claim": "Gated SAEs resolve shrinkage and improve Pareto frontiers.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "Rajamanoharan et al. 2024",
+        "section": "Method",
+        "verified": true,
+        "paraphrase": "By separating the sparsity penalty (applied to a gating network) from the magnitude prediction (handled by an unpenalized parallel path), Gated SAEs achieve better reconstruction-sparsity trade-offs than standard L1 SAEs."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Dictionary Scale Ambiguity",
+        "mechanism": "If $W_d$ is allowed to grow arbitrarily large, the encoder can make $z$ arbitrarily small to minimize the L1 penalty, while still achieving perfect reconstruction.",
+        "symptom": "The L1 loss drops to near zero, but the actual sparsity (L0) remains high. The model 'cheated' the penalty.",
+        "diagnosticTest": "Check the L2 norms of the columns of $W_d$. If they are exploding, the model is cheating.",
+        "mitigation": "Enforce a unit-norm constraint on the columns of $W_d$ ($||W_{d, i}||_2 = 1$) during training. (Not necessary for TopK).",
+        "setconcaRelevance": "Any representation learning technique relying on magnitude penalties must constrain the dictionary size to prevent scale hacking."
       }
     ],
     "setconcaConnection": {
-      "relevance": "The sparse autoencoder objective determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA requires a robust baseline architecture to extract features before coordinating them.",
+      "whichPart": "The local feature extractors.",
+      "whichDesignChoice": "Selecting the standard TopK or Gated SAE as the backbone for SetConCA models to ensure state-of-the-art local feature extraction.",
+      "proposedExperiment": "Compare SetConCA built on an L1 backbone vs a Gated backbone to see if decoupling feature selection from magnitude improves cross-view consistency."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that the sparse autoencoder objective improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "In an L1 SAE, why do we typically subtract the decoder bias ($b_{dec}$) from the input before applying the encoder weights?",
+        "reveal": "Language model activations often have a large, consistent mean vector (a 'dead direction'). If we don't subtract it, the SAE must waste sparse dictionary features just to reconstruct this constant mean. $b_{dec}$ acts as a learned mean, allowing the SAE features to model the interesting variance."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain the sparse autoencoder objective to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Write out the forward pass and loss function for a standard L1 Sparse Autoencoder, explaining the purpose of the unit-norm constraint on the decoder weights.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Provides correct encoder equation: $z = ReLU(W_e(x - b_d) + b_e)$.",
+          "Provides correct decoder equation: $\\hat{x} = W_d z + b_d$.",
+          "Provides correct loss function: $L = MSE(x, \\hat{x}) + \\lambda ||z||_1$.",
+          "Explains that without unit-norm constraint on $W_d$, the model can scale $W_d$ up and scale $z$ down, cheating the L1 penalty without actually becoming sparse."
+        ],
+        "badVersion": "The equations are z = W_e x and x_hat = W_d z. The loss is MSE + L1. We need unit norm because it's standard practice.",
+        "goodVersion": "The forward pass begins by centering the input with the decoder bias: $z = \\text{ReLU}(W_e(x - b_{dec}) + b_{enc})$. The sparse code $z$ is then used to reconstruct the input: $\\hat{x} = W_d z + b_{dec}$. The objective function minimizes both reconstruction error and code sparsity: $\\mathcal{L} = ||x - \\hat{x}||_2^2 + \\lambda ||z||_1$. The unit-norm constraint on the columns of $W_d$ (i.e., $||W_{d, i}||_2 = 1$) is absolutely critical. Without it, the network could trivially minimize the $\\lambda ||z||_1$ penalty by making $z$ arbitrarily small, and perfectly compensate for this by making the weights in $W_d$ arbitrarily large. The constraint forces the model to actually learn sparse representations rather than just exploiting mathematical scaling ambiguities."
       }
-    ],
-    "nextLesson": {
-      "id": "p03-l04",
-      "bridge": "Next: Dead features, shrinkage, and dictionary width. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p03-l04",
+    "text": "Understanding the equations is only half the battle. When you actually train an SAE, you encounter severe learning dynamics problems. The most notorious of these are dead features and the unsolved dilemma of dictionary width, which we will tackle next."
   }
 }

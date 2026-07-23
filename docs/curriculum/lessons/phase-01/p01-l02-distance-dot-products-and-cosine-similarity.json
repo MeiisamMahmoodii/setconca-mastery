@@ -3,162 +3,132 @@
   "phase": "Geometry of representations",
   "phaseIndex": 1,
   "lessonIndex": 2,
-  "title": "Distance, dot products, and cosine similarity",
+  "title": "Distance, Dot Products, and Cosine Similarity",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p01-l01"
-  ],
+  "prerequisites": ["p01-l01"],
   "learningObjectives": [
-    "Explain distance, dot products, and cosine similarity in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand distance, dot products, and cosine similarity",
+    "Recognize when to use each comparison method"
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Euclidean distance asks how far two states are apart; the dot product asks how much they point together; cosine similarity removes length so it compares direction alone. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Measuring similarity between vectors is critical in analyzing representations. We need ways to tell if two activations represent the same concept."
     },
-    "bridgeFrom": "p01-l01",
+    "bridgeFrom": "Vectors as locations and directions",
     "intuition": {
-      "analogy": "Imagine a sheet of graph paper laid over a cloud of points. Rotating the paper changes the coordinates, not the points themselves. Euclidean distance asks how far two states are apart; the dot product asks how much they point together; cosine similarity removes length so it compares direction alone.",
-      "analogyLimit": "Geometric summaries depend on centering, normalization, and the metric. A clean plot can still merge causes.",
-      "text": "Euclidean distance asks how far two states are apart; the dot product asks how much they point together; cosine similarity removes length so it compares direction alone."
+      "analogy": "Distance is how far apart two things are physically. Cosine similarity is whether they are pointing in the same direction, regardless of how far away they are.",
+      "analogyLimit": "In high dimensions, nearly all random vectors are orthogonal (cosine similarity ~0).",
+      "text": "We introduce Euclidean distance, dot product, and cosine similarity to compare vectors. b=2a so cos=1 despite being different vectors. Cosine IGNORES magnitude."
     },
     "toyExample": {
-      "description": "Draw a small cloud of points, rotate an axis through it, and compare the projection spread with the residual error.",
+      "description": "Three comparison methods for vectors a=[3,4], b=[6,8], c=[4,-3].",
       "steps": [
-        {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what distance, dot products, and cosine similarity should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
-        },
-        {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
-        },
-        {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
-        }
+        {"step": 1, "action": "Compute Distance d(a,b) and d(a,c)", "result": "d(a,b)=5, d(a,c)=√50≈7.07", "insight": "Euclidean distance measures magnitude of difference."},
+        {"step": 2, "action": "Compute Dot product a·b and a·c", "result": "a·b=50, a·c=0", "insight": "Dot product combines magnitude and direction."},
+        {"step": 3, "action": "Compute Cosine cos(a,b) and cos(a,c)", "result": "cos(a,b)=1.0 (same dir), cos(a,c)=0 (orthogonal)", "insight": "Cosine ignores magnitude."}
       ]
     },
     "visual": {
       "id": "angle-similarity",
-      "question": "When two vectors have different lengths, what does cosine similarity keep and what does it ignore?",
-      "description": "Rotate one vector and change its length. Compare angle, dot product, distance, and cosine rather than treating them as interchangeable."
+      "question": "How do distance and angle differ?",
+      "description": "Showing vectors of different lengths with the same angle, and vectors of same length with different angles."
     },
     "technical": {
-      "text": "Euclidean distance asks how far two states are apart; the dot product asks how much they point together; cosine similarity removes length so it compares direction alone. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Distance is the L2 norm of difference. Dot product is sum of element-wise products. Cosine similarity is dot product normalized by magnitudes.",
+      "definitions": [
+        {"term": "Cosine similarity", "definition": "Measures angle between vectors."}
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathrm{Var}(w^\\top x)=w^\\top\\Sigma w",
-        "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
-        },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Euclidean distance asks how far two states are apart; the dot product asks how much they point together; cosine similarity removes length so it compares direction alone.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Geometric summaries depend on centering, normalization, and the metric. A clean plot can still merge causes."
-      }
-    ],
-    "methodComparison": [
+        "id": "eq-1",
+        "label": "Euclidean distance",
+        "latex": "d(a,b)=||a-b||",
+        "symbols": { "a": "vector", "b": "vector" },
+        "plainExplanation": "Straight line distance between a and b.",
+        "whyNeeded": "Absolute difference in space.",
+        "ifRemoved": "Cannot measure absolute positional error.",
+        "encourages": "Magnitude sensitivity.",
+        "doesNotGuarantee": "Scale invariance."
+      },
       {
-        "question": "Which property is preserved?",
-        "methods": [
-          {
-            "name": "Distance",
-            "answer": "Euclidean distance"
-          },
-          {
-            "name": "Cosine",
-            "answer": "Angular direction"
-          },
-          {
-            "name": "Variance",
-            "answer": "Variance under projection"
-          }
-        ],
-        "practicalImplication": "Different geometric choices answer different questions."
+        "id": "eq-2",
+        "label": "Dot product",
+        "latex": "a \\cdot b = \\sum a_i b_i",
+        "symbols": { "a": "vector", "b": "vector" },
+        "plainExplanation": "Elementwise sum of products.",
+        "whyNeeded": "Linear projection.",
+        "ifRemoved": "Cannot do linear transformations easily.",
+        "encourages": "Projection.",
+        "doesNotGuarantee": "Bounds on values."
+      },
+      {
+        "id": "eq-3",
+        "label": "Cosine similarity",
+        "latex": "\\cos(a,b) = \\frac{a \\cdot b}{||a|| ||b||}",
+        "symbols": { "a": "vector", "b": "vector" },
+        "plainExplanation": "Normalized dot product.",
+        "whyNeeded": "Directional similarity.",
+        "ifRemoved": "Cannot ignore magnitude.",
+        "encourages": "Scale invariance.",
+        "doesNotGuarantee": "Same physical location."
       }
     ],
     "evidence": [
       {
-        "claim": "Euclidean distance asks how far two states are apart; the dot product asks how much they point together; cosine similarity removes length so it compares direction alone.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Cosine ignores magnitude",
+        "claimType": "paper_finding",
+        "label": "[Cosine properties]",
+        "sourceId": "math",
+        "section": "1",
+        "verified": true,
+        "paraphrase": "Cosine similarity is 1.0 for vectors pointing in the exact same direction, regardless of length."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Using cosine when magnitude matters",
+        "mechanism": "Ignoring magnitude differences.",
+        "symptom": "Treating low-confidence and high-confidence activations as identical.",
+        "diagnosticTest": "Check if magnitudes vary significantly.",
+        "mitigation": "Use dot product or distance instead.",
+        "setconcaRelevance": "Affects similarity metrics."
+      },
+      {
+        "name": "Using Euclidean when only direction matters",
+        "mechanism": "Over-penalizing magnitude differences.",
+        "symptom": "Missing semantic similarities.",
+        "diagnosticTest": "Check if vectors point the same way.",
+        "mitigation": "Use cosine similarity.",
+        "setconcaRelevance": "Crucial for feature discovery."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Distance, dot products, and cosine similarity determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA needs to measure how similar features are.",
+      "whichPart": "Evaluation metrics.",
+      "whichDesignChoice": "Choosing similarity metrics for representations.",
+      "proposedExperiment": "Compare features using different metrics."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that distance, dot products, and cosine similarity improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "computation",
+        "prompt": "Find cosine similarity between [3,4] and [6,8].",
+        "reveal": "1.0"
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain distance, dot products, and cosine similarity to a colleague, then name one thing the method cannot establish by itself.",
-        "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+        "prompt": "Why might cosine similarity be misleading?",
+        "rubric": ["Must mention it ignores magnitude."],
+        "badVersion": "It's hard to compute.",
+        "goodVersion": "It ignores magnitude, which might encode feature strength or confidence."
       }
-    ],
-    "nextLesson": {
-      "id": "p01-l03",
-      "bridge": "Next: Mean, variance, and covariance. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p01-l03",
+    "text": "Next we will look at statistics over collections of vectors."
   }
 }

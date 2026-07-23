@@ -6,159 +6,121 @@
   "title": "Observed variables versus latent causes",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p01-l05"
-  ],
+  "prerequisites": ["p01-l05"],
   "learningObjectives": [
-    "Explain observed variables versus latent causes in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Distinguish between observed variables (e.g., activations, pixels) and latent variables (e.g., concepts, features).",
+    "Formulate the mathematical relationship between latent causes and observed measurements.",
+    "Recognize the limitations of inferring latent structure from purely observed correlations.",
+    "Explain why recovering latent sources from observations is an underdetermined problem without additional constraints."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "We observe activations and labels; latent causes are the hidden variables proposed to explain why those observations covary. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "In representation learning and mechanistic interpretability, we frequently analyze the outputs of neural network layers. These activations are the observed variables—the tangible quantities we can measure and manipulate. However, these activations are rarely the fundamental, semantic units of information we actually care about. Instead, they are complex mixtures of underlying features or concepts. \n\nTo build meaningful interpretations of how a model works, we need to bridge the gap between what we observe (dense activations) and what we theorize exists (latent concepts). Understanding the formal distinction between observed variables and latent causes is the foundational step in this process. \n\nThis lesson introduces the structural equation relating latent causes to observed measurements, $x = f(z) + \\epsilon$. By clarifying this relationship, we set the stage for subsequent methods, like Independent Component Analysis (ICA) and dictionary learning, which attempt to invert this mixing process to discover the true, underlying components driving the network's behavior."
     },
-    "bridgeFrom": "p01-l05",
+    "bridgeFrom": "In Phase 1, we learned that neural representations often exhibit superposition, meaning models pack more features into a representation than there are dimensions. Now, we formalize the distinction between the packed representation we observe and the separate features we want to uncover.",
     "intuition": {
-      "analogy": "Think of hearing several instruments through a wall. The sound at the wall is observable; the instruments are the proposed hidden causes. We observe activations and labels; latent causes are the hidden variables proposed to explain why those observations covary.",
-      "analogyLimit": "Latent recovery claims are conditional: remove an assumption and the same observations can support a different latent explanation.",
-      "text": "We observe activations and labels; latent causes are the hidden variables proposed to explain why those observations covary."
+      "analogy": "A doctor diagnosing a patient based on symptoms.",
+      "analogyLimit": "Medical symptoms have known causal pathways and documented relationships. In neural networks, we don't know what the 'diseases' (latent concepts) are beforehand—we're trying to discover them entirely from scratch.",
+      "text": "Imagine a doctor examining a patient. The doctor observes various symptoms: a fever of 102°F, a persistent cough, and a distinctive red rash. These symptoms are the **observed variables**. They are measurable, quantifiable, and directly accessible. However, the symptoms themselves are not the root problem; they are simply the visible manifestations of an underlying condition. \n\nThe actual condition—perhaps the flu, measles, or a bacterial infection—is the **latent cause**. The doctor never directly 'sees' the measles virus with their naked eye during a routine checkup. Instead, they infer the presence of the latent cause based on the specific pattern of observed symptoms. \n\nIn mechanistic interpretability, a neural network's activations are our 'symptoms'. A vector of 768 floating-point numbers tells us what the model's intermediate state is, but not *why* it is in that state. The 'diseases' we are trying to diagnose are the specific semantic concepts (e.g., 'is a capital city', 'starts with a vowel') that caused those activations to take their specific values. Our goal is to develop diagnostic tools—like sparse autoencoders—that can reliably map the complex symptoms back to their underlying latent causes."
     },
     "toyExample": {
-      "description": "Mix two non-Gaussian sources, then change the mixing matrix. Ask which assumptions make unmixing possible and which leave several answers equally valid.",
+      "description": "Consider a system with 2 hidden causes ($z_1$, $z_2$) that are mixed into 3 observed variables ($x_1$, $x_2$, $x_3$) through a linear transformation.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what observed variables versus latent causes should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Define the latent causes and the mixing process.",
+          "result": "Let $x_1 = 0.7z_1 + 0.3z_2$, $x_2 = 0.4z_1 + 0.6z_2$, and $x_3 = 0.5z_1 + 0.5z_2$.",
+          "insight": "The observed variables $x_i$ are linear combinations of the latent causes $z_j$. We only have access to the values of $x_1$, $x_2$, and $x_3$."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
-        },
-        {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 2,
+          "action": "Attempt to solve for $z_1$ and $z_2$ using the observations.",
+          "result": "We have a system of 3 equations with 2 unknowns. If the mixing weights are known, it's an overdetermined system and easy to solve. But in feature discovery, we know NEITHER $z$ NOR the mixing weights (the coefficients 0.7, 0.3, etc.).",
+          "insight": "We are trying to factor a matrix $X = AW$ where both $A$ and $W$ are unknown. Without additional constraints, there are infinitely many valid solutions that perfectly reconstruct $X$."
         }
       ]
     },
     "visual": {
-      "id": "ica-mixing",
-      "question": "Which assumption behind observed variables versus latent causes changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "latent-mixing-diagram",
+      "question": "How does the complexity of the mixing function $f(z)$ affect our ability to recover $z$?",
+      "description": "A bipartite graph showing latent variables $Z$ on the left, connected by weighted edges to observed variables $X$ on the right. Arrows point from $Z$ to $X$, illustrating the forward generation process. The diagram highlights that our perspective is stuck on the right side ($X$), trying to infer the left side ($Z$)."
     },
     "technical": {
-      "text": "We observe activations and labels; latent causes are the hidden variables proposed to explain why those observations covary. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The generative model of our data assumes that the observed data $x \\in \\mathbb{R}^n$ is generated from a set of latent variables $z \\in \\mathbb{R}^m$ via a mixing function $f: \\mathbb{R}^m \\to \\mathbb{R}^n$, potentially with some additive noise $\\epsilon$. In the simplest case, $f$ is a linear function, meaning $x = Az + \\epsilon$, where $A$ is an $n \\times m$ mixing matrix. Representation learning seeks to find an unmixing function $g: \\mathbb{R}^n \\to \\mathbb{R}^m$ such that $g(x) \\approx z$.",
+      "definitions": [
+        "Observed Variable: A quantity that can be directly measured or recorded.",
+        "Latent Variable: A variable that is not directly observed but is inferred from other variables.",
+        "Generative Model: A model describing how the observed data is generated from underlying latent factors.",
+        "Mixing Function: The transformation that maps latent sources to observed mixtures."
+      ]
     },
     "mathematics": [
       {
-        "equation": "x=As+\\epsilon",
+        "id": "eq-1",
+        "label": "The Linear Mixing Model",
+        "latex": "x = Az + \\epsilon",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "x": "The observed data vector (e.g., neural network activations).",
+          "A": "The mixing matrix defining how latent variables combine.",
+          "z": "The vector of latent causes or features.",
+          "\\epsilon": "Additive noise or measurement error."
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. We observe activations and labels; latent causes are the hidden variables proposed to explain why those observations covary.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Latent recovery claims are conditional: remove an assumption and the same observations can support a different latent explanation."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What does the assumption buy?",
-        "methods": [
-          {
-            "name": "Correlation",
-            "answer": "Correlation: a linear summary"
-          },
-          {
-            "name": "Independence",
-            "answer": "Independence: stronger separation"
-          },
-          {
-            "name": "Causal model",
-            "answer": "Causal model: intervention predictions"
-          }
-        ],
-        "practicalImplication": "Do not upgrade one kind of evidence into another."
+        "plainExplanation": "This equation states that what we observe ($x$) is just a weighted sum of underlying, hidden factors ($z$), as determined by the matrix $A$, plus some random noise ($\\epsilon$).",
+        "whyNeeded": "It provides the simplest formal framework for discussing how semantic features are embedded into dense continuous representations.",
+        "ifRemoved": "We would lack a mathematical language to differentiate between the concepts we want to find and the activations we actually have.",
+        "encourages": "Viewing neural activations not as fundamental truths, but as composite signals.",
+        "doesNotGuarantee": "That $A$ is linear, or that $z$ is unique. Deep neural networks often employ highly non-linear mixing."
       }
     ],
     "evidence": [
       {
-        "claim": "We observe activations and labels; latent causes are the hidden variables proposed to explain why those observations covary.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Latent representations can causally capture multiple underlying generative factors.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "2311.04056v2",
+        "section": "Introduction",
+        "verified": true,
+        "paraphrase": "Research in causal representation learning indicates that deep models implicitly learn latent variables that map onto the true data-generating factors."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Confounding Correlation with Causation",
+        "mechanism": "Assuming that because two observed variables are correlated, one must cause the other.",
+        "symptom": "Identifying spurious relationships between neurons or activation patterns.",
+        "diagnosticTest": "Check if controlling for a suspected latent third variable removes the correlation.",
+        "mitigation": "Design intervention experiments (e.g., activation patching) to test causal links.",
+        "setconcaRelevance": "SetConCA explicitly aims to isolate independent components to avoid confounding correlated observations with entangled latent causes."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Observed variables versus latent causes determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA operates on the premise that transformer activations are complex mixtures of simpler, interpretable concepts.",
+      "whichPart": "The core objective of Concept Component Analysis (ConCA).",
+      "whichDesignChoice": "Framing the interpretability problem as a blind source separation task, specifically aiming to unmix observed activations into latent concept components.",
+      "proposedExperiment": "Train a linear probe on observed activations to predict a concept, and compare its weight vector against the latent component extracted by ConCA."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that observed variables versus latent causes improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you observe two thermometer readings in the same room, and they are highly correlated, does this mean one thermometer influences the other?",
+        "reveal": "No. They are highly correlated because they are both driven by the same latent cause: the room's temperature. This illustrates why correlations in observed variables (like neurons) don't imply causal relationships between them."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain observed variables versus latent causes to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Why is recovering latent variables from observed variables an underdetermined problem when both the mixing weights and the latent variables are unknown?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Mentions that multiple combinations of weights and latents can produce the same observations.",
+          "Explains the need for additional constraints (like sparsity or independence) to find a unique solution."
+        ],
+        "badVersion": "It's hard because there are too many variables.",
+        "goodVersion": "It is mathematically underdetermined because the equation $X = AW$ has infinitely many solutions for $A$ and $W$ that satisfy the equality. Without inductive biases like statistical independence or sparsity on $W$, any invertible transformation $M$ could yield an equally valid factorization $X = (AM)(M^{-1}W)$, making the true latent sources unidentifiable."
       }
-    ],
-    "nextLesson": {
-      "id": "p02-l02",
-      "bridge": "Next: Correlation is not independence. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p02-l02",
+    "text": "We've established that we need additional constraints to recover latent causes from observed mixtures. One common constraint is assuming the latent causes are uncorrelated. But as we'll see next, mere correlation is not enough."
   }
 }

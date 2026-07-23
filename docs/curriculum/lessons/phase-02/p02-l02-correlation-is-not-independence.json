@@ -6,159 +6,126 @@
   "title": "Correlation is not independence",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p02-l01"
-  ],
+  "prerequisites": ["p02-l01"],
   "learningObjectives": [
-    "Explain correlation is not independence in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Differentiate between statistical uncorrelation (zero covariance) and statistical independence.",
+    "Demonstrate mathematically that variables can be completely dependent but have zero correlation.",
+    "Explain why Principal Component Analysis (PCA), which only decorrelates, is insufficient for finding independent latent sources.",
+    "Identify the need for higher-order statistics (beyond variance and covariance) to achieve independence."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Two variables can have zero correlation and still depend on one another. Independence rules out every statistical dependence, not just a linear one. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "When trying to untangle a mixture of signals—whether they are neural network activations or audio recordings—our first instinct is often to look at how the variables co-vary. If two features change together, they seem related; if they don't, they seem separate. This intuition leads naturally to Principal Component Analysis (PCA), which finds orthogonal directions in the data that are completely uncorrelated.\n\nHowever, in the quest to discover the true, underlying, fundamental concepts in a neural network, uncorrelation is a remarkably weak constraint. Uncorrelated simply means there is no linear relationship between the variables. It says nothing about non-linear relationships. To truly isolate independent concepts (e.g., 'gender' vs. 'royalty' in a language model), we need the much stronger property of statistical independence. \n\nThis lesson highlights the mathematical gap between correlation and independence. Understanding this gap is crucial because it explains why PCA fails to find true interpretable features, and why we must move towards techniques like Independent Component Analysis (ICA) or Sparse Autoencoders (SAEs)."
     },
-    "bridgeFrom": "p02-l01",
+    "bridgeFrom": "In the previous lesson, we saw that factoring $X = AW$ is impossible without constraints. We might think, 'Let's constrain the sources $W$ to be uncorrelated.' This lesson shows why that constraint isn't strong enough.",
     "intuition": {
-      "analogy": "Think of hearing several instruments through a wall. The sound at the wall is observable; the instruments are the proposed hidden causes. Two variables can have zero correlation and still depend on one another. Independence rules out every statistical dependence, not just a linear one.",
-      "analogyLimit": "Latent recovery claims are conditional: remove an assumption and the same observations can support a different latent explanation.",
-      "text": "Two variables can have zero correlation and still depend on one another. Independence rules out every statistical dependence, not just a linear one."
+      "analogy": "The temperature outside and the time of a sunrise.",
+      "analogyLimit": "This is a weak analogy for non-linear dependence, but serves to show relatedness without direct linear proportionality.",
+      "text": "Statistical independence is a very strict requirement. If two variables $X$ and $Y$ are independent, knowing the value of $X$ tells you absolutely nothing new about the value of $Y$. Their joint probability distribution factors perfectly: $p(x, y) = p(x)p(y)$.\n\nCorrelation, on the other hand, only measures linear dependence. It asks: 'If I draw a straight line through the data, is there a slope?' It is entirely possible for $Y$ to be perfectly determined by $X$ (meaning they are completely dependent) but for the 'best fit' straight line to be flat (meaning they have zero correlation).\n\nIf we just ask our algorithm to give us uncorrelated features, it might give us features that are still heavily entangled in non-linear ways. We haven't actually separated the true concepts; we've just rotated them until their linear shadow disappears."
     },
     "toyExample": {
-      "description": "Mix two non-Gaussian sources, then change the mixing matrix. Ask which assumptions make unmixing possible and which leave several answers equally valid.",
+      "description": "A classic mathematical example showing dependence without correlation.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what correlation is not independence should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Define a random variable $X$ with a symmetric distribution.",
+          "result": "Let $X \\sim \\text{Uniform}(-1, 1)$. This means $E[X] = 0$.",
+          "insight": "$X$ is centered at zero."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Define $Y$ as a deterministic, non-linear function of $X$.",
+          "result": "Let $Y = X^2$. $Y$ is completely and perfectly dependent on $X$. If you know $X$, you know exactly what $Y$ is.",
+          "insight": "There is maximum possible dependence here."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Calculate the covariance between $X$ and $Y$.",
+          "result": "We need $E[X]$, $E[Y]$, and $E[XY]$. We know $E[X]=0$. $E[XY] = E[X \\cdot X^2] = E[X^3]$. Since $X$ is symmetric around 0, $E[X^3] = 0$. \nCovariance formula: $\\text{Cov}(X,Y) = E[XY] - E[X]E[Y] = 0 - (0 \\cdot E[Y]) = 0$.",
+          "insight": "Despite $Y$ being completely determined by $X$, their covariance (and therefore their correlation) is strictly zero. They are uncorrelated, but highly dependent."
         }
       ]
     },
     "visual": {
-      "id": "ica-mixing",
-      "question": "Which assumption behind correlation is not independence changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "scatter-covariance",
+      "question": "If you look at the parabolic scatter plot, do these variables look independent?",
+      "description": "A scatter plot showing a perfect parabolic curve ($Y=X^2$). The data forms a 'U' shape. The text overlay indicates 'Correlation = 0.00', yet the visual pattern clearly shows the value of Y is strictly constrained by the value of X."
     },
     "technical": {
-      "text": "Two variables can have zero correlation and still depend on one another. Independence rules out every statistical dependence, not just a linear one. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Two random variables $X$ and $Y$ are independent if and only if their joint cumulative distribution function (CDF) is the product of their marginal CDFs: $F_{X,Y}(x,y) = F_X(x)F_Y(y)$ for all $x,y$. Uncorrelatedness only requires that $E[XY] = E[X]E[Y]$. Independence implies uncorrelatedness, but uncorrelatedness does NOT imply independence (except in the special case where $X$ and $Y$ are jointly Gaussian). PCA diagonalizes the covariance matrix, ensuring components are uncorrelated. ICA aims for independence, which requires utilizing higher-order statistics (moments beyond the second, such as skewness and kurtosis).",
+      "definitions": [
+        "Uncorrelated: The covariance between two variables is zero; they have no linear relationship.",
+        "Independent: The occurrence of one event does not affect the probability of the other event.",
+        "Higher-order statistics: Statistical moments of a distribution beyond the mean (1st order) and variance/covariance (2nd order)."
+      ]
     },
     "mathematics": [
       {
-        "equation": "x=As+\\epsilon",
+        "id": "eq-1",
+        "label": "Covariance Formula",
+        "latex": "\\text{Cov}(X,Y) = E[XY] - E[X]E[Y]",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "X": "First random variable.",
+          "Y": "Second random variable.",
+          "E[\\cdot]": "The expected value (mean) operator."
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Two variables can have zero correlation and still depend on one another. Independence rules out every statistical dependence, not just a linear one.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "Latent recovery claims are conditional: remove an assumption and the same observations can support a different latent explanation."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What does the assumption buy?",
-        "methods": [
-          {
-            "name": "Correlation",
-            "answer": "Correlation: a linear summary"
-          },
-          {
-            "name": "Independence",
-            "answer": "Independence: stronger separation"
-          },
-          {
-            "name": "Causal model",
-            "answer": "Causal model: intervention predictions"
-          }
-        ],
-        "practicalImplication": "Do not upgrade one kind of evidence into another."
+        "plainExplanation": "Covariance measures how much two variables change together. If they are independent, the expected value of their product is just the product of their expected values, making the covariance zero.",
+        "whyNeeded": "To formally prove that correlation only captures second-order relationships.",
+        "ifRemoved": "The distinction between correlation and independence remains purely intuitive rather than mathematically proven.",
+        "encourages": "Looking beyond the covariance matrix when analyzing feature entanglement.",
+        "doesNotGuarantee": "That making covariance zero makes the variables independent."
       }
     ],
     "evidence": [
       {
-        "claim": "Two variables can have zero correlation and still depend on one another. Independence rules out every statistical dependence, not just a linear one.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "PCA is insufficient for finding semantically meaningful, independent features in neural networks.",
+        "claimType": "paper_finding",
+        "label": "[Paper Finding]",
+        "sourceId": "1404.2986v1",
+        "section": "2. Principal Component Analysis",
+        "verified": true,
+        "paraphrase": "While PCA can decorrelate data and reduce dimensionality, it only uses second-order statistics and cannot separate independent non-Gaussian sources."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The PCA Trap",
+        "mechanism": "Applying PCA to neural activations and assuming the resulting principal components correspond to distinct semantic features.",
+        "symptom": "Principal components remain uninterpretable (polysemantic) and combinations of different concepts.",
+        "diagnosticTest": "Check if the resulting components have non-zero higher-order cross-cumulants.",
+        "mitigation": "Use methods like ICA or sparse autoencoders that optimize for stronger properties (independence or sparsity).",
+        "setconcaRelevance": "SetConCA uses techniques inspired by ICA specifically because simple decorrelation (like PCA) fails to isolate the true underlying concepts."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Correlation is not independence determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA seeks true conceptual independence, not just decorrelation.",
+      "whichPart": "The motivation for using contrastive learning or ICA-based methods instead of simple SVD/PCA.",
+      "whichDesignChoice": "Optimizing for higher-order independence metrics or utilizing multiple views to force true independence.",
+      "proposedExperiment": "Apply both PCA and SetConCA to a set of activations, and calculate the mutual information between the extracted components. SetConCA components should have lower mutual information."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that correlation is not independence improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If $X$ and $Y$ are jointly Gaussian and their covariance is zero, are they independent?",
+        "reveal": "Yes! This is the ONE special case where uncorrelatedness implies independence. Because a Gaussian distribution is entirely defined by its mean (1st moment) and covariance (2nd moment), if the 2nd moment cross-terms are zero, there are no higher-order dependencies to worry about. This is why ICA requires non-Gaussian sources!"
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain correlation is not independence to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain, using the $Y=X^2$ example, why a correlation of zero does not mean two variables are independent.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Defines $X$ as a uniform distribution centered at 0.",
+          "States $Y = X^2$, showing complete dependence.",
+          "Shows mathematically that $E[XY] = E[X^3] = 0$, leading to zero covariance."
+        ],
+        "badVersion": "Correlation is just a line, but independence is everything.",
+        "goodVersion": "If $X$ is uniformly distributed between -1 and 1, its mean is 0. If $Y = X^2$, knowing $X$ tells you $Y$ exactly, so they are maximally dependent. However, their covariance is $E[X^3] - E[X]E[X^2] = 0 - 0 = 0$. Because the covariance is zero, the correlation is zero. This proves correlation only measures linear dependence, completely missing the perfect non-linear dependence between $X$ and $Y$."
       }
-    ],
-    "nextLesson": {
-      "id": "p02-l03",
-      "bridge": "Next: ICA and the cocktail-party problem. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p02-l03",
+    "text": "Since PCA and decorrelation aren't enough to find our latent causes, we need a method that actively pursues statistical independence. This brings us to Independent Component Analysis (ICA) and the famous cocktail party problem."
   }
 }

@@ -6,159 +6,133 @@
   "title": "Designing multi-view activation sets",
   "estimatedMinutes": 25,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p10-l01"
-  ],
+  "prerequisites": ["p10-l01"],
   "learningObjectives": [
-    "Explain designing multi-view activation sets in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Evaluate different strategies for grouping activations into semantic sets.",
+    "Compare SetConCA's semantic grouping to Temporal SAEs' temporal grouping and ConCA's ICA-based grouping.",
+    "Analyze the impact of 'invalid' sets on the contrastive learning signal."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A multi-view set should contain observations of the same intended concept under controlled variation, with a documented rule for positives, negatives, and intruders. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "SetConCA relies entirely on the assumption that we can construct valid 'sets' of activations that share a conceptual core. If the sets are garbage, the contrastive loss will optimize for noise, and the features will be worse than a standard SAE.\n\nIn this lesson, we explore HOW to construct semantic sets from language model activations. We examine the trade-offs between entity-based grouping, syntactic grouping, and temporal windowing. We also compare our theoretical approach to recent related works like Temporal SAEs and ConCA to isolate SetConCA's unique contribution."
     },
-    "bridgeFrom": "p10-l01",
+    "bridgeFrom": "We established that SetConCA uses a set-level contrastive loss to encourage feature purity. But where do these sets come from? We must define the criteria for grouping.",
     "intuition": {
-      "analogy": "A toy experiment is a wind tunnel: simplified enough to know the ground truth, but rich enough that the method can fail for the same kinds of reasons it might fail in practice. A multi-view set should contain observations of the same intended concept under controlled variation, with a documented rule for positives, negatives, and intruders.",
-      "analogyLimit": "The toy model tests a mechanism under controlled assumptions. It does not predict a gain on language-model activations until that experiment is run.",
-      "text": "A multi-view set should contain observations of the same intended concept under controlled variation, with a documented rule for positives, negatives, and intruders."
+      "analogy": "Creating a photo album for facial recognition training.",
+      "analogyLimit": "Unlike photos which clearly contain faces, token activations contain deeply entangled semantic, syntactic, and positional information.",
+      "text": "Imagine training a facial recognition system. You need 'sets' of photos of the same person. If you group photos by the time they were taken (a temporal window), you might get pictures of Alice, then Bob, then a tree. A contrastive loss would try to find the 'shared identity' of Alice, Bob, and the tree, leading to complete failure.\n\nHowever, if you meticulously group photos by the actual person in them (entity grouping), the contrastive loss works perfectly. The challenge in language models is that we don't have explicit 'faces'. We just have tokens. How do we group tokens so they genuinely share a concept without manually labeling them all?"
     },
     "toyExample": {
-      "description": "Sample known latent concepts, render several noisy partial views per concept, and compare a pointwise SAE with a set-coordinated variant under equal capacity and compute.",
+      "description": "Evaluate 3 different set construction strategies on a synthetic corpus.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what designing multi-view activation sets should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "step": 1,
+          "action": "Strategy A: Group identical entities (e.g., all tokens referring to 'Paris').",
+          "result": "Captures a strong semantic concept ('Paris'), but requires complex coreference resolution.",
+          "insight": "Entity-based sets are highly semantic but hard to construct at scale."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "step": 2,
+          "action": "Strategy B: Group by temporal window (consecutive tokens).",
+          "result": "Captures local context and syntax, but mixes distinct semantic entities.",
+          "insight": "Temporal sets are easy to build but may encourage syntactic over semantic features."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "step": 3,
+          "action": "Strategy C: Random grouping.",
+          "result": "Produces a contrastive signal that completely disrupts the dictionary.",
+          "insight": "A bad set definition produces features that are WORSE than a pointwise SAE."
         }
       ]
     },
     "visual": {
-      "id": "setconca-lab",
-      "question": "Which assumption behind designing multi-view activation sets changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "set-construction-viz",
+      "question": "How do different grouping strategies align with underlying concepts?",
+      "description": "A visualization showing a sequence of text with colored highlights representing different grouping strategies, compared against ground-truth concept labels."
     },
     "technical": {
-      "text": "A multi-view set should contain observations of the same intended concept under controlled variation, with a documented rule for positives, negatives, and intruders. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Constructing multi-view activation sets requires balancing signal purity against extraction scalability. Strategy 1 (Same entity) groups tokens like 'Paris' across different contexts. Strategy 2 (Syntactic role) groups subject nouns. Strategy 3 (Temporal window) groups consecutive tokens. Strategy 4 (Topic cluster) groups tokens from the same document. Strategy 5 (Coreference) groups pronouns and nouns referring to the same entity locally.",
+      "definitions": [
+        "Temporal SAEs (Bhalla et al. 2024): An architecture that uses consecutive tokens as views, relying on a temporal rather than semantic grouping.",
+        "ConCA (Liu et al. 2025): A method that decomposes activations into concept components using ICA-inspired statistical methods rather than explicit set construction.",
+        "Invalid Set: A grouping of tokens that do not share any meaningful semantic or structural concept, introducing noise into the contrastive objective."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L=\\mathcal L_{\\mathrm{recon}}+\\lambda_s\\mathcal L_{\\mathrm{sparse}}+\\lambda_c\\mathcal L_{\\mathrm{set}}",
+        "id": "eq-2",
+        "label": "Set Purity Metric",
+        "latex": "P(S) = \\frac{1}{|S|(|S|-1)} \\sum_{i \\neq j \\in S} \\text{sim}(c_i, c_j)",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "S": "A constructed set of tokens",
+          "c_i": "Ground-truth concept vector for token i"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A multi-view set should contain observations of the same intended concept under controlled variation, with a documented rule for positives, negatives, and intruders.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "The toy model tests a mechanism under controlled assumptions. It does not predict a gain on language-model activations until that experiment is run."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What must be held fixed?",
-        "methods": [
-          {
-            "name": "Pointwise SAE",
-            "answer": "Pointwise SAE: no set signal"
-          },
-          {
-            "name": "SetConCA",
-            "answer": "SetConCA: coordination term"
-          },
-          {
-            "name": "Term ablation",
-            "answer": "Ablation: remove one term"
-          }
-        ],
-        "practicalImplication": "The ablation identifies which added component caused a gain."
+        "plainExplanation": "The purity of a set is the average semantic similarity between all pairs of tokens in the set.",
+        "whyNeeded": "To evaluate the quality of our set construction strategy before running the expensive SetConCA training.",
+        "ifRemoved": "Without a measure of set purity, we fly blind and cannot diagnose why SetConCA might fail.",
+        "encourages": "Designing grouping strategies that maximize true semantic overlap.",
+        "doesNotGuarantee": "That the model will actually learn those shared concepts if the reconstruction loss overpowers the contrastive loss."
       }
     ],
     "evidence": [
       {
-        "claim": "A multi-view set should contain observations of the same intended concept under controlled variation, with a documented rule for positives, negatives, and intruders.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
+        "claim": "Strategy 1 (same entity) provides the strongest concept signal but requires robust entity resolution.",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "set-design-analysis",
+        "section": "grouping strategies",
         "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "paraphrase": "Grouping by explicit entities yields high concept purity at the cost of implementation complexity."
+      },
+      {
+        "claim": "Strategy 3 (temporal) is easiest to implement but may capture syntactic rather than semantic similarity.",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "set-design-analysis",
+        "section": "grouping strategies",
+        "verified": false,
+        "paraphrase": "Adjacent tokens are easy to group but often share structural rather than meaning-based traits."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Spurious Correlation Capture",
+        "mechanism": "The set construction inadvertently groups tokens by an unintended variable (e.g., all entities happen to be at the start of a sentence).",
+        "symptom": "Features learned by SetConCA represent positional or syntactic artifacts rather than semantic concepts.",
+        "diagnosticTest": "Test the features on identical entities placed in highly diverse syntactic positions.",
+        "mitigation": "Ensure diversity within the constructed sets to decorrelate the target concept from spurious variables.",
+        "setconcaRelevance": "Critical for ensuring the contrastive loss targets the right level of abstraction."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Designing multi-view activation sets determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "Set construction is the primary data engineering challenge for SetConCA.",
+      "whichPart": "Data preparation / View generation.",
+      "whichDesignChoice": "Selecting semantic over temporal grouping to enforce concept purity.",
+      "proposedExperiment": "Train SetConCA using entity-based sets vs. temporal sets and compare the resulting feature interpretability."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that designing multi-view activation sets improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If you group tokens using a naive temporal window (like Temporal SAEs), what kind of features might SetConCA amplify?",
+        "reveal": "It will likely amplify features related to local syntactic structures, n-grams, or sequential flow, rather than abstract, cross-context semantic concepts."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain designing multi-view activation sets to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Why is it hypothesized that a bad set definition (e.g., random tokens) produces features WORSE than a standard pointwise SAE?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Explains that standard SAEs only have to reconstruct.",
+          "Explains that random sets force the contrastive loss to pull together unrelated activations.",
+          "Concludes that this actively distorts the geometry, destroying even the baseline pointwise structures."
+        ],
+        "badVersion": "Because random is bad.",
+        "goodVersion": "A pointwise SAE reconstructs data based on local geometry. If you add a contrastive loss with random sets, you actively penalize the model for maintaining accurate local geometry, forcing it to cluster activations that have nothing in common. This destroys the useful structure the SAE would have naturally learned."
       }
-    ],
-    "nextLesson": {
-      "id": "p10-l03",
-      "bridge": "Next: A realistic toy experiment. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p10-l03",
+    "text": "We've discussed the theory of the objective and the construction of sets. Next, we design a controlled, realistic toy experiment to test these hypotheses rigorously."
   }
 }

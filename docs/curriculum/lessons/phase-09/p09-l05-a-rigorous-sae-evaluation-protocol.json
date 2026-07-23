@@ -4,159 +4,162 @@
   "phaseIndex": 9,
   "lessonIndex": 5,
   "title": "A rigorous SAE evaluation protocol",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 40,
   "status": "complete",
   "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
+    "Methodology",
+    "Diagnostic",
+    "Synthesis",
+    "Course Interpretation"
   ],
   "prerequisites": [
     "p09-l04"
   ],
   "learningObjectives": [
-    "Explain a rigorous sae evaluation protocol in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Synthesize all previous failure modes (splitting, absorption, non-canonicality, metric gaming) into a unified defense.",
+    "Define a rigorous, 8-part evaluation protocol required for any SAE claim.",
+    "Explain exactly what claim each measurement supports and what confound it rules out.",
+    "Interpret a complete evaluation table to identify concerning trade-offs.",
+    "Design the specific extensions required for evaluating SetConCA (matched FVU, intruder tests, view ablations)."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "A credible SAE evaluation reports fidelity, sparsity, interpretability, stability, and intervention outcomes, with seeds and matched baselines. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "We have spent this phase destroying the naive view of SAEs. Features split arbitrarily. They absorb context. They vary wildly by random seed. And the metrics we use to evaluate them often disagree or can be gamed. If you stop here, you might conclude SAEs are useless. They are not. But they require an extremely rigorous, multi-faceted evaluation protocol to separate genuine scientific discoveries from geometric artifacts. This lesson provides that protocol. It is the absolute minimum standard of evidence required to make a claim about an SAE or about a model based on an SAE. It also serves as the direct bridge to Phase 10, where we will apply this protocol to SetConCA."
     },
     "bridgeFrom": "p09-l04",
     "intuition": {
-      "analogy": "A dictionary is like a map drawn at a chosen zoom level. Zooming in can split one region into many roads; zooming out can merge distinct places. A credible SAE evaluation reports fidelity, sparsity, interpretability, stability, and intervention outcomes, with seeds and matched baselines.",
-      "analogyLimit": "A feature inventory is resolution-dependent. A label can be useful without being an atomic or canonical unit.",
-      "text": "A credible SAE evaluation reports fidelity, sparsity, interpretability, stability, and intervention outcomes, with seeds and matched baselines."
+      "analogy": "Evaluating an SAE is like conducting a clinical trial for a new drug. You cannot just measure 'does the patient feel better?' (Auto-Interp). You must measure liver toxicity (Reconstruction loss), side effects across diverse populations (Stability across seeds), whether the drug actually caused the cure (Causal steering), and whether a cheaper drug would have worked just as well (Baselines). A rigorous protocol forces you to look at the whole patient.",
+      "analogyLimit": "Unlike clinical trials, SAE metrics are often computationally expensive to run at scale, requiring compromises on dataset size or number of features evaluated.",
+      "text": "Putting it all together: A complete evaluation protocol for any SAE (including SetConCA) requires measuring reconstruction, sparsity, feature quality, stability, causality, splitting, absorption, and statistical rigor."
     },
     "toyExample": {
-      "description": "Train dictionaries at two widths on the same synthetic factors and inspect when one factor merges, splits, or changes identity across seeds.",
+      "description": "Consider a hypothetical SAE paper claiming 'State-of-the-Art Interpretable Features'. We examine their evaluation table.",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what a rigorous sae evaluation protocol should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "action": "Read the Reconstruction/Sparsity scores",
+          "result": "FVU is 0.05, L0 is 20. This looks excellent.",
+          "insight": "Supports claim: The SAE faithfully reconstructs activations sparsely. Does NOT support: Features are meaningful."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "action": "Read the Auto-Interp score",
+          "result": "Score is 0.88. High.",
+          "insight": "Supports claim: Features are easily describable by an LLM. Does NOT support: Features are causally relevant."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "action": "Check the Missing Metrics",
+          "result": "The table is missing Cross-seed stability, Steering success, and Cluster analysis (Splitting).",
+          "insight": "The paper is hiding failure modes. The high auto-interp score might be driven by massive feature splitting (generating hyper-specific, easily labeled features that are entirely non-canonical)."
         }
       ]
     },
     "visual": {
-      "id": "absorption-demo",
-      "question": "Which assumption behind a rigorous sae evaluation protocol changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "the-evaluation-radar",
+      "question": "How do we visualize a complete evaluation?",
+      "description": "A radar chart with 8 axes: Reconstruction, Sparsity, Feature Quality, Stability, Causal Impact, (Lack of) Splitting, (Lack of) Absorption, and Statistical Rigor. A truly excellent SAE pushes outwards on all axes simultaneously. A flawed SAE spikes on one (e.g., Feature Quality) while collapsing on another (e.g., Stability)."
     },
     "technical": {
-      "text": "A credible SAE evaluation reports fidelity, sparsity, interpretability, stability, and intervention outcomes, with seeds and matched baselines. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "Here is the required protocol for any SAE evaluation:\n\n1. Reconstruction (FVU, MSE, loss recovery): Supports claim that the dictionary spans the activation manifold. Rules out the confound of a trivial dictionary that only captures the mean.\n2. Sparsity (L0, active features, dead feature rate): Supports claim that the representation is disentangled. Rules out dense, uninterpretable mixtures.\n3. Feature quality (probe accuracy + control selectivity, MDL compression): Supports claim that features align with human concepts. Rules out random noise features.\n4. Stability (cross-seed feature matching rate): Supports claim that features are canonical/objective. Rules out geometric artifacts of optimization.\n5. Causal (steering success rate, ablation impact): Supports claim that the feature acts as a mechanism. Rules out purely correlational epiphenomena.\n6. Splitting (cluster analysis of decoder columns): Supports claim of true concept discovery. Rules out artificial inflation of feature counts via resolution changes.\n7. Absorption (concept-isolation tests): Supports claim of feature purity. Rules out bundled, context-dependent features.\n8. Statistical (multiple seeds, confidence intervals, effect sizes): Supports claim of generalizability. Rules out cherry-picked runs."
     },
     "mathematics": [
       {
-        "equation": "x\\approx\\sum_i z_i d_i",
+        "equation": "\\text{Protocol} = \\bigcap_{i=1}^{8} \\text{Metric}_i > \\tau_i",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "\\text{Metric}_i": "One of the 8 required evaluation dimensions",
+          "\\tau_i": "Minimum acceptable threshold for that metric"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A credible SAE evaluation reports fidelity, sparsity, interpretability, stability, and intervention outcomes, with seeds and matched baselines.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A feature inventory is resolution-dependent. A label can be useful without being an atomic or canonical unit."
+        "explanation": "A valid claim requires passing the threshold on the intersection of all metrics, not just maximizing one.",
+        "whyNeeded": "Emphasizes that failure on a single axis (e.g., zero causal impact) invalidates the entire SAE for scientific claims.",
+        "ifRemoved": "Researchers will continue to publish papers optimizing a single metric (like L0) while ignoring fatal flaws.",
+        "encourages": "Holistic, defensively-designed research.",
+        "doesNotGuarantee": "Even passing all tests doesn't guarantee the features are the 'true' ontology of the universe, just that they are a highly robust, causally active, and stable abstraction."
       }
     ],
     "methodComparison": [
       {
-        "question": "What changes with capacity or seed?",
+        "question": "How does SetConCA augment this standard protocol?",
         "methods": [
           {
-            "name": "Absorption",
-            "answer": "Absorption: factors merge"
+            "name": "Standard SAE Protocol",
+            "answer": "Measures the 8 dimensions on pointwise data."
           },
           {
-            "name": "Splitting",
-            "answer": "Splitting: factors divide"
-          },
-          {
-            "name": "Non-canonicality",
-            "answer": "Non-canonicality: bases differ"
+            "name": "SetConCA Extensions",
+            "answer": "Adds three specific tests: \n1. Set-level vs pointwise comparison at explicitly MATCHED FVU.\n2. Intruder robustness test (adding noisy/irrelevant views to the set).\n3. View construction ablation (comparing principled views vs. random views)."
           }
         ],
-        "practicalImplication": "None of these can be diagnosed from a single run."
+        "practicalImplication": "To prove SetConCA works, it must dominate standard SAEs on the 8 core metrics, AND pass its own specific architectural stress tests."
       }
     ],
     "evidence": [
       {
-        "claim": "A credible SAE evaluation reports fidelity, sparsity, interpretability, stability, and intervention outcomes, with seeds and matched baselines.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
+        "claim": "The evaluation protocol for SetConCA should include all standard SAE tests PLUS set-level comparisons, intruder tests, and view ablations.",
+        "claimType": "Methodology",
+        "sourceId": "Course Synthesis",
+        "section": "Evaluation Standards",
         "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "note": "This is the normative standard established by the curriculum for Phase 10."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "The Unmatched Baseline",
+        "mechanism": "Comparing SetConCA to a standard SAE, but the standard SAE has a much higher FVU.",
+        "symptom": "SetConCA looks vastly superior on downstream metrics.",
+        "diagnosticTest": "Check the FVU of the baseline. If they aren't matched, the baseline is a strawman.",
+        "mitigation": "Always compare models at explicitly matched FVU and L0 sparsity.",
+        "setconcaRelevance": "This is the most likely way a SetConCA paper would be rejected by rigorous reviewers."
       }
     ],
     "setconcaConnection": {
-      "relevance": "A rigorous SAE evaluation protocol determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "This entire protocol is the testing ground for SetConCA.",
+      "whichPart": "Phase 10: Building the Evaluation.",
+      "whichDesignChoice": "We must run SetConCA through every single one of these 8 metrics + 3 extensions.",
+      "whichFailure": "Failing to run the View Construction Ablation. If SetConCA works just as well with random, unprincipled views as it does with carefully constructed views, the core hypothesis (coordination extracts invariants) is falsified.",
+      "whichExperiment": "Train SetConCA with views grouped by semantic similarity, and another SetConCA with views grouped entirely randomly. Compare all metrics.",
+      "alternativeExplanation": "SetConCA is just acting as a batch-normalization or smoothing function, not a coordination mechanism."
     },
     "exercises": [
       {
         "type": "diagnose",
-        "prompt": "A paper claims that a rigorous sae evaluation protocol improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "prompt": "An SAE reports perfect Auto-Interp scores, low FVU, and high sparsity. What is the most critical missing metric to ask for before you use these features for model steering?",
+        "reveal": "Causal impact (steering success rate or ablation impact). Highly interpretable features are often causally disconnected from the model's actual computations."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain a rigorous sae evaluation protocol to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "List 4 of the 8 required measurements in the rigorous SAE evaluation protocol. For each, state exactly what claim it supports and what confound it rules out.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
+          "Lists 4 distinct metrics from the list (Reconstruction, Sparsity, Feature Quality, Stability, Causal, Splitting, Absorption, Statistical).",
+          "Correctly identifies the supporting claim for each.",
+          "Correctly identifies the ruled-out confound for each."
+        ]
+      },
+      {
+        "type": "open",
+        "prompt": "What are the three specific evaluation extensions required for SetConCA beyond the standard SAE protocol?",
+        "rubric": [
+          "Set-level vs pointwise comparison at matched FVU.",
+          "Intruder robustness test.",
+          "View construction ablation (random views)."
         ]
       }
     ],
     "nextLesson": {
-      "id": null,
-      "bridge": "This phase checkpoint now combines the ideas from the phase."
+      "id": "p10-l01",
+      "bridge": "Next: Phase 10 brings everything together for SetConCA specifically. We will take this rigorous protocol and apply it directly to the SetConCA architecture."
     },
     "researchWorksheet": {
       "fields": [
         {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
+          "key": "view_ablation",
+          "label": "View Construction Ablation",
+          "prompt": "Why is testing SetConCA with random views a critical scientific control?"
         },
         {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
+          "key": "table_critique",
+          "label": "Evaluation Critique",
+          "prompt": "Look at Table 1 of any recent SAE paper. Which of the 8 protocol metrics are missing?"
         }
       ]
     }

@@ -4,161 +4,172 @@
   "phaseIndex": 10,
   "lessonIndex": 3,
   "title": "A realistic toy experiment",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 30,
   "status": "complete",
-  "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
-  ],
-  "prerequisites": [
-    "p10-l02"
-  ],
+  "prerequisites": ["p10-l02"],
   "learningObjectives": [
-    "Explain a realistic toy experiment in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Design a controlled toy experiment to evaluate SetConCA against baselines.",
+    "Formulate expected outcomes for feature-to-concept alignment, absorption, and cross-seed matching.",
+    "Predict the behavior of the model under specific failure conditions like random grouping or intruder tokens."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Before training on language-model activations, use a toy world where the answer is known. The toy needs a latent concept, several partial views, nuisance variation, and deliberate intruders. Then you can tell whether set pooling recovers the intended direction or merely exploits an easier cue."
+      "text": "Before running large-scale distributed training on massive language models, researchers build toy models. A good toy experiment isolate the core mechanism, provides ground-truth answers, and allows for rapid iteration.\n\nIn this lesson, we design a realistic toy world where we know the exact ground-truth concepts. We will define the data generation process, the baselines, and the specific metrics we need to measure to prove (or falsify) SetConCA's claims."
     },
-    "bridgeFrom": "p10-l02",
+    "bridgeFrom": "We have our objective and our strategy for creating sets. Now we need a controlled environment to prove that the combination actually works as hypothesized.",
     "intuition": {
-      "analogy": "A toy experiment is a wind tunnel. It is simpler than a real aircraft, but it must still contain the forces that could make the design fail. Here, the known latent direction is the thing we want to recover; view noise and intruders are the ways the experiment can fool us.",
-      "analogyLimit": "The toy model tests a mechanism under controlled assumptions. It does not predict a gain on language-model activations until that experiment is run.",
-      "text": "A good toy problem has known latent causes, partial views, nuisance variation, and a metric that can distinguish recovery of the intended factor from a shortcut."
+      "analogy": "Testing a new aerodynamic wing design in a wind tunnel before bolting it to a real airplane.",
+      "analogyLimit": "The wind tunnel is perfectly controlled; real LM activations have unknown, nearly infinite dimensions of variation.",
+      "text": "In a real LM, we don't know what the 'true' concepts are, so evaluating an SAE is tricky. We rely on proxies like automated interpretability or downstream steering. \n\nIn a toy experiment, we play God. We create the concepts, we mix them together to create activations, and we add the noise. Because we know the exact ground truth, we can measure exactly how well our SetConCA dictionary recovers the original concepts compared to a baseline SAE."
     },
     "toyExample": {
-      "description": "Sample a two-dimensional latent direction for each concept. Produce several noisy views around it, with some views replaced by intruders. Compare the cosine of one view with the cosine of the pooled set estimate against the known latent direction.",
+      "description": "A d=8 dimensional activation space with 5 ground-truth concept directions. Activations are sparse linear combinations plus noise.",
       "steps": [
         {
-          "action": "Choose a known latent direction",
-          "result": "For example, let the latent concept be a unit vector at 40 degrees in a two-dimensional space.",
-          "insight": "The ground truth lets you measure recovery directly instead of judging a visually plausible feature label."
+          "step": 1,
+          "action": "Generate 1000 activations with known concept labels and group them into 200 sets of 5 tokens each (sharing 1-2 concepts).",
+          "result": "A controlled dataset with ground-truth semantic sets.",
+          "insight": "This provides the perfect testbed for evaluating the contrastive loss."
         },
         {
-          "action": "Create views and pool them",
-          "result": "Add independent noise to each view, then average the views. Compare the pooled vector and a single view with the known latent direction using cosine similarity.",
-          "insight": "Independent noise averages out; a shared shortcut or an intruder does not."
+          "step": 2,
+          "action": "Train a pointwise TopK SAE (width=16) and a SetConCA model on the sets.",
+          "result": "Both models yield a dictionary of 16 features.",
+          "insight": "We can now directly compare the dictionaries."
         },
         {
-          "action": "Add intruders",
-          "result": "Replace some valid views with samples from a different latent direction and repeat the comparison.",
-          "insight": "If the pooled estimate collapses under a few intruders, the set encoder needs a robustness mechanism, not a stronger claim."
+          "step": 3,
+          "action": "Measure feature-to-concept cosine similarity, absorption rate, and cross-seed matching (3 seeds each).",
+          "result": "Evaluate the core hypotheses of the SetConCA architecture.",
+          "insight": "Metrics must be rigorously defined to isolate the effect of the set-level losses."
         }
       ]
     },
     "visual": {
       "id": "setconca-lab",
-      "question": "Which assumption behind a realistic toy experiment changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "question": "How does SetConCA perform in the controlled toy world?",
+      "description": "An interactive environment showing the 8D toy space, comparing the feature directions learned by the TopK SAE vs. SetConCA against the ground-truth concept vectors."
     },
     "technical": {
-      "text": "The lab implements the data-generating side of the experiment, not a trained language model. A latent vector c is sampled first. Each clean view is c plus independent noise; an intruder is sampled around a different direction. Mean pooling is the baseline set estimator. Its recovery score is cosine(pool(x_i), c). This isolates one question: when does combining several views improve recovery of a known shared factor?"
+      "text": "The experiment requires careful controls. We must test what happens when the assumptions of SetConCA are violated. We will introduce 'intruder tokens' (tokens in a set that don't share the concept), use random groupings, and test zero concept sharing.",
+      "definitions": [
+        "Feature-to-concept cosine similarity: The maximum cosine similarity between a learned dictionary feature and any ground-truth concept direction.",
+        "Cross-seed matching: The consistency of the learned dictionary across independent training runs with different random initializations.",
+        "Intruder token: A token artificially inserted into a semantic set that does not share the target concept, simulating real-world noise."
+      ]
     },
     "mathematics": [
       {
-        "equation": "\\mathcal L=\\mathcal L_{\\mathrm{recon}}+\\lambda_s\\mathcal L_{\\mathrm{sparse}}+\\lambda_c\\mathcal L_{\\mathrm{set}}",
+        "id": "eq-3",
+        "label": "Activation Generation",
+        "latex": "x_i = \\sum_{j=1}^5 c_j a_{ij} + \\epsilon_i",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "x_i": "Generated activation",
+          "c_j": "Ground-truth concept vector",
+          "a_{ij}": "Sparse activation coefficient",
+          "\\epsilon_i": "Gaussian noise"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. A good toy problem has known latent causes, partial views, nuisance variation, and a metric that can distinguish recovery of the intended factor from a shortcut.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "The toy model tests a mechanism under controlled assumptions. It does not predict a gain on language-model activations until that experiment is run."
-      }
-    ],
-    "methodComparison": [
-      {
-        "question": "What must be held fixed?",
-        "methods": [
-          {
-            "name": "Pointwise SAE",
-            "answer": "Pointwise SAE: no set signal"
-          },
-          {
-            "name": "SetConCA",
-            "answer": "SetConCA: coordination term"
-          },
-          {
-            "name": "Term ablation",
-            "answer": "Ablation: remove one term"
-          }
-        ],
-        "practicalImplication": "The ablation identifies which added component caused a gain."
+        "plainExplanation": "Each activation is a combination of a few active concepts plus some background noise.",
+        "whyNeeded": "To establish a known ground truth for evaluating recovery.",
+        "ifRemoved": "We wouldn't know if the SAE is learning real concepts or just modeling noise.",
+        "encourages": "Clear evaluation of feature purity.",
+        "doesNotGuarantee": "That real LMs behave exactly like this linear mixture model."
       }
     ],
     "evidence": [
       {
-        "claim": "Multi-view causal representation learning studies when partial views can identify latent variables under explicit assumptions.",
-        "claimType": "paper_finding",
-        "sourceId": "mv-causal",
-        "section": "abstract and method",
-        "verified": true,
-        "note": "The toy borrows the discipline of known latent variables and controlled views; it does not reproduce the paper's full theorem."
+        "claim": "SetConCA should show higher feature-to-concept cosine on the SHARED concepts.",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "toy-experiment",
+        "section": "expected outcomes",
+        "verified": false,
+        "paraphrase": "The contrastive loss guides the features closer to the true shared concepts."
+      },
+      {
+        "claim": "SetConCA should show lower absorption (each feature maps to fewer concepts).",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "toy-experiment",
+        "section": "expected outcomes",
+        "verified": false,
+        "paraphrase": "Features will be less polysemantic."
+      },
+      {
+        "claim": "SetConCA should show higher cross-seed matching.",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "toy-experiment",
+        "section": "expected outcomes",
+        "verified": false,
+        "paraphrase": "The set constraints reduce the number of degenerate local minima, improving stability."
+      },
+      {
+        "claim": "Worse than baseline when tested with BAD sets (random grouping).",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "toy-experiment",
+        "section": "negative controls",
+        "verified": false,
+        "paraphrase": "Random sets destroy the model's ability to learn anything."
+      },
+      {
+        "claim": "Degradation proportional to intruder fraction.",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "toy-experiment",
+        "section": "noise robustness",
+        "verified": false,
+        "paraphrase": "The model gracefully (or catastrophically) degrades as set purity drops."
+      },
+      {
+        "claim": "SetConCA degrades to pointwise when concept sharing is ZERO.",
+        "claimType": "hypothesis",
+        "label": "[Hypothesis]",
+        "sourceId": "toy-experiment",
+        "section": "boundary conditions",
+        "verified": false,
+        "paraphrase": "Without shared concepts, the contrastive loss provides no useful gradient."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Intruder Collapse",
+        "mechanism": "The contrastive loss is highly sensitive to outliers, and intruder tokens drag the set representation away from the true concept.",
+        "symptom": "Feature purity drops dramatically even with a small percentage of intruder tokens.",
+        "diagnosticTest": "Plot feature-to-concept similarity as a function of intruder percentage.",
+        "mitigation": "Use robust pooling mechanisms (e.g., attention instead of mean) to ignore outliers in the set.",
+        "setconcaRelevance": "Crucial for predicting performance on real LM data, which is inherently noisy."
       }
     ],
     "setconcaConnection": {
-      "relevance": "A realistic toy experiment determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "This experiment is the primary empirical proof-of-concept for SetConCA.",
+      "whichPart": "Experimental validation.",
+      "whichDesignChoice": "Testing against standard TopK SAEs in a synthetic setting.",
+      "proposedExperiment": "Execute the defined toy experiment and analyze the results across multiple random seeds."
     },
     "exercises": [
       {
-        "type": "diagnose",
-        "prompt": "A paper claims that a realistic toy experiment improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "type": "prediction",
+        "prompt": "If SetConCA shows high feature-to-concept cosine but VERY high reconstruction error (high FVU), what might be wrong with the hyperparameters?",
+        "reveal": "The contrastive weight (β) and alignment weight (γ) are likely too high relative to the reconstruction weight, forcing the model to capture the concept at the expense of reconstructing the individual token's full activation."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain a realistic toy experiment to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Why is it important to test SetConCA with 'zero concept sharing' as a boundary condition?",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
-        ]
+          "Identifies that it tests whether the architecture inherently degrades learning when there is no signal.",
+          "Verifies that SetConCA behaves no worse than a baseline SAE when set information is absent."
+        ],
+        "badVersion": "To see if it works without concepts.",
+        "goodVersion": "Testing with zero concept sharing acts as a sanity check. If sets share no concepts, the contrastive loss should theoretically provide zero useful signal. If SetConCA performs significantly worse than the baseline SAE in this scenario, it means the architecture itself introduces instability or harmful biases when the set assumptions fail."
       }
-    ],
-    "nextLesson": {
-      "id": "p10-l04",
-      "bridge": "Next: Hypotheses, baselines, and ablations. The next idea reuses this lesson's representation and makes a new assumption explicit."
-    },
-    "researchWorksheet": {
-      "fields": [
-        {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
-        },
-        {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
-        }
-      ]
-    }
+    ]
+  },
+  "bridgeToNext": {
+    "nextId": "p10-l04",
+    "text": "The toy experiment provides the initial evidence. Now, we must formulate a complete research program around these findings, defining the precise hypotheses, baselines, and critical ablations required for a rigorous paper."
   }
 }

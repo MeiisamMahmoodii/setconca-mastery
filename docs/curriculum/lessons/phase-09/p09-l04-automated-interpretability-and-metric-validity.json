@@ -4,159 +4,158 @@
   "phaseIndex": 9,
   "lessonIndex": 4,
   "title": "Automated interpretability and metric validity",
-  "estimatedMinutes": 25,
+  "estimatedMinutes": 35,
   "status": "complete",
   "claimLabels": [
-    "Definition",
-    "Mathematical Result",
-    "Course Interpretation",
-    "Hypothesis",
-    "Warning"
+    "Critique",
+    "Empirical Finding",
+    "Conceptual Trap",
+    "Diagnostic"
   ],
   "prerequisites": [
     "p09-l03"
   ],
   "learningObjectives": [
-    "Explain automated interpretability and metric validity in plain language",
-    "Write down the objective and identify its assumptions",
-    "Design one test that could falsify an over-strong interpretation"
+    "Understand the standard automated interpretability pipeline (auto-labeling and activation prediction).",
+    "Identify why LLM-generated descriptions can be fundamentally misleading or imprecise.",
+    "Explain the findings from SAEBench and Chanin et al. 2025 regarding metric disagreement.",
+    "Recognize that improvements in one metric often come at the expense of another (Pareto trade-offs).",
+    "Critique claims that one SAE is objectively 'better' based on a single automated metric."
   ],
   "sections": {
     "whyThisLesson": {
-      "text": "Automated descriptions are useful measurements only if they are calibrated against controls, human checks, and causal tests rather than judged by plausibility alone. This lesson gives you a concrete test for that claim before the course moves to the next abstraction."
+      "text": "Evaluating SAEs by hand is impossible when dictionaries have millions of features. The field relies on automated interpretability pipelines, usually using an LLM (like GPT-4) to read a feature's top activating texts, guess what the feature represents, and then predict its activation on unseen text. While scalable, these automated metrics are deeply flawed. LLMs hallucinate plausible but imprecise labels, and different evaluation metrics frequently disagree on which SAE is 'best'. If we are to trust SetConCA, we must understand why the current standard metrics for comparing SAEs are unreliable, and how to avoid the trap of optimizing for a broken metric."
     },
     "bridgeFrom": "p09-l03",
     "intuition": {
-      "analogy": "A dictionary is like a map drawn at a chosen zoom level. Zooming in can split one region into many roads; zooming out can merge distinct places. Automated descriptions are useful measurements only if they are calibrated against controls, human checks, and causal tests rather than judged by plausibility alone.",
-      "analogyLimit": "A feature inventory is resolution-dependent. A label can be useful without being an atomic or canonical unit.",
-      "text": "Automated descriptions are useful measurements only if they are calibrated against controls, human checks, and causal tests rather than judged by plausibility alone."
+      "analogy": "Relying purely on LLM auto-labeling is like having a confident but careless intern summarize a 500-page legal document in one sentence. The summary ('It’s about corporate taxes') might sound highly plausible and even predict general topics, but it completely misses the nuanced, complex reality of the actual clauses. If you score the intern based on how confident they sound, you are optimizing for plausibility, not accuracy.",
+      "analogyLimit": "LLMs aren't just summarizing; they are actively generating a hypothesis and testing it. The issue is that the hypothesis space of human language doesn't map perfectly onto the model's alien internal representations.",
+      "text": "Can we automate feature interpretation? Can we trust the metrics we use? LLM descriptions can be wrong, and metrics can disagree. There is no single 'best SAE'."
     },
     "toyExample": {
-      "description": "Train dictionaries at two widths on the same synthetic factors and inspect when one factor merges, splits, or changes identity across seeds.",
+      "description": "Consider an SAE feature that fires on text containing both 'numbers' AND 'dates' (an absorbed feature).",
       "steps": [
         {
-          "action": "State the ground truth first",
-          "result": "Specify exactly what automated interpretability and metric validity should recover, preserve, or ignore.",
-          "insight": "The intended factor must be known before a toy result can be judged."
+          "action": "Auto-labeling Phase",
+          "result": "The LLM looks at the top activations and generates the label: 'Mathematical concepts'.",
+          "insight": "The label sounds plausible based on the numbers, but it completely misses the date aspect. It is a plausible hallucination."
         },
         {
-          "action": "Run the matched comparison",
-          "result": "Use the same data, capacity, training budget, and evaluation examples for both methods.",
-          "insight": "Otherwise a visible gain may be a resource difference in disguise."
+          "action": "Prediction Phase",
+          "result": "The LLM is asked to predict if the feature will fire on 'Calculus is hard'. It predicts YES (based on its label). The feature does NOT fire (because there are no dates).",
+          "insight": "The automated interpretability score drops. But did the SAE fail, or did the LLM evaluator fail? It's impossible to tell from the score alone."
         },
         {
-          "action": "Break one assumption",
-          "result": "Vary the source correlation, noise, view quality, or sparsity and record the first failure.",
-          "insight": "The boundary of success is usually more useful than the headline score."
+          "action": "Comparing SAEs",
+          "result": "SAE-A scores 0.85 on feature detection, 0.72 on steering. SAE-B scores 0.78 on detection, 0.89 on steering. Which is better?",
+          "insight": "Neither dominates. They lie on a Pareto frontier. Claiming SAE-B is 'state-of-the-art' based only on steering ignores its weaknesses."
         }
       ]
     },
     "visual": {
-      "id": "absorption-demo",
-      "question": "Which assumption behind automated interpretability and metric validity changes the result most?",
-      "description": "Move one control at a time. Treat the display as a toy model, then write down the real experiment it suggests."
+      "id": "metric-disagreement",
+      "question": "How do different metrics rank the same models?",
+      "description": "Visualize a parallel coordinates plot from SAEBench. It shows that lines (representing specific SAE models) criss-cross wildly between different metrics (like Auto-Interp, Reconstruction, Sparsity, and Downstream Task performance). A model that is #1 on Auto-Interp might be #5 on Downstream task performance."
     },
     "technical": {
-      "text": "Automated descriptions are useful measurements only if they are calibrated against controls, human checks, and causal tests rather than judged by plausibility alone. In practice, write down the input unit, the operation applied to it, and the exact statistic used to score the result. Those are different things. A learned representation can be useful even when the interpretation attached to it turns out to be wrong."
+      "text": "The core issue is metric validity. Automated Interpretability score (using an LLM to predict activations) measures *how easily translatable* a feature is to human linguistic concepts. It does NOT measure *how causally important* that feature is to the model's behavior. A feature might be highly interpretable but causally inert. Conversely, a feature might be a complex, uninterpretable alien geometric artifact that is absolutely vital for the model's output. Optimizing solely for auto-interpretability risks creating SAEs that extract superficial, human-pleasing correlations while missing the actual mechanics of the network."
     },
     "mathematics": [
       {
-        "equation": "x\\approx\\sum_i z_i d_i",
+        "equation": "\\text{Score} = \\text{Correlation}(z_{true}, \\text{LLM}_{predict}(x | \\text{label}))",
         "symbols": {
-          "x": "observed activation or input",
-          "z": "latent code",
-          "d_i": "dictionary direction",
-          "lambda": "trade-off weight"
+          "z_{true}": "Actual activation of the feature on input x",
+          "\\text{LLM}_{predict}": "LLM's predicted activation based on its generated label"
         },
-        "explanation": "For this lesson, the expression makes the central trade-off explicit. Automated descriptions are useful measurements only if they are calibrated against controls, human checks, and causal tests rather than judged by plausibility alone.",
-        "whyNeeded": "It says precisely what the method is being rewarded for.",
-        "ifRemoved": "You could not tell whether two implementations were solving the same problem.",
-        "encourages": "A testable prediction about the chosen objective.",
-        "doesNotGuarantee": "A feature inventory is resolution-dependent. A label can be useful without being an atomic or canonical unit."
+        "explanation": "This formula defines the standard automated interpretability score. It assumes that if a label accurately predicts activation, the label is the true 'meaning' of the feature.",
+        "whyNeeded": "Highlights the mechanism of evaluation, revealing its heavy dependence on the LLM's predictive capabilities and linguistic priors.",
+        "ifRemoved": "The metric remains a black box, and students won't understand how it can easily be gamed or confused by complex features.",
+        "encourages": "Developing causal metrics (like steering or patching) instead of purely correlational predictive metrics.",
+        "doesNotGuarantee": "A high score does NOT guarantee the feature is causal, canonical, or un-split. It just guarantees the LLM figured out a heuristic to predict it."
       }
     ],
     "methodComparison": [
       {
-        "question": "What changes with capacity or seed?",
+        "question": "How do we evaluate an SAE?",
         "methods": [
           {
-            "name": "Absorption",
-            "answer": "Absorption: factors merge"
+            "name": "Auto-Interpretability (Prediction)",
+            "answer": "Scalable, but measures human-translatability, not causal truth. Prone to LLM hallucinations."
           },
           {
-            "name": "Splitting",
-            "answer": "Splitting: factors divide"
+            "name": "Feature Steering / Causal Intervention",
+            "answer": "Measures true mechanism, but hard to scale and evaluate automatically across millions of features."
           },
           {
-            "name": "Non-canonicality",
-            "answer": "Non-canonicality: bases differ"
+            "name": "SAEBench Composite",
+            "answer": "Provides a suite of metrics, revealing that no single SAE dominates across all axes."
           }
         ],
-        "practicalImplication": "None of these can be diagnosed from a single run."
+        "practicalImplication": "Never trust a paper that claims State-of-the-Art performance based on a single automated metric."
       }
     ],
     "evidence": [
       {
-        "claim": "Automated descriptions are useful measurements only if they are calibrated against controls, human checks, and causal tests rather than judged by plausibility alone.",
-        "claimType": "definition",
-        "sourceId": "course-synthesis",
-        "section": "lesson framing",
-        "verified": false,
-        "note": "Course explanation. Use the research library's primary sources for paper-specific empirical claims."
+        "claim": "Feature detection metrics may not reliably distinguish better from worse SAEs. Performance improvements on one metric can come at the cost of another.",
+        "claimType": "Empirical Finding",
+        "sourceId": "Chanin et al. 2025 (Reliable benchmarks?) & SAEBench 2025",
+        "section": "Metric Disagreement Analysis",
+        "verified": true,
+        "note": "SAEBench definitively showed that SAEs ranked differently on different metrics. There is no single 'best SAE'. Chanin et al. demonstrated that highly interpretable features often fail causal tests."
       }
     ],
     "failureModes": [
       {
-        "name": "A score that answers the wrong question",
-        "mechanism": "The objective rewards a proxy while the paper describes a stronger scientific property.",
-        "symptom": "The headline metric rises, but seed stability, controls, or interventions disagree.",
-        "diagnosticTest": "Add a matched negative control and one counterfactual intervention.",
-        "mitigation": "Either narrow the claim or add the missing measurement.",
-        "setconcaRelevance": "Report both the intended benefit and the most plausible shortcut for every SetConCA loss term."
+        "name": "Goodhart's Law on Auto-Interp",
+        "mechanism": "A researcher designs a new loss function specifically to maximize the Auto-Interpretability score by an LLM.",
+        "symptom": "The score hits 0.95. The features have clean, perfectly human-readable labels. But when used for causal steering, the features do absolutely nothing to the model's output.",
+        "diagnosticTest": "Run causal ablation tests on the 'highly interpretable' features. If removing them doesn't affect the model's behavior on that concept, the metric was gamed.",
+        "mitigation": "Always pair correlational metrics (like Auto-Interp) with causal metrics (like steering or patching).",
+        "setconcaRelevance": "When evaluating SetConCA, we must prove it improves causal metrics, not just that it makes features easier for an LLM to read."
       }
     ],
     "setconcaConnection": {
-      "relevance": "Automated interpretability and metric validity determines how SetConCA should represent, group, or evaluate activation views.",
-      "whichPart": "The choice of sparse code, view set, coordination loss, or evaluation.",
-      "whichDesignChoice": "Match the pointwise SAE and SetConCA on model, activation site, width, sparsity budget, and compute.",
-      "whichFailure": "Mistaking stronger agreement for recovery of the intended concept.",
-      "whichExperiment": "Compare fidelity, feature stability, selectivity, and controlled interventions; report each result separately.",
-      "alternativeExplanation": "An apparent gain may come from extra context, effective capacity, or easier positives rather than set coordination."
+      "relevance": "SetConCA must be evaluated on a rigorous, multi-axis benchmark to prove it represents a true Pareto improvement, not just a trade-off.",
+      "whichPart": "The final evaluation protocol.",
+      "whichDesignChoice": "We must report all metrics from SAEBench. If SetConCA improves cross-view consistency but destroys downstream task performance, it is a failure.",
+      "whichFailure": "Claiming victory because SetConCA scores higher on one specific, easily-gamed metric.",
+      "whichExperiment": "Compare standard SAE and SetConCA across all SAEBench axes. Look for Pareto dominance.",
+      "alternativeExplanation": "If SetConCA only improves one metric, it might just be shifting the model along the existing Pareto frontier rather than pushing the frontier outward."
     },
     "exercises": [
       {
         "type": "diagnose",
-        "prompt": "A paper claims that automated interpretability and metric validity improved interpretability. What one result would you ask for before accepting that claim?",
-        "reveal": "Ask for the smallest missing control: a matched baseline, several seeds, a negative control, or an intervention that tests the claimed mechanism."
+        "prompt": "An SAE paper claims 'Our new architecture achieves a 15% improvement in Automated Interpretability over the baseline.' What specific data must you request before believing the architecture is fundamentally better?",
+        "reveal": "You must request the other metrics (Reconstruction/FVU, Sparsity, Downstream Task degradation, Causal Steering). It is highly likely they achieved the 15% gain by sacrificing reconstruction or making the model dense."
       }
     ],
     "masteryQuestions": [
       {
         "type": "open",
-        "prompt": "Explain automated interpretability and metric validity to a colleague, then name one thing the method cannot establish by itself.",
+        "prompt": "Explain the two main problems with using LLM-generated descriptions to evaluate SAE features, and reference the findings of SAEBench regarding metric validity.",
         "rubric": [
-          "Defines the object clearly",
-          "Names the objective or assumption",
-          "Separates evidence from interpretation",
-          "Gives a valid limitation"
+          "Identifies Problem 1: LLM descriptions can be plausible hallucinations (wrong/imprecise labels).",
+          "Identifies Problem 2: Different metrics disagree; there is no single dominant SAE.",
+          "Explains that a high auto-interp score doesn't guarantee the feature is causally meaningful.",
+          "Concludes that relying on a single metric is invalid."
         ]
       }
     ],
     "nextLesson": {
       "id": "p09-l05",
-      "bridge": "Next: A rigorous SAE evaluation protocol. The next idea reuses this lesson's representation and makes a new assumption explicit."
+      "bridge": "Next: A rigorous SAE evaluation protocol. If automated metrics are flawed and features are non-canonical, how DO we evaluate an SAE? We will build a comprehensive, multi-metric protocol."
     },
     "researchWorksheet": {
       "fields": [
         {
-          "key": "claim",
-          "label": "Falsifiable claim",
-          "prompt": "Write the smallest claim this lesson supports."
+          "key": "saebench_finding",
+          "label": "SAEBench Core Finding",
+          "prompt": "What did SAEBench conclude about the existence of a universally 'best' SAE?"
         },
         {
-          "key": "control",
-          "label": "Control",
-          "prompt": "What control would rule out a shortcut?"
+          "key": "metric_tradeoff",
+          "label": "Metric Trade-offs",
+          "prompt": "Give an example of how optimizing for automated interpretability might degrade another crucial metric."
         }
       ]
     }

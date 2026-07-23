@@ -452,7 +452,7 @@ function checkProgRequirement(prog, check) {
 
 // ── Page renderers ────────────────────────────────────────────────────────────
 
-export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensurePapers, ensureGlossary, ensureConcepts, ensureDependencies, ensureLessonNarratives) {
+export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensurePapers, ensureGlossary, ensureConcepts, ensureDependencies, ensureLessonNarratives, ensurePaperGuides) {
 
   async function renderHome(phases, state) {
     if (!phases) return '<p class="muted">Loading…</p>';
@@ -800,7 +800,7 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
 
     return `
       <h2 style="margin-bottom:0.5rem">Research Library</h2>
-      <p class="muted" style="margin-bottom:1rem">Papers are supporting sources for concept lessons. Navigate through lessons to reach papers naturally — or browse here for reference.</p>
+      <p class="muted" style="margin-bottom:1rem">This is the RAW paper course. Each completed page is written from its source paper, with a plain-language explanation, limits, and a paper-specific toy.</p>
       <div class="search-bar">
         <input class="search-input" type="search" placeholder="Search papers…" oninput="filterLibrary(this.value)" id="librarySearch" />
       </div>
@@ -889,6 +889,27 @@ export function createRenderer(stateRef, cache, ensureLesson, ensurePhases, ensu
     try { papers = await ensurePapers(); } catch { papers = []; }
     const paper = papers.find(p => p.id === paperId);
     if (!paper) return `<p class="muted">Paper "${esc(paperId)}" not found in library.</p>`;
+    let guides = {};
+    try { guides = await ensurePaperGuides(); } catch {}
+    const guide = guides[paperId];
+
+    if (guide) {
+      const nextPaper = papers.find(p => p.id === guide.next);
+      return `
+        <button class="btn-ghost" onclick="app.navigate('/library')" style="margin-bottom:1rem">← RAW paper course</button>
+        <div style="margin-bottom:0.5rem"><span class="badge badge-blue">Paper ${guide.order}</span><span class="badge badge-green">Read from RAW PDF</span></div>
+        <h1 style="margin-bottom:0.5rem; font-size:1.65rem">${esc(paper.title)}</h1>
+        <p class="muted" style="margin-bottom:1rem">${esc(paper.authors || '')}</p>
+        <div class="callout ok" style="margin-bottom:1rem"><strong>What this page will do:</strong> ${esc(guide.readingPromise)}</div>
+        ${paper.file ? `<a href="RAW/${paper.file}" target="_blank" class="btn-secondary" style="display:inline-block; text-decoration:none; margin-bottom:1.25rem">Open the source PDF ↗</a>` : ''}
+        <article class="card" style="margin-bottom:1rem"><p style="margin:0; font-size:1.05rem; line-height:1.8">${esc(guide.strapline)}</p></article>
+        ${guide.sections.map(section => `<article class="card" style="margin-bottom:1rem"><h2 style="font-size:1.18rem; margin-bottom:0.6rem">${esc(section.heading)}</h2><p style="margin:0; line-height:1.8; color:#d6deeb">${esc(section.body)}</p></article>`).join('')}
+        <article class="card" style="margin-bottom:1rem"><h2 style="font-size:1.18rem; margin-bottom:0.6rem">${esc(guide.toy.title)}</h2><p style="line-height:1.7; color:#d6deeb">${esc(guide.toy.body)}</p><div id="demoMount" data-visual="${esc(guide.toy.visual)}"></div></article>
+        <article class="card" style="margin-bottom:1rem"><h2 style="font-size:1.18rem; margin-bottom:0.6rem">Check your understanding</h2><ul style="padding-left:1.2rem; color:#d6deeb; line-height:1.8">${guide.checks.map(check => `<li>${esc(check)}</li>`).join('')}</ul></article>
+        <article class="card" style="margin-bottom:1rem"><h2 style="font-size:1.18rem; margin-bottom:0.6rem">Where this comes from in the paper</h2><ul style="padding-left:1.2rem; color:#d6deeb; line-height:1.8">${guide.sourceNotes.map(note => `<li>${esc(note)}</li>`).join('')}</ul></article>
+        ${nextPaper ? `<div class="callout purple"><strong>Next paper:</strong> ${esc(guide.nextReason)}${guides[nextPaper.id] ? `<div style="margin-top:0.7rem"><button class="btn-primary" onclick="app.navigate('/paper/${esc(nextPaper.id)}')">Continue to ${esc(nextPaper.title)} →</button></div>` : ''}</div>` : ''}
+      `;
+    }
 
     return `
       <button class="btn-ghost" onclick="app.navigate('/library')" style="margin-bottom:1rem">← Research Library</button>

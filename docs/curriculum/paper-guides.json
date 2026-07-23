@@ -1,0 +1,86 @@
+{
+  "pca-shlens": {
+    "order": 1,
+    "strapline": "A careful introduction to a linear way of finding the few directions that carry most of a dataset's variation.",
+    "readingPromise": "This page follows the whole tutorial: its spring experiment, change-of-basis argument, covariance and eigenvector solution, SVD derivation, practical recipe, limits, and explanatory code.",
+    "previous": null,
+    "next": "ica-shlens",
+    "nextReason": "PCA removes linear correlation. The next paper asks for something stronger: components that are statistically independent, even when zero correlation is not enough.",
+    "sections": [
+      {
+        "heading": "The problem before the mathematics",
+        "body": "Imagine a ball on a spring. It really moves along one physical line, but three imperfect cameras record six numbers at every moment: horizontal and vertical position from each camera. The readings are noisy and repeat the same underlying event. The tutorial's question is not 'how can we compress six numbers?' It is 'can we discover the one direction that actually describes the motion?' PCA is the proposed answer when the useful structure is linear and appears as large, coherent variation."
+      },
+      {
+        "heading": "What counts as one observation",
+        "body": "Put one moment of measurement in a column vector x. Stack all n moments into a data matrix X, with measurement types as rows and observations as columns. This convention matters: PCA compares how each measurement type changes across the observations. Before doing anything else, subtract the mean of every row. Otherwise the first component can mostly point toward the average offset rather than toward changing behaviour."
+      },
+      {
+        "heading": "PCA is a new coordinate system",
+        "body": "The camera axes are only the coordinates used to collect the data; they are not automatically the meaningful axes. PCA looks for a new orthonormal basis P and expresses the data as Y = PX. Each row of P is a direction in the old measurement space. Each entry of Y is a dot product: it tells us how far one observation lies along one new direction. Geometrically, this is a rotation or reflection of the coordinate system, not a mysterious new kind of data."
+      },
+      {
+        "heading": "Why variance and covariance enter",
+        "body": "The tutorial makes an assumption that must stay visible: directions with large variance are likely to contain signal, while small sideways variation is likely to be noise. It also treats strongly correlated measurements as redundant: if one reading predicts another, keeping both coordinates is wasteful. The covariance matrix C = (1/n)XXᵀ records both facts after centring. Its diagonal contains each variable's variance; its off-diagonal entries say how two variables co-vary. PCA wants coordinates whose covariance matrix is diagonal, with the largest variances first."
+      },
+      {
+        "heading": "The eigenvector answer",
+        "body": "For a symmetric covariance matrix, eigenvectors give perpendicular directions that diagonalise it. Sort their eigenvalues from largest to smallest. The first eigenvector is the direction that captures the most variance; the second captures the most variance left over while being perpendicular to the first; and so on. Projecting onto only the first few vectors gives a lower-dimensional approximation. In the spring example, the first component should align with the line of motion, while the remaining components mainly represent camera noise or unneeded detail."
+      },
+      {
+        "heading": "The SVD route says the same thing more generally",
+        "body": "The paper also derives singular value decomposition: any matrix can be written X = UΣVᵀ. Think of this as rotate, stretch along independent axes, then rotate again. For centred data, doing SVD on the correctly scaled transpose of X produces the same principal directions as the covariance calculation. The singular values squared are proportional to the component variances. This is why practical software often uses SVD rather than explicitly constructing a covariance matrix."
+      },
+      {
+        "heading": "The complete practical recipe",
+        "body": "Arrange observations into a matrix. Centre every measurement type. Compute either the covariance eigendecomposition or an SVD. Sort components by decreasing variance. Then decide how many to retain by asking how much variation the retained components explain and whether the discarded residual is acceptable for the purpose. The appendix gives both routes in MATLAB: pca1 forms covariance and calls eig; pca2 scales the transposed centred data and calls svd. Both finally project the original centred data onto the selected components."
+      },
+      {
+        "heading": "What PCA does not promise",
+        "body": "PCA does not discover the true causes of the data. It prefers orthogonal, high-variance linear directions because that is its objective. A person moving around a ferris wheel has one underlying phase variable, but the observed circle cannot be described by one straight PCA direction. PCA can also miss meaningful non-orthogonal or non-Gaussian structure. It removes only second-order dependence: zero covariance is not independence. Under squared reconstruction error, PCA is optimal among its linear orthogonal choices; that is a narrower claim than 'PCA found the concepts.'"
+      },
+      {
+        "heading": "Why this matters for sparse feature methods",
+        "body": "PCA is an essential baseline because it can reconstruct activations very well while producing dense directions that need not be individually meaningful. An SAE, ICA, or ConCA method has to show what extra property it achieves beyond PCA's variance-efficient compression: sparsity, independence, stability, causal usefulness, or better control. This paper gives the geometry needed to make that comparison honestly."
+      }
+    ],
+    "toy": {
+      "visual": "pca-direction-variance",
+      "title": "Toy: aim a one-dimensional measuring stick at the cloud",
+      "body": "The violet dots are observations from a stretched, noisy cloud. Drag the blue direction. Blue projected dots show what remains if every observation is represented by one number along that line; red dashed segments are the discarded error. The best PCA direction is the angle with the largest explained variance, not necessarily a direction that has a human meaning."
+    },
+    "checks": [
+      "Can you explain why centring happens before covariance is computed?",
+      "Can you distinguish 'large variance' from 'important causal factor'?",
+      "Can you state one situation where a one-dimensional PCA summary will fail even when the data has one underlying variable?"
+    ],
+    "sourceNotes": [
+      "Pages 1-2: motivation, the three-camera spring example, and the meaning of a data sample.",
+      "Pages 3-6: change of basis, covariance, the variance and decorrelation objective, and the eigenvector solution.",
+      "Pages 7-9: SVD, its geometric interpretation, its connection to PCA, and the implementation recipe.",
+      "Pages 9-12: limits of linear, orthogonal, second-order analysis; linear-algebra proofs; and both MATLAB implementations."
+    ]
+  },
+  "ica-shlens": {
+    "order": 2,
+    "strapline": "ICA asks a different question from PCA: which hidden sources, when added together, could have produced these measurements?",
+    "readingPromise": "This page follows the tutorial's cocktail-party examples, linear-mixture model, whitening step, independence objective, ambiguities, failure cases, and its explanatory FOBI code.",
+    "previous": "pca-shlens",
+    "next": "cca-uurtio",
+    "nextReason": "ICA separates sources inside one observation. CCA changes the setting: it looks for what two different views of the same observations share.",
+    "sections": [
+      {"heading":"The difference between noise and another source","body":"A street recording contains hiss, but it can also contain a car, footsteps, music, and another voice. Those are not just random errors around one signal: they are separate signals that have been added together. ICA belongs to blind source separation. It tries to recover hidden sources from mixtures without being told the mixing process. The cocktail-party example has two microphones, each recording a different weighted sum of music and speech."},
+      {"heading":"The model ICA commits to","body":"ICA assumes an observed vector x was made by a square, invertible linear mixing matrix A acting on hidden sources s: x = As. The sources must be statistically independent. ICA learns an unmixing matrix W so that ŝ = Wx is close to s. This is a powerful but narrow promise: arbitrary blind source separation is not solvable, and ICA only addresses mixtures that meet these assumptions."},
+      {"heading":"Why PCA is useful but insufficient","body":"PCA rotates data toward directions of large variance and removes linear correlation. Hidden sources need not be perpendicular and need not be the directions of greatest variance. ICA therefore begins with PCA-like whitening: centre the data, rotate into covariance eigenvectors, and rescale so every direction has variance one. The resulting cloud is spherical in its second-order statistics, but it may still have higher-order structure that reveals the source axes."},
+      {"heading":"The remaining rotation is found by independence","body":"After whitening, ICA has removed everything covariance can decide. It still needs a rotation V. The paper chooses V so that the recovered coordinates are as statistically independent as possible, expressed by minimising multi-information or, equivalently for this search, the sum of marginal entropies. In a two-source toy, the right rotation restores a bimodal source on one axis and a Gaussian source on the other. A wrong rotation leaves each coordinate contaminated by both sources."},
+      {"heading":"What an ICA result means","body":"The complete transform is W = VΣ⁻¹Uᵀ: covariance eigenvectors and eigenvalues provide the whitening part, and numerical optimisation supplies V. A row of W extracts one estimated source from an observation. A column of W⁻¹ describes how that source contributes back to the sensors. This lets someone retain, suppress, or inspect a recovered component, but it does not attach a name or causal story to it automatically."},
+      {"heading":"The answer is never uniquely labelled","body":"ICA cannot know which recovered component should be called first. Components may be permuted, flipped in sign, or rescaled while compensating in the source amplitude. These are genuine symmetries of the problem, not bugs. Comparisons across ICA runs must account for them before claiming that two components disagree."},
+      {"heading":"When the paper says ICA can fail","body":"The sources must be independent, the mixing must be linear and invertible, and there cannot be more independent sources than measurements without extra assumptions. ICA has no way to select a special orientation when the whitened data is Gaussian: every rotation looks equally independent, so it collapses to the information PCA already used. Nonlinear manifolds, occlusion or mutually exclusive interactions, finite-sample entropy estimates, and local optimisation traps are further hazards."},
+      {"heading":"The appendix is part of the lesson","body":"The appendix proves the orthogonal and whitening facts used in the derivation. Its MATLAB example centres the data, computes a whitening transform from covariance eigenvectors, then uses the FOBI method to seek directions with fourth-order structure. The author explicitly calls FOBI didactic rather than robust. The remaining code sweeps rotations, estimates multi-information by nearest-neighbour entropy, and plots how the recovered sources change."},
+      {"heading":"Why this is a bridge to sparse concept methods","body":"ICA makes a sharper claim than PCA: not only that a few directions reconstruct well, but that the coordinates behave independently under a specific generative model. Sparse autoencoders and Concept Component Analysis inherit the appeal of finding disentangled directions, but they need separate evidence when their data violate ICA's linear, square, factorial assumptions."}
+    ],
+    "toy": {"visual":"ica-mixing","title":"Toy: mix two sources, then see why a variance direction is not a source","body":"The two hidden signals vary independently, then the mixer combines them into two sensor readings. Change the cross-mixing amount. The three panels compare the sources, their sensor mixture, and a fixed PCA-style rotation. This is a geometry toy, not an ICA estimator: real ICA must infer an unmixing transform from the data distribution."},
+    "checks":["What additional assumption does ICA make beyond PCA?","Why does whitening leave an unresolved rotation?","Why can ICA not identify a preferred set of independent axes for fully Gaussian data?"],
+    "sourceNotes":["Pages 1-4: blind source separation, cocktail-party and image examples, linear mixtures, and x = As.","Pages 5-9: SVD perspective, covariance, whitening, multi-information, entropy, and the complete ICA recipe.","Pages 9-11: solution ambiguities, Gaussian and non-Gaussian cases, and the limits of overcomplete, nonlinear, or non-additive data.","Pages 11-13: proofs, the didactic FOBI implementation, the rotation sweep, and nearest-neighbour entropy estimator."]
+  }
+}

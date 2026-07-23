@@ -98,6 +98,7 @@ const cache = {
   papers: null,
   glossary: null,
   lessonNarratives: null,
+  paperGuides: null,
   lessons: {},    // lessonId → lesson data
 };
 
@@ -147,6 +148,13 @@ async function ensureLessonNarratives() {
     cache.lessonNarratives = await fetchJSON('./curriculum/lesson-narratives.json');
   }
   return cache.lessonNarratives;
+}
+
+async function ensurePaperGuides() {
+  if (!cache.paperGuides) {
+    cache.paperGuides = await fetchJSON('./curriculum/paper-guides.json');
+  }
+  return cache.paperGuides;
 }
 
 async function ensureLesson(id) {
@@ -398,7 +406,7 @@ function renderSidebar(state, phases, route) {
 export function createApp() {
   let state = loadState();
   let phases = null;
-  const renderer = createRenderer(state, cache, ensureLesson, ensurePhases, ensurePapers, ensureGlossary, ensureConcepts, ensureDependencies, ensureLessonNarratives);
+  const renderer = createRenderer(state, cache, ensureLesson, ensurePhases, ensurePapers, ensureGlossary, ensureConcepts, ensureDependencies, ensureLessonNarratives, ensurePaperGuides);
   const vis = createVisualisations();
 
   // Apply saved settings immediately

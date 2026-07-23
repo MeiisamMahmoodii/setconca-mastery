@@ -46,7 +46,7 @@ function mkCanvas(container) {
     canvas.style.width = container.clientWidth + 'px';
     canvas.style.height = container.clientHeight + 'px';
     const ctx = canvas.getContext('2d');
-    ctx.scale(devicePixelRatio, devicePixelRatio);
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
     return [canvas.clientWidth, canvas.clientHeight];
   }
   resize();
@@ -255,7 +255,7 @@ register('ica-mixing', (container) => {
     const W = canvas.clientWidth, H = canvas.clientHeight;
     canvas.width = W * devicePixelRatio;
     canvas.height = H * devicePixelRatio;
-    ctx.scale(devicePixelRatio, devicePixelRatio);
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
     ctx.clearRect(0, 0, W, H);
 
     const panelW = W / 3, h = H;
